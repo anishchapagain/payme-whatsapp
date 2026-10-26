@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payme Server Architecture, Database ERD, SQL Schema &amp; Conditions Specification</title>
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-slate: #0f172a;
+      --bg-slate-mid: #1e293b;
+      --bg-emerald-dark: #064e3b;
+      --bg-emerald-mid: #047857;
+      --bg-emerald-light: #ecfdf5;
+      --accent-green: #10b981;
+      --accent-blue: #0284c7;
+      --accent-indigo: #4f46e5;
+      --accent-amber: #d97706;
+      --accent-rose: #e11d48;
+      --text-main: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-light: #e2e8f0;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-page);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Layout Shell */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 295px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sticky Sidebar */
+    .sidebar {
+      background: var(--bg-slate);
+      color: #f8fafc;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 18px;
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7, #10b981);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 17px;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .brand-sub {
+      font-size: 11.5px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .nav-group-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      font-weight: 700;
+      margin-bottom: 6px;
+      padding-left: 10px;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      font-size: 10px;
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid #334155;
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1200px;
+      padding: 36px 44px 80px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
+      color: #ffffff;
+      padding: 36px 40px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 36px;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-emerald {
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .badge-blue {
+      background: rgba(56, 189, 248, 0.2);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .badge-amber {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fde68a;
+      border: 1px solid rgba(251, 191, 36, 0.35);
+    }
+
+    .hero-banner h1 {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-banner p {
+      color: #cbd5e1;
+      font-size: 15.5px;
+      max-width: 900px;
+      margin-bottom: 24px;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .metric-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-bottom: 3px;
+    }
+
+    .metric-lbl {
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+
+    /* Sections */
+    .doc-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 32px 36px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-eyebrow {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-blue);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .doc-section h2 {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      letter-spacing: -0.015em;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .doc-section h3 {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 24px 0 10px;
+    }
+
+    .doc-section p {
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    /* Callouts */
+    .callout {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin: 18px 0;
+      border-left: 4px solid var(--accent-green);
+      background: var(--bg-emerald-light);
+      color: #065f46;
+      font-size: 14px;
+    }
+
+    .callout-info {
+      border-left-color: var(--accent-blue);
+      background: #f0f9ff;
+      color: #075985;
+    }
+
+    .callout-warn {
+      border-left-color: var(--accent-amber);
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* Diagrams */
+    .diagram-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin: 20px 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .diagram-caption {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 18px 0;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: var(--text-main);
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Grid Cards */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin: 18px 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 18px 0;
+    }
+
+    .info-card {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      background: #ffffff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-card ul {
+      padding-left: 18px;
+      color: var(--text-secondary);
+      font-size: 13.5px;
+    }
+
+    .info-card li {
+      margin-bottom: 6px;
+    }
+
+    /* Code Blocks & Tabs */
+    .code-panel {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin: 14px 0;
+      border: 1px solid #1e293b;
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #94a3b8;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      border-bottom: 1px solid #334155;
+    }
+
+    .copy-btn {
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      color: #064e3b;
+    }
+
+    pre {
+      padding: 16px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #e2e8f0;
+    }
+
+    code {
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 12.5px;
+    }
+
+    p code, li code, td code {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-size: 12px;
+    }
+
+    .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      background: #f8fafc;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-slate);
+      color: #38bdf8;
+      border-color: var(--bg-slate);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* Status Pill Tags */
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .pill-pk { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .pill-fk { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .pill-new { background: #dcfce7; color: #065f46; border: 1px solid #a7f3d0; }
+    .pill-core { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+    .pill-err { background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
+
+    /* Interactive Filter Buttons */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .filter-btn {
+      padding: 6px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      background: #f8fafc;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-color: var(--accent-blue);
+    }
+
+    @media (max-width: 1024px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .grid-3, .grid-2, .hero-metrics { grid-template-columns: 1fr; }
+      .main-content { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Sticky Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-box">
+      <div class="brand-logo">DB</div>
+      <div>
+        <div class="brand-title">Payme Server &amp; DB Spec</div>
+        <div class="brand-sub">Backend Architecture &amp; ERD</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Server Architecture</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#sec-server-arch">1. Internal Server Architecture <span class="nav-badge">SVG</span></a></li>
+        <li><a class="nav-link" href="#sec-queues-locks">2. Queues, Locks &amp; Workers <span class="nav-badge">BullMQ</span></a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Database &amp; ERD</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#sec-erd">3. Database ERD (10 Tables) <span class="nav-badge">ERD SVG</span></a></li>
+        <li><a class="nav-link" href="#sec-sql-ddl">4. PostgreSQL 16 DDL Schema <span class="nav-badge">SQL</span></a></li>
+        <li><a class="nav-link" href="#sec-redis-schema">5. Redis Hot-State &amp; 2h TTL <span class="nav-badge">Redis</span></a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Conditions &amp; State Logic</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#sec-conditions">6. 24 Runtime Conditions Matrix <span class="nav-badge">Filterable</span></a></li>
+        <li><a class="nav-link" href="#sec-state-transitions">7. State Transition Table <span class="nav-badge">FSM</span></a></li>
+        <li><a class="nav-link" href="#sec-worker-code">8. Inbound/Outbound Engine Code <span class="nav-badge">Node/TS</span></a></li>
+        <li><a class="nav-link" href="#sec-third-party-ai">9. 3rd-Party APIs &amp; AI Layer <span class="nav-badge">Ecosystem</span></a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
+      <div><strong>Companion File:</strong> <code>payme_whatsapp_remittance_manual.html</code></div>
+      <div style="margin-top:4px;"><strong>Database Stack:</strong> PostgreSQL 16 + Redis 7 Cluster + BullMQ</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="hero-banner">
+      <div class="hero-badges">
+        <span class="badge badge-blue">Internal Backend &amp; Database Blueprint</span>
+        <span class="badge badge-emerald">PostgreSQL 16 + Redis 7 (2-Hour TTL)</span>
+        <span class="badge badge-amber">24 Runtime Conditions &amp; Guardrails</span>
+      </div>
+      <h1>Payme Server Architecture, Database ERD &amp; Conditions Engineering Specification</h1>
+      <p>
+        A complete backend systems design for the <strong>Payme Development Team</strong> detailing the internal server components, message queues, distributed locks, <strong>Entity-Relationship Diagram (ERD)</strong>, <strong>PostgreSQL 16 SQL DDL</strong>, <strong>Redis 2-hour session store</strong>, and <strong>runtime condition matrix</strong> required to receive, process, and send WhatsApp remittance messages while integrating with Payme's existing KYC and Payment infrastructure.
+      </p>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <div class="metric-val">10 DB Tables</div>
+          <div class="metric-lbl">5 Existing Payme Core + 5 New WhatsApp Channel Tables</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">&lt; 150ms Ack</div>
+          <div class="metric-lbl">Fast-Ack Webhook Receiver + BullMQ Async Worker Pool</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">7,200s (2h)</div>
+          <div class="metric-lbl">Dual Redis + PostgreSQL Session Lifecycle &amp; Re-Entry</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">24 Guardrails</div>
+          <div class="metric-lbl">Idempotency, Per-User Mutex, FX Expiry, KYC &amp; 24h Window</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1: INTERNAL SERVER ARCHITECTURE -->
+    <section class="doc-section" id="sec-server-arch">
+      <div class="section-eyebrow">Section 1 • Internal Payme Server Architecture</div>
+      <h2>How the Payme Server Internally Receives, Queues, Processes, and Sends WhatsApp Messages</h2>
+      <p>
+        In production, your Payme server should <strong>never</strong> execute slow database queries, FX quote locks, or outbound HTTP calls synchronously inside the webhook HTTP handler. Meta's <a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/about-the-platform" target="_blank">WhatsApp Cloud API</a> expects a `200 OK` response rapidly; if your endpoint blocks or times out, Meta retries the same webhook with exponential backoff, causing duplicate messages to the user.
+      </p>
+      <p>
+        To guarantee zero duplicate messages, strict ordering when a user double-taps buttons, and sub-second responsiveness, split your Payme WhatsApp backend into <strong>4 internal tiers</strong> shown in the architecture diagram below:
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 1060 560" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Payme Internal Server Architecture for Receiving and Sending WhatsApp Messages">
+          <defs>
+            <marker id="srvArrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+            </marker>
+            <marker id="srvArrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
+            </marker>
+            <marker id="srvArrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+            </marker>
+            <marker id="srvArrPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+            </marker>
+          </defs>
+
+          <!-- Tier 1: Edge / Ingress -->
+          <rect x="15" y="15" width="210" height="530" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="120" y="40" text-anchor="middle" font-size="11.5" font-weight="800" fill="#0f172a">TIER 1: INGRESS &amp; API GATEWAY</text>
+
+          <rect x="30" y="60" width="180" height="105" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+          <text x="120" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">1. Webhook Ingress</text>
+          <text x="120" y="102" text-anchor="middle" font-size="10.5" fill="#0284c7" font-family="monospace">POST /webhooks/whatsapp</text>
+          <text x="120" y="120" text-anchor="middle" font-size="10.5" fill="#475569">• Verify X-Hub-Signature-256</text>
+          <text x="120" y="136" text-anchor="middle" font-size="10.5" fill="#475569">• Check Redis SETNX wamid</text>
+          <text x="120" y="152" text-anchor="middle" font-size="10.5" fill="#047857" font-weight="700">• Return 200 OK in &lt;100ms</text>
+
+          <rect x="30" y="185" width="180" height="110" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+          <text x="120" y="209" text-anchor="middle" font-size="12" font-weight="700" fill="#5b21b6">2. Encrypted Flow API</text>
+          <text x="120" y="227" text-anchor="middle" font-size="10.5" fill="#6d28d9" font-family="monospace">POST /api/wa/flows-endpoint</text>
+          <text x="120" y="245" text-anchor="middle" font-size="10.5" fill="#475569">• RSA-OAEP + AES-128-GCM</text>
+          <text x="120" y="261" text-anchor="middle" font-size="10.5" fill="#475569">• Validate flow_token in Redis</text>
+          <text x="120" y="277" text-anchor="middle" font-size="10.5" fill="#5b21b6" font-weight="700">• Return ~IV Screen (&lt;2s)</text>
+
+          <rect x="30" y="315" width="180" height="95" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+          <text x="120" y="339" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">3. Web Handoff API</text>
+          <text x="120" y="357" text-anchor="middle" font-size="10.5" fill="#047857" font-family="monospace">POST /v1/wa-handoff/init</text>
+          <text x="120" y="375" text-anchor="middle" font-size="10.5" fill="#475569">• Mints Ref: PMW-9F3K82</text>
+          <text x="120" y="391" text-anchor="middle" font-size="10.5" fill="#475569">• Returns wa.me launch URL</text>
+
+          <rect x="30" y="430" width="180" height="95" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+          <text x="120" y="454" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">4. Core Event Callback</text>
+          <text x="120" y="472" text-anchor="middle" font-size="10.5" fill="#b45309" font-family="monospace">POST /webhooks/payme-core</text>
+          <text x="120" y="490" text-anchor="middle" font-size="10.5" fill="#78350f">• kyc.approved</text>
+          <text x="120" y="506" text-anchor="middle" font-size="10.5" fill="#78350f">• payment.captured / disbursed</text>
+
+          <!-- Tier 2: Queues & Workers -->
+          <rect x="250" y="15" width="275" height="530" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+          <text x="387" y="40" text-anchor="middle" font-size="11.5" font-weight="800" fill="#38bdf8">TIER 2: QUEUES &amp; WORKER ENGINE</text>
+
+          <rect x="268" y="60" width="240" height="80" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="388" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#38bdf8">Inbound Event Queue (BullMQ)</text>
+          <text x="388" y="104" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Buffers burst webhook traffic</text>
+          <text x="388" y="120" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Partitioned by wa_phone</text>
+
+          <rect x="268" y="165" width="240" height="175" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+          <text x="388" y="190" text-anchor="middle" font-size="12.5" font-weight="800" fill="#34d399">State Machine &amp; Rules Engine</text>
+          <text x="388" y="210" text-anchor="middle" font-size="10.5" fill="#e2e8f0">1. Acquire Redis Lock (wa_phone)</text>
+          <text x="388" y="227" text-anchor="middle" font-size="10.5" fill="#e2e8f0">2. Load 2h Session (Redis / PG)</text>
+          <text x="388" y="244" text-anchor="middle" font-size="10.5" fill="#e2e8f0">3. Evaluate Conditions Matrix:</text>
+          <text x="388" y="260" text-anchor="middle" font-size="10" fill="#94a3b8">   • Re-Entry Conflict Check (&lt;2h)</text>
+          <text x="388" y="275" text-anchor="middle" font-size="10" fill="#94a3b8">   • Quote Lock &amp; Velocity Check</text>
+          <text x="388" y="290" text-anchor="middle" font-size="10" fill="#94a3b8">   • KYC Tier Gate Check</text>
+          <text x="388" y="307" text-anchor="middle" font-size="10.5" fill="#e2e8f0">4. Persist Step &amp; Enqueue Reply</text>
+          <text x="388" y="324" text-anchor="middle" font-size="10.5" fill="#34d399">5. Release Per-User Mutex Lock</text>
+
+          <rect x="268" y="365" width="240" height="155" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="388" y="390" text-anchor="middle" font-size="12" font-weight="700" fill="#fbbf24">Outbound Dispatcher Worker</text>
+          <text x="388" y="410" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Checks 24h Service Window:</text>
+          <text x="388" y="426" text-anchor="middle" font-size="10" fill="#6ee7b7">  - Open: Send Interactive / Text JSON</text>
+          <text x="388" y="442" text-anchor="middle" font-size="10" fill="#fde68a">  - Closed: Send Approved Template</text>
+          <text x="388" y="460" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Calls Meta Graph API (80 msg/s)</text>
+          <text x="388" y="476" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Logs wamid in wa_message_logs</text>
+          <text x="388" y="494" text-anchor="middle" font-size="10" fill="#94a3b8">• Retries 429/5xx with Backoff</text>
+
+          <!-- Tier 3: Hot Cache & Persistent DB -->
+          <rect x="550" y="15" width="245" height="530" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <text x="672" y="40" text-anchor="middle" font-size="11.5" font-weight="800" fill="#065f46">TIER 3: REDIS &amp; POSTGRESQL</text>
+
+          <rect x="568" y="60" width="210" height="175" rx="8" fill="#ffffff" stroke="#ef4444" stroke-width="2"/>
+          <text x="673" y="84" text-anchor="middle" font-size="12" font-weight="800" fill="#b91c1c">Redis 7 Cluster (Hot State)</text>
+          <text x="673" y="104" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">payme:wa:dedup:{wamid}</text>
+          <text x="673" y="118" text-anchor="middle" font-size="9.5" fill="#64748b">(TTL: 24h — Idempotency)</text>
+          <text x="673" y="136" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">payme:wa:lock:{wa_phone}</text>
+          <text x="673" y="150" text-anchor="middle" font-size="9.5" fill="#64748b">(TTL: 5s — Mutex Lock)</text>
+          <text x="673" y="168" text-anchor="middle" font-size="10" fill="#047857" font-weight="700" font-family="monospace">payme:wa:session:{wa_phone}</text>
+          <text x="673" y="182" text-anchor="middle" font-size="9.5" fill="#065f46">(TTL: 7200s / 2 Hours)</text>
+          <text x="673" y="200" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">payme:wa:handoff:{ref_id}</text>
+          <text x="673" y="214" text-anchor="middle" font-size="9.5" fill="#64748b">(TTL: 900s / 15 Mins)</text>
+
+          <rect x="568" y="255" width="210" height="265" rx="8" fill="#ffffff" stroke="#047857" stroke-width="2"/>
+          <text x="673" y="280" text-anchor="middle" font-size="12" font-weight="800" fill="#065f46">PostgreSQL 16 (System DB)</text>
+          <text x="673" y="300" text-anchor="middle" font-size="10.5" font-weight="700" fill="#047857">New WhatsApp Tables:</text>
+          <text x="673" y="317" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• wa_handoff_tokens</text>
+          <text x="673" y="333" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• wa_conversations</text>
+          <text x="673" y="349" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• wa_sessions (2h audit)</text>
+          <text x="673" y="365" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• wa_message_logs</text>
+          <text x="673" y="381" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• wa_template_registry</text>
+          <text x="673" y="405" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4f46e5">Existing Payme Core Tables:</text>
+          <text x="673" y="422" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• users &amp; kyc_verifications</text>
+          <text x="673" y="438" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• beneficiaries</text>
+          <text x="673" y="454" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• fx_quotes</text>
+          <text x="673" y="470" text-anchor="middle" font-size="10" fill="#334155" font-family="monospace">• remittance_transactions</text>
+
+          <!-- Tier 4: Existing Payme Services & Meta API -->
+          <rect x="820" y="15" width="225" height="530" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="932" y="40" text-anchor="middle" font-size="11.5" font-weight="800" fill="#1e40af">TIER 4: CORE &amp; EXTERNAL APIs</text>
+
+          <rect x="838" y="65" width="190" height="105" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+          <text x="933" y="90" text-anchor="middle" font-size="12" font-weight="700" fill="#312e81">Payme FX &amp; Bene Service</text>
+          <text x="933" y="110" text-anchor="middle" font-size="10.5" fill="#475569">• Live Corridor FX Calculation</text>
+          <text x="933" y="126" text-anchor="middle" font-size="10.5" fill="#475569">• 15-Min Rate Lock</text>
+          <text x="933" y="142" text-anchor="middle" font-size="10.5" fill="#475569">• Bank / CLABE Validation</text>
+
+          <rect x="838" y="195" width="190" height="125" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+          <text x="933" y="220" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">Payme WebView Host</text>
+          <text x="933" y="240" text-anchor="middle" font-size="10.5" fill="#78350f">• Verifies Signed WebView JWT</text>
+          <text x="933" y="256" text-anchor="middle" font-size="10.5" fill="#78350f">• Hosts Existing KYC Page</text>
+          <text x="933" y="272" text-anchor="middle" font-size="10.5" fill="#78350f">• Hosts 3DS2 Card/ACH Page</text>
+          <text x="933" y="290" text-anchor="middle" font-size="10" fill="#b45309" font-family="monospace">Fires payment.captured</text>
+
+          <rect x="838" y="350" width="190" height="165" rx="8" fill="#1e3a8a"/>
+          <text x="933" y="378" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">Meta Graph Cloud API</text>
+          <text x="933" y="400" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="monospace">POST /{PHONE_ID}/messages</text>
+          <text x="933" y="420" text-anchor="middle" font-size="10.5" fill="#e0f2fe">• Delivers Interactive Lists,</text>
+          <text x="933" y="436" text-anchor="middle" font-size="10.5" fill="#e0f2fe">  Buttons, Flows &amp; CTA URLs</text>
+          <text x="933" y="456" text-anchor="middle" font-size="10.5" fill="#6ee7b7">• Delivers Utility Receipts</text>
+          <text x="933" y="476" text-anchor="middle" font-size="10" fill="#cbd5e1">• Emits sent/delivered/read</text>
+          <text x="933" y="492" text-anchor="middle" font-size="10" fill="#cbd5e1">  status webhooks</text>
+
+          <!-- Flow Lines -->
+          <line x1="210" y1="100" x2="264" y2="100" stroke="#0284c7" stroke-width="2" marker-end="url(#srvArrBlue)"/>
+          <line x1="388" y1="140" x2="388" y2="161" stroke="#0284c7" stroke-width="2" marker-end="url(#srvArrBlue)"/>
+          <line x1="388" y1="340" x2="388" y2="361" stroke="#10b981" stroke-width="2" marker-end="url(#srvArrGreen)"/>
+          <line x1="210" y1="475" x2="264" y2="290" stroke="#d97706" stroke-width="2" marker-end="url(#srvArrAmber)"/>
+
+          <line x1="508" y1="215" x2="564" y2="155" stroke="#10b981" stroke-width="2" marker-end="url(#srvArrGreen)" marker-start="url(#srvArrGreen)"/>
+          <line x1="508" y1="265" x2="564" y2="345" stroke="#0284c7" stroke-width="2" marker-end="url(#srvArrBlue)" marker-start="url(#srvArrBlue)"/>
+          <line x1="508" y1="435" x2="834" y2="435" stroke="#d97706" stroke-width="2.2" marker-end="url(#srvArrAmber)"/>
+          <line x1="778" y1="125" x2="834" y2="125" stroke="#7c3aed" stroke-width="2" marker-end="url(#srvArrPurple)"/>
+        </svg>
+        <div class="diagram-caption">
+          Figure 1.1 — Payme Internal Server Architecture separating Fast-Ack Webhook Ingress, BullMQ Worker Queues, Redis 2-Hour Hot State, PostgreSQL 16 Persistent Tables, and the Window-Aware Outbound Dispatcher.
+        </div>
+      </div>
+
+      <div class="grid-3" id="sec-queues-locks">
+        <div class="info-card">
+          <h4>1. Fast-Ack &amp; Deduplication</h4>
+          <ul>
+            <li>Meta retries any webhook that takes <code>&gt;5–10s</code> or returns non-2xx.</li>
+            <li>Your ingress route verifies <code>X-Hub-Signature-256</code>, executes <code>SET payme:wa:dedup:{wamid} 1 EX 86400 NX</code> in Redis, pushes the payload to BullMQ, and immediately returns <code>200 OK</code> in under 100ms.</li>
+            <li>If <code>SETNX</code> returns <code>null</code>, the webhook is a duplicate retry and is safely ignored.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>2. Per-User Mutex Lock</h4>
+          <ul>
+            <li>Users on mobile frequently double-tap interactive buttons (e.g., tapping <em>"Bank Deposit"</em> twice in 200ms).</li>
+            <li>Before processing a job for <code>wa_phone</code>, the worker acquires a Redis lock (<code>payme:wa:lock:{wa_phone}</code>, TTL <code>5000ms</code>) so the second tap waits until the first state transition commits.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>3. Window-Aware Outbound Queue</h4>
+          <ul>
+            <li>Every inbound user message updates <code>wa_conversations.service_window_expires_at = NOW() + INTERVAL '24 hours'</code> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/send-messages" target="_blank">Meta Service Window</a>).</li>
+            <li>Before sending any outbound message, the dispatcher checks if <code>service_window_expires_at &gt; NOW()</code>. If open, it sends free-form <code>interactive</code>/<code>text</code> JSON; if expired, it automatically wraps the notification in an approved <code>template</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: ENTITY RELATIONSHIP DIAGRAM (ERD) -->
+    <section class="doc-section" id="sec-erd">
+      <div class="section-eyebrow">Section 2 • Database Entity-Relationship Diagram (ERD)</div>
+      <h2>Complete ERD: Bridging 5 New WhatsApp Tables with 5 Existing Payme Core Tables</h2>
+      <p>
+        The Crow's-Foot ERD below shows how your <strong>5 new WhatsApp tables</strong> (green headers) link via Foreign Keys to your <strong>5 existing Payme Core tables</strong> (indigo headers). This design keeps your core remittance ledger clean while giving the WhatsApp channel full session tracking, auditability, and 2-hour (`7200s`) state persistence.
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 1080 680" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Payme Database Entity Relationship Diagram (ERD)">
+          <!-- Legend -->
+          <rect x="20" y="12" width="1040" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+          <rect x="36" y="22" width="16" height="16" rx="3" fill="#065f46"/>
+          <text x="60" y="34" font-size="11.5" font-weight="700" fill="#0f172a">New WhatsApp Channel Tables (Add to Payme DB)</text>
+          <rect x="370" y="22" width="16" height="16" rx="3" fill="#312e81"/>
+          <text x="394" y="34" font-size="11.5" font-weight="700" fill="#0f172a">Existing Payme Core Tables (Reuse / Add Nullable FKs)</text>
+          <text x="745" y="34" font-size="11" font-weight="700" fill="#b45309">PK = Primary Key &nbsp;|&nbsp; FK = Foreign Key &nbsp;|&nbsp; UQ = Unique Index</text>
+
+          <!-- LEFT COLUMN: NEW WHATSAPP TABLES -->
+          <!-- Table 1: wa_handoff_tokens -->
+          <rect x="20" y="65" width="290" height="145" rx="8" fill="#ffffff" stroke="#065f46" stroke-width="2"/>
+          <rect x="20" y="65" width="290" height="28" rx="6" fill="#065f46"/>
+          <text x="165" y="84" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">wa_handoff_tokens (Website Click)</text>
+          <text x="30" y="108" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> ref_id             VARCHAR(24)</text>
+          <text x="30" y="124" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> web_user_id        UUID NULL</text>
+          <text x="30" y="140" font-size="10.5" font-family="monospace" fill="#0f172a">   pre_corridor       CHAR(2) NULL</text>
+          <text x="30" y="156" font-size="10.5" font-family="monospace" fill="#0f172a">   pre_amount_usd     NUMERIC(10,2)</text>
+          <text x="30" y="172" font-size="10.5" font-family="monospace" fill="#0f172a">   claimed_by_phone   VARCHAR(20) NULL</text>
+          <text x="30" y="188" font-size="10.5" font-family="monospace" fill="#0f172a">   expires_at         TIMESTAMPTZ (15m)</text>
+
+          <!-- Table 2: wa_conversations -->
+          <rect x="20" y="230" width="290" height="160" rx="8" fill="#ffffff" stroke="#065f46" stroke-width="2"/>
+          <rect x="20" y="230" width="290" height="28" rx="6" fill="#065f46"/>
+          <text x="165" y="249" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">wa_conversations (24h Meta Window)</text>
+          <text x="30" y="273" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> wa_phone           VARCHAR(20)</text>
+          <text x="30" y="289" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> user_id            UUID NULL</text>
+          <text x="30" y="305" font-size="10.5" font-family="monospace" fill="#0f172a">   wa_profile_name    VARCHAR(120)</text>
+          <text x="30" y="321" font-size="10.5" font-family="monospace" fill="#0f172a">   opt_in_status      BOOLEAN</text>
+          <text x="30" y="337" font-size="10.5" font-family="monospace" fill="#047857" font-weight="700">   window_expires_at  TIMESTAMPTZ (24h)</text>
+          <text x="30" y="353" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> active_session_id  UUID NULL</text>
+          <text x="30" y="369" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> last_paid_tx_id    UUID NULL</text>
+
+          <!-- Table 3: wa_message_logs -->
+          <rect x="20" y="410" width="290" height="145" rx="8" fill="#ffffff" stroke="#065f46" stroke-width="2"/>
+          <rect x="20" y="410" width="290" height="28" rx="6" fill="#065f46"/>
+          <text x="165" y="429" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">wa_message_logs (Inbound/Outbound)</text>
+          <text x="30" y="453" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> id                 BIGSERIAL</text>
+          <text x="30" y="469" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#7c3aed" font-weight="700">UQ</tspan> wamid              VARCHAR(128)</text>
+          <text x="30" y="485" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> wa_phone           VARCHAR(20)</text>
+          <text x="30" y="501" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> session_id         UUID NULL</text>
+          <text x="30" y="517" font-size="10.5" font-family="monospace" fill="#0f172a">   direction          ENUM(IN, OUT)</text>
+          <text x="30" y="533" font-size="10.5" font-family="monospace" fill="#0f172a">   msg_type           VARCHAR(32)</text>
+          <text x="30" y="549" font-size="10.5" font-family="monospace" fill="#0f172a">   delivery_status    VARCHAR(24)</text>
+
+          <!-- Table 4: wa_template_registry -->
+          <rect x="20" y="570" width="290" height="95" rx="8" fill="#ffffff" stroke="#065f46" stroke-width="2"/>
+          <rect x="20" y="570" width="290" height="26" rx="6" fill="#065f46"/>
+          <text x="165" y="588" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">wa_template_registry (Meta Sync)</text>
+          <text x="30" y="611" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> template_id        VARCHAR(64)</text>
+          <text x="30" y="627" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#7c3aed" font-weight="700">UQ</tspan> template_name      VARCHAR(128)</text>
+          <text x="30" y="643" font-size="10.5" font-family="monospace" fill="#0f172a">   meta_status        ENUM(APPROVED...)</text>
+          <text x="30" y="658" font-size="10.5" font-family="monospace" fill="#0f172a">   param_schema       JSONB</text>
+
+          <!-- CENTER TABLE: wa_sessions (2-HOUR INSTANCE) -->
+          <rect x="380" y="165" width="315" height="275" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="2.5"/>
+          <rect x="380" y="165" width="315" height="32" rx="6" fill="#047857"/>
+          <text x="537" y="186" text-anchor="middle" font-size="12.5" font-weight="800" fill="#ffffff">wa_sessions (2-Hour Remittance Instance)</text>
+          <text x="392" y="214" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> session_id         UUID</text>
+          <text x="392" y="232" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> wa_phone           VARCHAR(20)</text>
+          <text x="392" y="250" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> user_id            UUID NULL</text>
+          <text x="392" y="268" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> handoff_ref_id     VARCHAR(24) NULL</text>
+          <text x="392" y="286" font-size="10.5" font-family="monospace" fill="#047857" font-weight="700">   current_step       wa_step_enum</text>
+          <text x="392" y="304" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#7c3aed" font-weight="700">UQ</tspan> flow_token         VARCHAR(96) NULL</text>
+          <text x="392" y="322" font-size="10.5" font-family="monospace" fill="#0f172a">   corridor_code      CHAR(2) NULL</text>
+          <text x="392" y="340" font-size="10.5" font-family="monospace" fill="#0f172a">   send_amount_usd    NUMERIC(10,2) NULL</text>
+          <text x="392" y="358" font-size="10.5" font-family="monospace" fill="#0f172a">   delivery_mode      VARCHAR(24) NULL</text>
+          <text x="392" y="376" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> quote_id           UUID NULL</text>
+          <text x="392" y="394" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> beneficiary_id     UUID NULL</text>
+          <text x="392" y="412" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> draft_tx_id        UUID NULL</text>
+          <text x="392" y="430" font-size="10.5" font-family="monospace" fill="#b45309" font-weight="700">   expires_at         TIMESTAMPTZ (+2h)</text>
+
+          <!-- RIGHT COLUMN: EXISTING iSEND CORE TABLES -->
+          <!-- Table 5: users -->
+          <rect x="765" y="60" width="295" height="125" rx="8" fill="#ffffff" stroke="#312e81" stroke-width="2"/>
+          <rect x="765" y="60" width="295" height="26" rx="6" fill="#312e81"/>
+          <text x="912" y="78" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">users (Existing Payme Core)</text>
+          <text x="775" y="102" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> id                 UUID</text>
+          <text x="775" y="118" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#7c3aed" font-weight="700">UQ</tspan> phone_e164         VARCHAR(20)</text>
+          <text x="775" y="134" font-size="10.5" font-family="monospace" fill="#0f172a">   full_name          VARCHAR(120)</text>
+          <text x="775" y="150" font-size="10.5" font-family="monospace" fill="#0f172a">   kyc_tier           ENUM(T0, T1, T2)</text>
+          <text x="775" y="166" font-size="10.5" font-family="monospace" fill="#0f172a">   daily_limit_usd    NUMERIC(10,2)</text>
+
+          <!-- Table 6: kyc_verifications -->
+          <rect x="765" y="200" width="295" height="110" rx="8" fill="#ffffff" stroke="#312e81" stroke-width="2"/>
+          <rect x="765" y="200" width="295" height="26" rx="6" fill="#312e81"/>
+          <text x="912" y="218" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">kyc_verifications (Existing Core)</text>
+          <text x="775" y="242" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> id                 UUID</text>
+          <text x="775" y="258" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> user_id            UUID</text>
+          <text x="775" y="274" font-size="10.5" font-family="monospace" fill="#0f172a">   kyc_status         ENUM(APPROVED...)</text>
+          <text x="775" y="290" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#7c3aed" font-weight="700">UQ</tspan> webview_jwt_jti    VARCHAR(64)</text>
+
+          <!-- Table 7: fx_quotes -->
+          <rect x="765" y="325" width="295" height="110" rx="8" fill="#ffffff" stroke="#312e81" stroke-width="2"/>
+          <rect x="765" y="325" width="295" height="26" rx="6" fill="#312e81"/>
+          <text x="912" y="343" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">fx_quotes (Existing Quote Engine)</text>
+          <text x="775" y="367" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> id                 UUID</text>
+          <text x="775" y="383" font-size="10.5" font-family="monospace" fill="#0f172a">   send_amount_usd    NUMERIC(10,2)</text>
+          <text x="775" y="399" font-size="10.5" font-family="monospace" fill="#0f172a">   fx_rate / fee_usd  NUMERIC(12,4)</text>
+          <text x="775" y="415" font-size="10.5" font-family="monospace" fill="#b45309" font-weight="700">   locked_until       TIMESTAMPTZ (15m)</text>
+
+          <!-- Table 8: beneficiaries -->
+          <rect x="765" y="450" width="295" height="95" rx="8" fill="#ffffff" stroke="#312e81" stroke-width="2"/>
+          <rect x="765" y="450" width="295" height="26" rx="6" fill="#312e81"/>
+          <text x="912" y="468" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">beneficiaries (Existing Core)</text>
+          <text x="775" y="492" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> id                 UUID</text>
+          <text x="775" y="508" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> user_id            UUID</text>
+          <text x="775" y="524" font-size="10.5" font-family="monospace" fill="#0f172a">   full_name_on_id    VARCHAR(140)</text>
+          <text x="775" y="538" font-size="10.5" font-family="monospace" fill="#0f172a">   account_or_clabe   VARCHAR(64)</text>
+
+          <!-- Table 9: remittance_transactions -->
+          <rect x="380" y="485" width="680" height="175" rx="8" fill="#ffffff" stroke="#312e81" stroke-width="2.5"/>
+          <rect x="380" y="485" width="680" height="28" rx="6" fill="#312e81"/>
+          <text x="720" y="504" text-anchor="middle" font-size="12.5" font-weight="800" fill="#ffffff">remittance_transactions (Existing Core Ledger + WhatsApp Channel Tracking)</text>
+          <text x="395" y="532" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#b45309" font-weight="700">PK</tspan> id                   UUID</text>
+          <text x="395" y="550" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#7c3aed" font-weight="700">UQ</tspan> mtcn_reference       VARCHAR(24)  -- e.g., 'PAY-84920411' (Payment ID sent to WA)</text>
+          <text x="395" y="568" font-size="10.5" font-family="monospace" fill="#0f172a"><tspan fill="#0284c7" font-weight="700">FK</tspan> user_id              UUID         | <tspan fill="#0284c7" font-weight="700">FK</tspan> quote_id UUID | <tspan fill="#0284c7" font-weight="700">FK</tspan> beneficiary_id UUID</text>
+          <text x="395" y="586" font-size="10.5" font-family="monospace" fill="#047857" font-weight="700"><tspan fill="#0284c7" font-weight="700">FK</tspan> wa_session_id        UUID NULL    | channel ENUM('WEB','MOBILE','WHATSAPP')</text>
+          <text x="395" y="604" font-size="10.5" font-family="monospace" fill="#0f172a">   kyc_gate_status      ENUM('PENDING','PASSED','FAILED')</text>
+          <text x="395" y="622" font-size="10.5" font-family="monospace" fill="#0f172a">   payment_status       ENUM('AWAITING_3DS','CAPTURED','FAILED','REFUNDED')</text>
+          <text x="395" y="640" font-size="10.5" font-family="monospace" fill="#0f172a">   payout_status        ENUM('QUEUED','PROCESSING_BANK','READY_FOR_PICKUP','DEPOSITED')</text>
+
+          <!-- ERD Relationship Lines -->
+          <!-- wa_handoff_tokens -> wa_sessions (1:1) -->
+          <path d="M 310 135 L 345 135 L 345 264 L 380 264" fill="none" stroke="#065f46" stroke-width="1.8"/>
+          <text x="348" y="195" font-size="9.5" font-weight="700" fill="#065f46">1:1</text>
+
+          <!-- wa_conversations -> wa_sessions (1:N) -->
+          <line x1="310" y1="295" x2="380" y2="295" stroke="#065f46" stroke-width="2"/>
+          <text x="345" y="288" text-anchor="middle" font-size="9.5" font-weight="700" fill="#065f46">1 : N</text>
+
+          <!-- wa_sessions -> wa_message_logs (1:N) -->
+          <path d="M 380 390 L 345 390 L 345 497 L 310 497" fill="none" stroke="#065f46" stroke-width="1.8"/>
+          <text x="330" y="450" font-size="9.5" font-weight="700" fill="#065f46">1:N</text>
+
+          <!-- users -> wa_sessions (1:N) -->
+          <path d="M 765 115 L 730 115 L 730 245 L 695 245" fill="none" stroke="#312e81" stroke-width="1.8"/>
+          <text x="720" y="180" font-size="9.5" font-weight="700" fill="#312e81">1:N</text>
+
+          <!-- fx_quotes -> wa_sessions (1:1) -->
+          <line x1="695" y1="373" x2="765" y2="373" stroke="#312e81" stroke-width="1.8"/>
+          <text x="730" y="366" text-anchor="middle" font-size="9.5" font-weight="700" fill="#312e81">1:1</text>
+
+          <!-- beneficiaries -> wa_sessions (1:N) -->
+          <path d="M 695 392 L 730 392 L 730 488 L 765 488" fill="none" stroke="#312e81" stroke-width="1.8"/>
+
+          <!-- wa_sessions -> remittance_transactions (1:1) -->
+          <line x1="537" y1="440" x2="537" y2="485" stroke="#047857" stroke-width="2.2"/>
+          <text x="558" y="468" font-size="10" font-weight="800" fill="#047857">1 : 1</text>
+        </svg>
+        <div class="diagram-caption">
+          Figure 2.1 — Entity-Relationship Diagram (ERD) showing how `wa_sessions` acts as the central 2-hour transactional bridge between WhatsApp (`wa_conversations`, `wa_handoff_tokens`, `wa_message_logs`) and Payme's existing core database (`users`, `fx_quotes`, `beneficiaries`, `remittance_transactions`).
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: SQL DDL & REDIS SCHEMA -->
+    <section class="doc-section" id="sec-sql-ddl">
+      <div class="section-eyebrow">Section 3 • PostgreSQL 16 DDL &amp; Redis 7 Key-Space</div>
+      <h2>Production Database Migration Script &amp; Redis 2-Hour Session Schema</h2>
+      <p>
+        Use the tabs below to copy the complete PostgreSQL 16 DDL migration script (`001_payme_whatsapp_schema.sql`) and the Redis 7 key-space structures for your engineering team.
+      </p>
+
+      <div class="tab-bar" id="dbTabs">
+        <button class="tab-btn active" onclick="switchTab('dbTabs', 'db-pane-1', this)">1. PostgreSQL 16 DDL (New WhatsApp Tables &amp; Indexes)</button>
+        <button class="tab-btn" onclick="switchTab('dbTabs', 'db-pane-2', this)">2. Existing Payme Core Table Alterations</button>
+        <button class="tab-btn" onclick="switchTab('dbTabs', 'db-pane-3', this)">3. Redis 7 Key-Space &amp; 2-Hour JSON Schema</button>
+      </div>
+
+      <!-- DB Pane 1: PostgreSQL DDL -->
+      <div class="tab-pane active" id="db-pane-1">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>migrations/001_create_payme_whatsapp_schema.sql (PostgreSQL 16)</span>
+            <button class="copy-btn" onclick="copyCode('codePgDdl', this)">Copy SQL DDL</button>
+          </div>
+          <pre><code id="codePgDdl">-- ============================================================================
+-- Payme WhatsApp Remittance Channel Schema (PostgreSQL 16+)
+-- ============================================================================
+
+CREATE TYPE wa_step_enum AS ENUM (
+  'IDLE',
+  'AWAITING_RESUME_DECISION',
+  'AWAITING_CORRIDOR',
+  'AWAITING_AMOUNT',
+  'AWAITING_DELIVERY_MODE',
+  'AWAITING_BENEFICIARY_FLOW',
+  'AWAITING_KYC_WEBVIEW',
+  'AWAITING_PAYMENT_WEBVIEW',
+  'COMPLETED',
+  'EXPIRED',
+  'CANCELLED'
+);
+
+CREATE TYPE wa_msg_direction_enum AS ENUM ('INBOUND', 'OUTBOUND');
+
+-- 1. Website Click-to-WhatsApp Handoff Tokens (15-Minute Single-Use Nonce)
+CREATE TABLE wa_handoff_tokens (
+  ref_id              VARCHAR(24) PRIMARY KEY,            -- e.g., 'PMW-9F3K82'
+  web_user_id         UUID REFERENCES users(id),          -- Populated if user was logged in on web
+  pre_corridor        CHAR(2),                            -- e.g., 'NP', 'MX', 'IN'
+  pre_amount_usd      NUMERIC(10, 2),                     -- e.g., 500.00
+  pre_delivery_mode   VARCHAR(24),                        -- Optional pre-selected mode
+  client_ip           INET,
+  user_agent          TEXT,
+  claimed_by_wa_phone VARCHAR(20),                        -- Populated on first WA webhook
+  claimed_at          TIMESTAMPTZ,
+  expires_at          TIMESTAMPTZ NOT NULL,               -- NOW() + INTERVAL '15 minutes'
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_wa_handoff_unclaimed ON wa_handoff_tokens(ref_id) WHERE claimed_at IS NULL;
+
+-- 2. WhatsApp Conversations (Tracks Meta 24-Hour Service Window per Phone Number)
+CREATE TABLE wa_conversations (
+  wa_phone                  VARCHAR(20) PRIMARY KEY,      -- E.164 digits e.g. '17135550142'
+  user_id                   UUID REFERENCES users(id),    -- Linked Payme Core User ID
+  wa_profile_name           VARCHAR(120),
+  preferred_locale          VARCHAR(10) DEFAULT 'en_US',
+  opt_in_status             BOOLEAN NOT NULL DEFAULT TRUE,
+  service_window_expires_at TIMESTAMPTZ NOT NULL,         -- Updated to NOW() + 24h on every inbound msg
+  active_session_id         UUID,                         -- Points to current active 2h wa_sessions row
+  last_paid_tx_id           UUID,                         -- Quick pointer for 'Track Previous Transfer'
+  last_inbound_at           TIMESTAMPTZ,
+  last_outbound_at          TIMESTAMPTZ,
+  created_at                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at                TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_wa_conv_user_id ON wa_conversations(user_id);
+
+-- 3. WhatsApp 2-Hour Remittance Sessions (Persistent State Machine & Audit Record)
+CREATE TABLE wa_sessions (
+  session_id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wa_phone            VARCHAR(20) NOT NULL REFERENCES wa_conversations(wa_phone),
+  user_id             UUID REFERENCES users(id),
+  handoff_ref_id      VARCHAR(24) REFERENCES wa_handoff_tokens(ref_id),
+  current_step        wa_step_enum NOT NULL DEFAULT 'AWAITING_CORRIDOR',
+  flow_token          VARCHAR(96) UNIQUE,                 -- Echoed by Meta in encrypted Flow & nfm_reply
+  corridor_code       CHAR(2),
+  send_amount_usd     NUMERIC(10, 2),
+  delivery_mode       VARCHAR(24),                        -- 'BANK_DEPOSIT', 'CASH_PICKUP', 'MOBILE_WALLET'
+  quote_id            UUID REFERENCES fx_quotes(id),
+  beneficiary_id      UUID REFERENCES beneficiaries(id),
+  draft_tx_id         UUID REFERENCES remittance_transactions(id),
+  webview_jwt_jti     VARCHAR(64) UNIQUE,                 -- JTI of active KYC/Payment WebView token
+  pending_web_context JSONB,                              -- Holds new web click data during RESUME prompt
+  expires_at          TIMESTAMPTZ NOT NULL,               -- NOW() + INTERVAL '2 hours' (7200s)
+  completed_at        TIMESTAMPTZ,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Partial index to rapidly fetch active 2-hour session for a phone number
+CREATE INDEX idx_wa_sessions_active_phone ON wa_sessions(wa_phone, expires_at)
+  WHERE current_step NOT IN ('COMPLETED', 'EXPIRED', 'CANCELLED');
+
+-- 4. WhatsApp Message Logs (Idempotency, Compliance Audit & Delivery Tracking)
+CREATE TABLE wa_message_logs (
+  id                  BIGSERIAL PRIMARY KEY,
+  wamid               VARCHAR(128) UNIQUE NOT NULL,       -- Meta Message ID (Idempotency Key)
+  wa_phone            VARCHAR(20) NOT NULL REFERENCES wa_conversations(wa_phone),
+  session_id          UUID REFERENCES wa_sessions(session_id),
+  direction           wa_msg_direction_enum NOT NULL,
+  msg_type            VARCHAR(32) NOT NULL,               -- 'text','list','button','flow','cta_url','template','nfm_reply'
+  template_name       VARCHAR(128),                       -- Populated if msg_type = 'template'
+  payload_json        JSONB NOT NULL,                     -- Redacted JSON body for audit
+  delivery_status     VARCHAR(24) DEFAULT 'RECEIVED',     -- 'SENT','DELIVERED','READ','FAILED'
+  meta_error_code     INTEGER,                            -- e.g., 131047 (Re-engagement outside 24h window)
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  status_updated_at   TIMESTAMPTZ
+);
+
+CREATE INDEX idx_wa_msg_logs_phone_created ON wa_message_logs(wa_phone, created_at DESC);
+
+-- 5. WhatsApp Template Registry (Local Cache of Approved Meta Templates)
+CREATE TABLE wa_template_registry (
+  template_id         VARCHAR(64) PRIMARY KEY,
+  template_name       VARCHAR(128) NOT NULL,
+  language_code       VARCHAR(16) NOT NULL DEFAULT 'en_US',
+  category            VARCHAR(24) NOT NULL,               -- 'UTILITY', 'MARKETING', 'AUTHENTICATION'
+  meta_status         VARCHAR(24) NOT NULL,               -- 'APPROVED', 'PENDING', 'REJECTED', 'PAUSED'
+  parameter_format    VARCHAR(16) DEFAULT 'NAMED',
+  components_schema   JSONB NOT NULL,
+  last_synced_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (template_name, language_code)
+);</code></pre>
+        </div>
+      </div>
+
+      <!-- DB Pane 2: Existing Core Table Alterations -->
+      <div class="tab-pane" id="db-pane-2">
+        <p>
+          You only need minimal, non-breaking additions to your existing `remittance_transactions` and `users` tables so your web/mobile app and WhatsApp channel share a unified ledger:
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>migrations/002_alter_existing_payme_core_tables.sql</span>
+            <button class="copy-btn" onclick="copyCode('codeAlterCore', this)">Copy SQL</button>
+          </div>
+          <pre><code id="codeAlterCore">-- Add WhatsApp channel linkage to existing remittance_transactions table
+ALTER TABLE remittance_transactions
+  ADD COLUMN IF NOT EXISTS channel VARCHAR(16) NOT NULL DEFAULT 'WEB', -- 'WEB', 'MOBILE', 'WHATSAPP'
+  ADD COLUMN IF NOT EXISTS wa_session_id UUID REFERENCES wa_sessions(session_id),
+  ADD COLUMN IF NOT EXISTS kyc_gate_status VARCHAR(24) NOT NULL DEFAULT 'PENDING',
+  ADD COLUMN IF NOT EXISTS webview_checkout_jti VARCHAR(64);
+
+CREATE INDEX IF NOT EXISTS idx_remittance_tx_mtcn ON remittance_transactions(mtcn_reference);
+CREATE INDEX IF NOT EXISTS idx_remittance_tx_wa_session ON remittance_transactions(wa_session_id);
+
+-- Ensure users.phone_e164 is indexed for fast MSISDN lookup on incoming WhatsApp webhooks
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone_e164 ON users(phone_e164);</code></pre>
+        </div>
+      </div>
+
+      <!-- DB Pane 3: Redis Key-Space -->
+      <div class="tab-pane" id="db-pane-3">
+        <div class=" table-wrap" id="sec-redis-schema">
+          <table>
+            <thead>
+              <tr>
+                <th>Redis Key Pattern</th>
+                <th>Redis Type</th>
+                <th>TTL</th>
+                <th>Purpose &amp; Stored Value Structure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>payme:wa:session:{wa_phone}</code></td>
+                <td><code>STRING (JSON)</code></td>
+                <td><strong><code>7200s</code> (2 Hours)</strong></td>
+                <td>Hot cache of the active `wa_sessions` record. Read on every webhook in `&lt;1ms`; write-through to PostgreSQL `wa_sessions` on step change.</td>
+              </tr>
+              <tr>
+                <td><code>payme:wa:handoff:{ref_id}</code></td>
+                <td><code>STRING (JSON)</code></td>
+                <td><strong><code>900s</code> (15 Mins)</strong></td>
+                <td>Stores `{ webUserId, corridor, sendAmountUsd }` minted when clicking "Send via WhatsApp" on `payme.com`. Deleted via `GETDEL` on first webhook.</td>
+              </tr>
+              <tr>
+                <td><code>payme:wa:flow_token:{flow_token}</code></td>
+                <td><code>STRING</code></td>
+                <td><strong><code>7200s</code> (2 Hours)</strong></td>
+                <td>Maps `flow_token` &rarr; `session_id` + `wa_phone` so `/api/wa/flows-endpoint` validates that a WhatsApp Flow form belongs to an active 2-hour session.</td>
+              </tr>
+              <tr>
+                <td><code>payme:wa:dedup:{wamid}</code></td>
+                <td><code>STRING</code></td>
+                <td><strong><code>86400s</code> (24 Hours)</strong></td>
+                <td>Set via `SET key 1 EX 86400 NX` at webhook ingress to guarantee idempotent processing if Meta retries a webhook.</td>
+              </tr>
+              <tr>
+                <td><code>payme:wa:lock:{wa_phone}</code></td>
+                <td><code>STRING</code></td>
+                <td><strong><code>5000ms</code> (5 Seconds)</strong></td>
+                <td>Per-user distributed mutex lock (`SET key worker_id PX 5000 NX`) so rapid double-taps by the same user are serialized in order.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: 24 RUNTIME CONDITIONS & GUARDRAILS MATRIX -->
+    <section class="doc-section" id="sec-conditions">
+      <div class="section-eyebrow">Section 4 • Runtime Conditions &amp; Guardrails Specification</div>
+      <h2>The 24 Server Conditions Required to Receive, Validate, and Send Messages Safely</h2>
+      <p>
+        Filter the conditions matrix below by subsystem to review every validation rule, SQL/Redis check, and fallback action your development team should implement in the Payme Server.
+      </p>
+
+      <div class="filter-bar" id="condFilterBar">
+        <button class="filter-btn active" onclick="filterConditions('ALL', this)">All 24 Conditions</button>
+        <button class="filter-btn" onclick="filterConditions('INGRESS', this)">A. Webhook &amp; Security (6)</button>
+        <button class="filter-btn" onclick="filterConditions('SESSION', this)">B. 2-Hour Session &amp; Re-Entry (6)</button>
+        <button class="filter-btn" onclick="filterConditions('COMPLIANCE', this)">C. FX Quote, KYC &amp; Limits (7)</button>
+        <button class="filter-btn" onclick="filterConditions('OUTBOUND', this)">D. Outbound &amp; 24h Window (5)</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="conditionsTable">
+          <thead>
+            <tr>
+              <th>ID &amp; Category</th>
+              <th>Condition / Trigger</th>
+              <th>Server Check (Redis / SQL / Crypto)</th>
+              <th>System Action &amp; User Experience</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Category A: Ingress & Security -->
+            <tr data-cat="INGRESS">
+              <td><span class="pill pill-err">C-01</span><br/>Ingress</td>
+              <td><strong>Invalid Webhook HMAC Signature</strong></td>
+              <td><code>HMAC_SHA256(rawBody, APP_SECRET) !== req.headers['x-hub-signature-256']</code></td>
+              <td>Reject immediately with <code>HTTP 401 Unauthorized</code>; do not enqueue or touch DB.</td>
+            </tr>
+            <tr data-cat="INGRESS">
+              <td><span class="pill pill-err">C-02</span><br/>Ingress</td>
+              <td><strong>Duplicate Webhook Delivery (Meta Retry)</strong></td>
+              <td><code>redis.set(`payme:wa:dedup:${wamid}`, '1', 'EX', 86400, 'NX') === null</code></td>
+              <td>Return <code>HTTP 200 OK</code> immediately and drop event so user never receives duplicate bot replies.</td>
+            </tr>
+            <tr data-cat="INGRESS">
+              <td><span class="pill pill-err">C-03</span><br/>Ingress</td>
+              <td><strong>Concurrent Double-Tap by Same User</strong></td>
+              <td><code>redis.set(`payme:wa:lock:${wa_phone}`, jobId, 'PX', 5000, 'NX') === null</code></td>
+              <td>Worker delays job by <code>300ms</code> and retries lock acquisition so state transitions execute strictly sequentially.</td>
+            </tr>
+            <tr data-cat="INGRESS">
+              <td><span class="pill pill-err">C-04</span><br/>Ingress</td>
+              <td><strong>Stale / Out-of-Order Webhook Timestamp</strong></td>
+              <td><code>message.timestamp &lt; wa_conversations.last_inbound_at</code></td>
+              <td>Log in <code>wa_message_logs</code> for audit but do not regress <code>wa_sessions.current_step</code>.</td>
+            </tr>
+            <tr data-cat="INGRESS">
+              <td><span class="pill pill-err">C-05</span><br/>Security</td>
+              <td><strong>User Types Raw Credit/Debit Card Number in Chat</strong></td>
+              <td>Regex <code>/\b(?:\d[ -]*?){13,19}\b/</code> + Luhn check on <code>messages[0].text.body</code></td>
+              <td>Mask digits as <code>[REDACTED_PAN]</code> before writing to <code>wa_message_logs.payload_json</code>; send warning that card details are only accepted in the secure WebView.</td>
+            </tr>
+            <tr data-cat="INGRESS">
+              <td><span class="pill pill-err">C-06</span><br/>Crypto</td>
+              <td><strong>WhatsApp Flow RSA/AES Decryption Failure</strong></td>
+              <td><code>privateDecrypt</code> or <code>AESGCM.decrypt</code> throws exception on <code>/api/wa/flows-endpoint</code></td>
+              <td>Return <code>HTTP 421 Misdirected Request</code> (<a href="https://help.1msg.io/docs/api-1msg/whatsapp-flow/flow-encryption" target="_blank">Meta Flow Spec</a>) so WhatsApp client automatically re-downloads your public key.</td>
+            </tr>
+
+            <!-- Category B: 2-Hour Session & Website Re-Entry -->
+            <tr data-cat="SESSION">
+              <td><span class="pill pill-new">C-07</span><br/>Session</td>
+              <td><strong>First Website Click (`[Ref: PMW-xxxxxx]`)</strong></td>
+              <td><code>GETDEL payme:wa:handoff:PMW-xxxxxx</code> returns valid JSON &amp; no active session exists</td>
+              <td>Create new 2-hour session (<code>EX 7200</code>), bind <code>web_user_id</code>/<code>corridor</code>/<code>amount</code> to <code>wa_phone</code>, and jump straight to Delivery Mode (if amount+corridor present) or Country List.</td>
+            </tr>
+            <tr data-cat="SESSION">
+              <td><span class="pill pill-new">C-08</span><br/>Session</td>
+              <td><strong>Expired or Replay Website Handoff Token</strong></td>
+              <td><code>GETDEL payme:wa:handoff:PMW-xxxxxx</code> returns <code>null</code> (expired &gt;15m or already used)</td>
+              <td>Do not fail; gracefully start a standard 2-hour session at <code>AWAITING_CORRIDOR</code> and greet the user.</td>
+            </tr>
+            <tr data-cat="SESSION">
+              <td><span class="pill pill-new">C-09</span><br/>Re-Entry</td>
+              <td><strong>User Re-Clicks Website Link Within 2 Hours (Draft In Progress)</strong></td>
+              <td><code>wa_sessions.expires_at &gt; NOW()</code> AND <code>current_step NOT IN ('IDLE','COMPLETED','EXPIRED')</code></td>
+              <td>Save new web parameters in <code>pending_web_context</code>, set step to <code>AWAITING_RESUME_DECISION</code>, and send 2 buttons: <strong>▶️ Resume Current</strong> vs. <strong>🔄 Start New Transfer</strong>.</td>
+            </tr>
+            <tr data-cat="SESSION">
+              <td><span class="pill pill-new">C-10</span><br/>Re-Entry</td>
+              <td><strong>User Re-Clicks Website Link After 2 Hours (&gt;7200s)</strong></td>
+              <td>Redis key <code>payme:wa:session:{wa_phone}</code> missing OR <code>wa_sessions.expires_at &lt;= NOW()</code></td>
+              <td>Mark old DB row <code>current_step = 'EXPIRED'</code>, expire old quote, create a fresh <code>session_id</code> with a new 2-hour TTL, and fetch live FX rates.</td>
+            </tr>
+            <tr data-cat="SESSION">
+              <td><span class="pill pill-new">C-11</span><br/>Re-Entry</td>
+              <td><strong>User Re-Clicks Website Link After Completing Payment</strong></td>
+              <td><code>wa_sessions.current_step = 'COMPLETED'</code> and <code>wa_conversations.last_paid_tx_id IS NOT NULL</code></td>
+              <td>Send Interactive Buttons offering <strong>💸 Send Another Transfer</strong> (mints new 2h session) or <strong>📦 Track Transfer {MTCN}</strong>.</td>
+            </tr>
+            <tr data-cat="SESSION">
+              <td><span class="pill pill-new">C-12</span><br/>Flow Token</td>
+              <td><strong>User Submits an Old WhatsApp Flow Form from Chat History</strong></td>
+              <td><code>nfm_reply.flow_token !== active_session.flow_token</code> OR session expired</td>
+              <td>Reject stale form submission and send a 1-tap button to launch a fresh form with current FX rates.</td>
+            </tr>
+
+            <!-- Category C: FX Quote, KYC & Velocity Limits -->
+            <tr data-cat="COMPLIANCE">
+              <td><span class="pill pill-core">C-13</span><br/>FX Quote</td>
+              <td><strong>Invalid or Out-of-Range Send Amount</strong></td>
+              <td>Parsed USD amount is <code>NaN</code>, <code>&lt; $1.00</code>, or <code>&gt; $999.99</code> (including fee)</td>
+              <td>Keep <code>current_step = 'AWAITING_AMOUNT'</code> and prompt user to enter an amount between <code>$1.00</code> and <code>$999.99 USD</code> (<a href="https://www.riamoneytransfer.com/en/blog/how-to-send-money-on-whatsapp/" target="_blank">Ria WhatsApp Limit</a>).</td>
+            </tr>
+            <tr data-cat="COMPLIANCE">
+              <td><span class="pill pill-core">C-14</span><br/>FX Quote</td>
+              <td><strong>15-Minute FX Rate Lock Expired Before Payment</strong></td>
+              <td><code>fx_quotes.locked_until &lt; NOW()</code> when user opens WebView or requests checkout link</td>
+              <td>Automatically recalculate quote using current corridor FX rate, update <code>quote_id</code>, and show updated payout amount for 1-tap confirmation.</td>
+            </tr>
+            <tr data-cat="COMPLIANCE">
+              <td><span class="pill pill-core">C-15</span><br/>Velocity</td>
+              <td><strong>Daily ($999.99) or Monthly ($7,999.99) WhatsApp Limit Exceeded</strong></td>
+              <td><code>SELECT SUM(send_amount_usd) FROM remittance_transactions WHERE user_id = $1 AND created_at &gt; NOW() - INTERVAL '24 hours'</code></td>
+              <td>Block draft creation in chat and send a polite message explaining the remaining daily/monthly WhatsApp allowance (with link to full Web/App for higher-tier limits).</td>
+            </tr>
+            <tr data-cat="COMPLIANCE">
+              <td><span class="pill pill-core">C-16</span><br/>Identity</td>
+              <td><strong>WhatsApp Phone Matches Existing Payme User vs. New Prospect</strong></td>
+              <td><code>SELECT id, kyc_tier FROM users WHERE phone_e164 = $1</code></td>
+              <td>If found, link <code>wa_conversations.user_id</code> and load saved beneficiaries; if not found, create a shadow/prospect user record and require KYC WebView before payment.</td>
+            </tr>
+            <tr data-cat="COMPLIANCE">
+              <td><span class="pill pill-core">C-17</span><br/>KYC Gate</td>
+              <td><strong>User KYC Unverified or Expired ID Document</strong></td>
+              <td><code>users.kyc_tier = 'T0'</code> OR <code>kyc_verifications.kyc_status != 'APPROVED'</code></td>
+              <td>Transition session to <code>AWAITING_KYC_WEBVIEW</code> and send signed <code>cta_url</code> to existing Payme KYC WebView. Do not generate payment link until <code>kyc.approved</code> webhook fires.</td>
+            </tr>
+            <tr data-cat="COMPLIANCE">
+              <td><span class="pill pill-core">C-18</span><br/>Beneficiary</td>
+              <td><strong>Bank Account / CLABE Checksum or Name Validation Fails</strong></td>
+              <td>Payme Beneficiary Service returns validation error during Flow <code>data_exchange</code></td>
+              <td>Return the same <code>SCREEN_BENEFICIARY</code> in Flow response with field-level <code>error_message</code> so the user fixes the typo inside the form without closing it.</td>
+            </tr>
+            <tr data-cat="COMPLIANCE">
+              <td><span class="pill pill-core">C-19</span><br/>Reg E</td>
+              <td><strong>30-Minute Statutory Cancellation Request</strong></td>
+              <td>User taps <em>"Cancel Transfer"</em> within 30 mins of payment AND <code>payout_status = 'QUEUED'</code></td>
+              <td>Call existing Payme Refund API, void/refund the 3DS2 card charge, update <code>payment_status = 'REFUNDED'</code>, and push cancellation confirmation in WhatsApp.</td>
+            </tr>
+
+            <!-- Category D: Outbound & 24h Window -->
+            <tr data-cat="OUTBOUND">
+              <td><span class="pill pill-fk">C-20</span><br/>Window</td>
+              <td><strong>Outbound Message Inside 24-Hour Customer Service Window</strong></td>
+              <td><code>wa_conversations.service_window_expires_at &gt; NOW()</code></td>
+              <td>Send dynamic <code>type: "interactive"</code> (List, Reply Buttons, Flow, CTA URL) or <code>type: "text"</code> directly via <code>POST /{PHONE_ID}/messages</code>.</td>
+            </tr>
+            <tr data-cat="OUTBOUND">
+              <td><span class="pill pill-fk">C-21</span><br/>Window</td>
+              <td><strong>Outbound Message Outside 24-Hour Window (e.g., Delayed Bank Payout)</strong></td>
+              <td><code>wa_conversations.service_window_expires_at &lt;= NOW()</code></td>
+              <td>Must send <code>type: "template"</code> using an <code>APPROVED</code> template from <code>wa_template_registry</code> (e.g., <code>payme_transfer_receipt</code> or <code>payme_payout_status_update</code>).</td>
+            </tr>
+            <tr data-cat="OUTBOUND">
+              <td><span class="pill pill-fk">C-22</span><br/>WebView</td>
+              <td><strong>KYC Approved Event Received from Existing Payme Backend</strong></td>
+              <td><code>POST /webhooks/payme-core</code> with <code>event = 'kyc.approved'</code></td>
+              <td>Update <code>wa_sessions.current_step = 'AWAITING_PAYMENT_WEBVIEW'</code> and automatically push the signed 3DS2 Payment Checkout <code>cta_url</code> button to WhatsApp.</td>
+            </tr>
+            <tr data-cat="OUTBOUND">
+              <td><span class="pill pill-fk">C-23</span><br/>WebView</td>
+              <td><strong>Payment Captured Event Received from Existing Payme Backend</strong></td>
+              <td><code>POST /webhooks/payme-core</code> with <code>event = 'payment.captured'</code></td>
+              <td>Mark <code>wa_sessions.current_step = 'COMPLETED'</code>, set <code>wa_conversations.last_paid_tx_id</code>, and push the confirmation receipt with <code>mtcn_reference</code> + <strong>🔄 Check Status</strong> button.</td>
+            </tr>
+            <tr data-cat="OUTBOUND">
+              <td><span class="pill pill-fk">C-24</span><br/>Rate Limit</td>
+              <td><strong>Meta Cloud API Throughput / HTTP 429 Error</strong></td>
+              <td>Meta returns error <code>130429</code> (Rate limit hit) or <code>503</code></td>
+              <td>BullMQ Outbound Worker retries with exponential backoff (<code>1s, 2s, 4s, 8s</code>) preserving message order per <code>wa_phone</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 5: STATE TRANSITION SPECIFICATION -->
+    <section class="doc-section" id="sec-state-transitions">
+      <div class="section-eyebrow">Section 5 • Deterministic State Machine Table</div>
+      <h2>Complete State Transition Table (`wa_sessions.current_step`)</h2>
+      <p>
+        Your backend developers can implement the state machine directly from the transition table below. Every row defines the current state, the inbound webhook trigger, the database/Redis mutation, and the outbound WhatsApp JSON response.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Current Step (<code>wa_step_enum</code>)</th>
+              <th>Inbound Trigger from WhatsApp</th>
+              <th>Conditions Checked</th>
+              <th>Next Step</th>
+              <th>Outbound JSON Sent by Payme Server</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>IDLE</code> / <code>EXPIRED</code></td>
+              <td><code>text</code> (with or without <code>[Ref: PMW-...]</code>)</td>
+              <td><code>C-07</code>, <code>C-08</code>, <code>C-16</code></td>
+              <td><code>AWAITING_CORRIDOR</code> (or <code>AWAITING_DELIVERY_MODE</code> if Ref had quote)</td>
+              <td>Interactive Country List (<code>type: "list"</code>) or Saved Beneficiaries List</td>
+            </tr>
+            <tr>
+              <td><code>ANY_ACTIVE_STEP</code> (&lt;2h)</td>
+              <td>New website click <code>text</code> with <code>[Ref: PMW-...]</code></td>
+              <td><code>C-09</code> (Active session &lt;2h check)</td>
+              <td><code>AWAITING_RESUME_DECISION</code></td>
+              <td>Interactive Reply Buttons: <strong>▶️ Resume Current</strong> vs. <strong>🔄 Start New</strong></td>
+            </tr>
+            <tr>
+              <td><code>AWAITING_RESUME_DECISION</code></td>
+              <td><code>button_reply.id === "session_RESUME"</code></td>
+              <td>Refresh Redis TTL to <code>7200s</code></td>
+              <td>Restores previous <code>step</code></td>
+              <td>Re-sends the prompt/button for the restored step</td>
+            </tr>
+            <tr>
+              <td><code>AWAITING_CORRIDOR</code></td>
+              <td><code>list_reply.id === "corridor_NP"</code></td>
+              <td>Supported corridor check</td>
+              <td><code>AWAITING_AMOUNT</code></td>
+              <td>Text prompt showing live FX rate &amp; asking for USD send amount</td>
+            </tr>
+            <tr>
+              <td><code>AWAITING_AMOUNT</code></td>
+              <td><code>text.body === "500"</code></td>
+              <td><code>C-13</code> ($1–$999.99), <code>C-15</code> (Velocity)</td>
+              <td><code>AWAITING_DELIVERY_MODE</code></td>
+              <td>Locks 15m quote in <code>fx_quotes</code>; sends Reply Buttons (Bank Deposit, Cash Pickup, Wallet)</td>
+            </tr>
+            <tr>
+              <td><code>AWAITING_DELIVERY_MODE</code></td>
+              <td><code>button_reply.id === "mode_BANK_DEPOSIT"</code></td>
+              <td><code>C-16</code> (Check saved beneficiaries)</td>
+              <td><code>AWAITING_BENEFICIARY_FLOW</code></td>
+              <td>Sends Interactive WhatsApp Flow Launcher (<code>type: "flow"</code>) with <code>flow_token</code></td>
+            </tr>
+            <tr>
+              <td><code>AWAITING_BENEFICIARY_FLOW</code></td>
+              <td><code>nfm_reply</code> (Flow completed)</td>
+              <td><code>C-12</code> (Valid <code>flow_token</code>), <code>C-17</code> (KYC check)</td>
+              <td><code>AWAITING_KYC_WEBVIEW</code> (if T0) OR <code>AWAITING_PAYMENT_WEBVIEW</code> (if KYC passed)</td>
+              <td>Creates row in <code>remittance_transactions</code>; sends signed <code>cta_url</code> button to WebView</td>
+            </tr>
+            <tr>
+              <td><code>AWAITING_KYC_WEBVIEW</code></td>
+              <td>Internal Webhook: <code>kyc.approved</code></td>
+              <td><code>C-14</code> (Refresh quote if &gt;15m), <code>C-22</code></td>
+              <td><code>AWAITING_PAYMENT_WEBVIEW</code></td>
+              <td>Pushes signed 3DS2 Payment Checkout <code>cta_url</code> button to WhatsApp</td>
+            </tr>
+            <tr>
+              <td><code>AWAITING_PAYMENT_WEBVIEW</code></td>
+              <td>Internal Webhook: <code>payment.captured</code></td>
+              <td><code>C-20</code> / <code>C-21</code>, <code>C-23</code></td>
+              <td><code>COMPLETED</code></td>
+              <td>Pushes <code>payme_transfer_receipt</code> template with <code>mtcn_reference</code> + <strong>🔄 Check Status</strong> button</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 6: PRODUCTION SERVER CODE -->
+    <section class="doc-section" id="sec-worker-code">
+      <div class="section-eyebrow">Section 6 • Server Implementation Blueprint</div>
+      <h2>Reference Implementation: Fast-Ack Ingress, Mutex Worker, and Window-Aware Dispatcher</h2>
+      <p>
+        Below is the complete TypeScript / Node.js server implementation connecting Express, BullMQ, Redis 7, and PostgreSQL (`pg`) using the exact schema and conditions defined above.
+      </p>
+
+      <div class="tab-bar" id="srvCodeTabs">
+        <button class="tab-btn active" onclick="switchTab('srvCodeTabs', 'sc-pane-1', this)">1. Fast-Ack Webhook Ingress &amp; Dedup</button>
+        <button class="tab-btn" onclick="switchTab('srvCodeTabs', 'sc-pane-2', this)">2. Inbound Worker + Per-User Redis Lock</button>
+        <button class="tab-btn" onclick="switchTab('srvCodeTabs', 'sc-pane-3', this)">3. Outbound Window-Aware Dispatcher</button>
+      </div>
+
+      <!-- Code Pane 1 -->
+      <div class="tab-pane active" id="sc-pane-1">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>src/api/whatsappWebhookIngress.ts (HMAC Verification + Redis Dedup + BullMQ Enqueue)</span>
+            <button class="copy-btn" onclick="copyCode('codeIngressTs', this)">Copy TypeScript</button>
+          </div>
+          <pre><code id="codeIngressTs">import crypto from "node:crypto";
+import express, { Request, Response } from "express";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
+
+const redis = new Redis(process.env.REDIS_URL!);
+const inboundQueue = new Queue("payme-wa-inbound", { connection: redis });
+export const ingressRouter = express.Router();
+
+// Condition C-05: Redact any accidental 13-19 digit card PANs before logging
+function redactSensitivePan(rawJson: string): string {
+  return rawJson.replace(/\b(?:\d[ -]*?){13,19}\b/g, "[REDACTED_PAN]");
+}
+
+ingressRouter.post(
+  "/webhooks/whatsapp",
+  express.raw({ type: "application/json" }),
+  async (req: Request, res: Response) => {
+    // Condition C-01: Verify X-Hub-Signature-256 over raw request bytes
+    const sigHeader = req.get("x-hub-signature-256") || "";
+    const expectedSig =
+      "sha256=" +
+      crypto
+        .createHmac("sha256", process.env.WHATSAPP_APP_SECRET!)
+        .update(req.body)
+        .digest("hex");
+
+    if (
+      sigHeader.length !== expectedSig.length ||
+      !crypto.timingSafeEqual(Buffer.from(sigHeader), Buffer.from(expectedSig))
+    ) {
+      return res.status(401).send("Invalid signature");
+    }
+
+    const payload = JSON.parse(req.body.toString("utf-8"));
+    const value = payload?.entry?.[0]?.changes?.[0]?.value;
+
+    // Acknowledge Meta immediately (<100ms) so Meta never retries
+    res.status(200).send("EVENT_RECEIVED");
+
+    // Handle Inbound User Message (text, list_reply, button_reply, nfm_reply)
+    const msg = value?.messages?.[0];
+    if (msg) {
+      const wamid: string = msg.id;
+      // Condition C-02: Atomic 24-hour idempotency check in Redis
+      const isNew = await redis.set(`payme:wa:dedup:${wamid}`, "1", "EX", 86400, "NX");
+      if (!isNew) return; // Duplicate retry from Meta — ignore safely
+
+      await inboundQueue.add(
+        "process-inbound-msg",
+        {
+          waPhone: msg.from,
+          profileName: value?.contacts?.[0]?.profile?.name || "Customer",
+          message: JSON.parse(redactSensitivePan(JSON.stringify(msg))),
+        },
+        { removeOnComplete: 1000, attempts: 3, backoff: { type: "exponential", delay: 500 } }
+      );
+    }
+
+    // Handle Delivery Status Updates (sent, delivered, read, failed)
+    const statusEvent = value?.statuses?.[0];
+    if (statusEvent) {
+      await inboundQueue.add("update-msg-status", {
+        wamid: statusEvent.id,
+        status: statusEvent.status.toUpperCase(),
+        errorCode: statusEvent.errors?.[0]?.code || null,
+      });
+    }
+  }
+);</code></pre>
+        </div>
+      </div>
+
+      <!-- Code Pane 2 -->
+      <div class="tab-pane" id="sc-pane-2">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>src/workers/inboundStateWorker.ts (Per-User Mutex Lock + DB/Redis 2-Hour Session Sync)</span>
+            <button class="copy-btn" onclick="copyCode('codeWorkerTs', this)">Copy TypeScript</button>
+          </div>
+          <pre><code id="codeWorkerTs">import { Worker, Job } from "bullmq";
+import { Pool } from "pg";
+import Redis from "ioredis";
+
+const redis = new Redis(process.env.REDIS_URL!);
+const pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
+const TWO_HOURS_SEC = 7200;
+
+export const inboundWorker = new Worker(
+  "payme-wa-inbound",
+  async (job: Job) => {
+    if (job.name === "update-msg-status") {
+      const { wamid, status, errorCode } = job.data;
+      await pgPool.query(
+        `UPDATE wa_message_logs
+         SET delivery_status = $1, meta_error_code = $2, status_updated_at = NOW()
+         WHERE wamid = $3`,
+        [status, errorCode, wamid]
+      );
+      return;
+    }
+
+    const { waPhone, profileName, message } = job.data;
+    const lockKey = `payme:wa:lock:${waPhone}`;
+
+    // Condition C-03: Acquire per-user mutex lock (5s) to serialize double-taps
+    const lockAcquired = await redis.set(lockKey, job.id!, "PX", 5000, "NX");
+    if (!lockAcquired) {
+      throw new Error("USER_LOCK_BUSY_RETRY"); // BullMQ retries after backoff
+    }
+
+    const client = await pgPool.connect();
+    try {
+      await client.query("BEGIN");
+
+      // 1. Upsert wa_conversations & extend 24-hour Meta Customer Service Window
+      await client.query(
+        `INSERT INTO wa_conversations (wa_phone, wa_profile_name, service_window_expires_at, last_inbound_at)
+         VALUES ($1, $2, NOW() + INTERVAL '24 hours', NOW())
+         ON CONFLICT (wa_phone) DO UPDATE SET
+           wa_profile_name = EXCLUDED.wa_profile_name,
+           service_window_expires_at = NOW() + INTERVAL '24 hours',
+           last_inbound_at = NOW(),
+           updated_at = NOW()`,
+        [waPhone, profileName]
+      );
+
+      // 2. Log inbound message in wa_message_logs
+      await client.query(
+        `INSERT INTO wa_message_logs (wamid, wa_phone, direction, msg_type, payload_json)
+         VALUES ($1, $2, 'INBOUND', $3, $4)
+         ON CONFLICT (wamid) DO NOTHING`,
+        [message.id, waPhone, message.interactive?.type || message.type, JSON.stringify(message)]
+      );
+
+      // 3. Load active 2-hour session from Redis (or fallback to PostgreSQL)
+      const sessionKey = `payme:wa:session:${waPhone}`;
+      let sessionRaw = await redis.get(sessionKey);
+      let session = sessionRaw ? JSON.parse(sessionRaw) : null;
+
+      if (!session) {
+        const dbSess = await client.query(
+          `SELECT * FROM wa_sessions
+           WHERE wa_phone = $1 AND expires_at > NOW()
+             AND current_step NOT IN ('COMPLETED', 'EXPIRED', 'CANCELLED')
+           ORDER BY created_at DESC LIMIT 1`,
+          [waPhone]
+        );
+        session = dbSess.rows[0] || null;
+      }
+
+      // 4. Execute state transition & enqueue outbound WhatsApp JSON response
+      const updatedSession = await evaluateStateTransition(client, redis, waPhone, message, session);
+
+      // 5. Refresh 2-hour (7200s) TTL in both Redis and PostgreSQL
+      await redis.set(sessionKey, JSON.stringify(updatedSession), "EX", TWO_HOURS_SEC);
+      await client.query(
+        `UPDATE wa_sessions
+         SET current_step = $1, corridor_code = $2, send_amount_usd = $3,
+             delivery_mode = $4, quote_id = $5, beneficiary_id = $6,
+             draft_tx_id = $7, expires_at = NOW() + INTERVAL '2 hours', updated_at = NOW()
+         WHERE session_id = $8`,
+        [
+          updatedSession.current_step,
+          updatedSession.corridor_code,
+          updatedSession.send_amount_usd,
+          updatedSession.delivery_mode,
+          updatedSession.quote_id,
+          updatedSession.beneficiary_id,
+          updatedSession.draft_tx_id,
+          updatedSession.session_id,
+        ]
+      );
+
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+      await redis.del(lockKey); // Release per-user mutex
+    }
+  },
+  { connection: redis, concurrency: 20 }
+);</code></pre>
+        </div>
+      </div>
+
+      <!-- Code Pane 3 -->
+      <div class="tab-pane" id="sc-pane-3">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>src/workers/outboundWhatsAppDispatcher.ts (24-Hour Window Check + Template Fallback)</span>
+            <button class="copy-btn" onclick="copyCode('codeDispatcherTs', this)">Copy TypeScript</button>
+          </div>
+          <pre><code id="codeDispatcherTs">import { Worker, Job } from "bullmq";
+import { Pool } from "pg";
+import Redis from "ioredis";
+
+const redis = new Redis(process.env.REDIS_URL!);
+const pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export const outboundDispatcher = new Worker(
+  "payme-wa-outbound",
+  async (job: Job) => {
+    const { waPhone, sessionId, payload, fallbackTemplate } = job.data;
+
+    // Conditions C-20 & C-21: Check if the 24-hour Customer Service Window is currently open
+    const convRes = await pgPool.query(
+      `SELECT service_window_expires_at > NOW() AS window_open
+       FROM wa_conversations WHERE wa_phone = $1`,
+      [waPhone]
+    );
+    const windowOpen = convRes.rows[0]?.window_open === true;
+
+    // If 24h window is closed and payload is not already a template, switch to fallbackTemplate
+    const bodyToSend =
+      !windowOpen && payload.type !== "template" && fallbackTemplate
+        ? fallbackTemplate
+        : payload;
+
+    const response = await fetch(
+      `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_SYSTEM_USER_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: waPhone,
+          ...bodyToSend,
+        }),
+      }
+    );
+
+    if (response.status === 429 || response.status >= 500) {
+      // Condition C-24: Trigger BullMQ exponential backoff retry
+      throw new Error(`META_API_TRANSIENT_${response.status}`);
+    }
+
+    const resData = await response.json();
+    const outWamid = resData?.messages?.[0]?.id || `local_${Date.now()}`;
+
+    // Persist outbound message in wa_message_logs for compliance & delivery status tracking
+    await pgPool.query(
+      `INSERT INTO wa_message_logs
+         (wamid, wa_phone, session_id, direction, msg_type, template_name, payload_json, delivery_status)
+       VALUES ($1, $2, $3, 'OUTBOUND', $4, $5, $6, 'SENT')`,
+      [
+        outWamid,
+        waPhone,
+        sessionId || null,
+        bodyToSend.type === "interactive" ? bodyToSend.interactive.type : bodyToSend.type,
+        bodyToSend.template?.name || null,
+        JSON.stringify(bodyToSend),
+      ]
+    );
+  },
+  { connection: redis, concurrency: 15 }
+);</code></pre>
+        </div>
+      </div>
+    </section>
+  
+    <!-- SECTION 7: 3RD-PARTY DEPENDENCY ECOSYSTEM & AI ARCHITECTURE -->
+    <section class="doc-section" id="sec-third-party-ai">
+      <div class="section-eyebrow">Section 7 • 3rd-Party Dependencies &amp; AI Copilot Architecture</div>
+      <h2>External 3rd-Party Provider Ecosystem &amp; Hybrid AI Integration Blueprint</h2>
+      <p>
+        Delivering a complete WhatsApp remittance lifecycle requires orchestrating <strong>7 external 3rd-party dependency categories</strong> (Messaging, Wholesale FX, KYC/AML, Bank Account Verification, PCI-DSS 3DS2 Payment Acquiring, Last-Mile Payout Networks, and Optional AI/ASR/OCR Services) behind Payme's server infrastructure.
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 1060 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Payme 3rd-Party Dependency Ecosystem and AI Architecture Diagram">
+          <defs>
+            <marker id="depBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+            </marker>
+            <marker id="depGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
+            </marker>
+            <marker id="depPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+            </marker>
+            <marker id="depAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+            </marker>
+          </defs>
+
+          <!-- Center Hub: Payme Server Core & WA Orchestrator -->
+          <rect x="365" y="135" width="330" height="230" rx="14" fill="#0f172a" stroke="#10b981" stroke-width="2.5"/>
+          <text x="530" y="168" text-anchor="middle" font-size="14" font-weight="800" fill="#34d399">PAYME SERVER INFRASTRUCTURE</text>
+          <text x="530" y="188" text-anchor="middle" font-size="11" fill="#94a3b8">(Orchestrator + Core Remittance Engine)</text>
+
+          <rect x="388" y="205" width="284" height="65" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+          <text x="530" y="228" text-anchor="middle" font-size="11.5" font-weight="700" fill="#38bdf8">WhatsApp Orchestrator &amp; 2h FSM</text>
+          <text x="530" y="246" text-anchor="middle" font-size="10.5" fill="#cbd5e1">Webhook Ingress • BullMQ • Redis 7 (7200s)</text>
+          <text x="530" y="261" text-anchor="middle" font-size="10.5" fill="#cbd5e1">RSA-OAEP / AES-GCM Flow Endpoint</text>
+
+          <rect x="388" y="282" width="284" height="65" rx="8" fill="#064e3b" stroke="#10b981"/>
+          <text x="530" y="305" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6ee7b7">Payme Core &amp; WebView Host</text>
+          <text x="530" y="323" text-anchor="middle" font-size="10.5" fill="#d1fae5">PostgreSQL 16 • Quote Lock • Ledger</text>
+          <text x="530" y="338" text-anchor="middle" font-size="10.5" fill="#d1fae5">Signed JWT WebView (KYC &amp; Checkout)</text>
+
+          <!-- Left Column: Messaging & AI 3rd Parties -->
+          <!-- 1. Meta WhatsApp Cloud API -->
+          <rect x="20" y="35" width="265" height="120" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+          <text x="152" y="60" text-anchor="middle" font-size="12" font-weight="800" fill="#1e40af">1. META WHATSAPP PLATFORM</text>
+          <text x="152" y="80" text-anchor="middle" font-size="10.5" fill="#1e3a8a">• Cloud API v23.0 (Messages &amp; Media)</text>
+          <text x="152" y="97" text-anchor="middle" font-size="10.5" fill="#1e3a8a">• WhatsApp Flows Engine (v7.0)</text>
+          <text x="152" y="114" text-anchor="middle" font-size="10.5" fill="#1e3a8a">• Template Approval &amp; Push Engine</text>
+          <text x="152" y="135" text-anchor="middle" font-size="10" font-family="monospace" fill="#0284c7">graph.facebook.com/v23.0</text>
+
+          <!-- 2. AI & Multimodal Providers -->
+          <rect x="20" y="185" width="265" height="135" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+          <text x="152" y="210" text-anchor="middle" font-size="12" font-weight="800" fill="#5b21b6">2. AI, SPEECH &amp; VISION APIs</text>
+          <text x="152" y="230" text-anchor="middle" font-size="10.5" fill="#4c1d95">• Speech-to-Text ASR (Whisper/Deepgram)</text>
+          <text x="152" y="247" text-anchor="middle" font-size="10.5" fill="#4c1d95">• NLU Intent Router (Gemini / GPT-4o)</text>
+          <text x="152" y="264" text-anchor="middle" font-size="10.5" fill="#4c1d95">• Bank Slip / Check Vision OCR</text>
+          <text x="152" y="281" text-anchor="middle" font-size="10.5" fill="#4c1d95">• RAG Corridor FAQ &amp; Scam Scoring</text>
+          <text x="152" y="302" text-anchor="middle" font-size="10" font-family="monospace" fill="#6d28d9">Structured JSON Schema Output</text>
+
+          <!-- 3. FX Rate & Liquidity Provider -->
+          <rect x="20" y="350" width="265" height="115" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+          <text x="152" y="375" text-anchor="middle" font-size="12" font-weight="800" fill="#065f46">3. FX RATE &amp; LIQUIDITY APIs</text>
+          <text x="152" y="395" text-anchor="middle" font-size="10.5" fill="#064e3b">• Currencycloud / XE / Wise Platform</text>
+          <text x="152" y="412" text-anchor="middle" font-size="10.5" fill="#064e3b">• Live Mid-Market Spot Streaming</text>
+          <text x="152" y="429" text-anchor="middle" font-size="10.5" fill="#064e3b">• 15-Minute Corridor Rate Lock</text>
+          <text x="152" y="448" text-anchor="middle" font-size="10" font-family="monospace" fill="#047857">Cached in Redis (30s Spot / 15m Quote)</text>
+
+          <!-- Right Column: KYC, Bank Validation, Pay-In & Pay-Out -->
+          <!-- 4. KYC & AML Screening -->
+          <rect x="775" y="25" width="265" height="105" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+          <text x="907" y="48" text-anchor="middle" font-size="12" font-weight="800" fill="#92400e">4. KYC, LIVENESS &amp; AML APIs</text>
+          <text x="907" y="67" text-anchor="middle" font-size="10.5" fill="#78350f">• Sumsub / Onfido / Persona WebSDK</text>
+          <text x="907" y="84" text-anchor="middle" font-size="10.5" fill="#78350f">• ComplyAdvantage OFAC / PEP Check</text>
+          <text x="907" y="101" text-anchor="middle" font-size="10.5" fill="#78350f">• Fires kyc.approved Webhook</text>
+
+          <!-- 5. Bank & Account Validation -->
+          <rect x="775" y="145" width="265" height="100" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+          <text x="907" y="168" text-anchor="middle" font-size="12" font-weight="800" fill="#0369a1">5. BANK &amp; ACCOUNT VALIDATION</text>
+          <text x="907" y="187" text-anchor="middle" font-size="10.5" fill="#075985">• CLABE / IBAN / IFSC Checksum</text>
+          <text x="907" y="204" text-anchor="middle" font-size="10.5" fill="#075985">• Real-Time Penny-Drop / Name Match</text>
+          <text x="907" y="221" text-anchor="middle" font-size="10.5" fill="#075985">• Cash Pickup Agent Branch Lookup</text>
+
+          <!-- 6. Payment Acquiring Gateway (Pay-In) -->
+          <rect x="775" y="260" width="265" height="105" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+          <text x="907" y="283" text-anchor="middle" font-size="12" font-weight="800" fill="#9f1239">6. PAYMENT GATEWAY (PAY-IN)</text>
+          <text x="907" y="302" text-anchor="middle" font-size="10.5" fill="#881337">• Stripe / Adyen / Checkout.com</text>
+          <text x="907" y="319" text-anchor="middle" font-size="10.5" fill="#881337">• PCI-DSS v4.0 3D Secure 2.0 Debit Card</text>
+          <text x="907" y="336" text-anchor="middle" font-size="10.5" fill="#881337">• Open Banking ACH (Plaid) &amp; Apple Pay</text>
+
+          <!-- 7. Last-Mile Payout Network (Pay-Out) -->
+          <rect x="775" y="380" width="265" height="105" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+          <text x="907" y="403" text-anchor="middle" font-size="12" font-weight="800" fill="#065f46">7. PAYOUT NETWORKS (PAY-OUT)</text>
+          <text x="907" y="422" text-anchor="middle" font-size="10.5" fill="#064e3b">• dLocal / Thunes / TerraPay / Nium</text>
+          <text x="907" y="439" text-anchor="middle" font-size="10.5" fill="#064e3b">• Instant Bank Rails (SPEI, UPI, IPS)</text>
+          <text x="907" y="456" text-anchor="middle" font-size="10.5" fill="#064e3b">• Cash Pickup (Elektra, OXXO, IME)</text>
+
+          <!-- Connectors -->
+          <line x1="285" y1="95" x2="384" y2="215" stroke="#0284c7" stroke-width="2" marker-end="url(#depBlue)" marker-start="url(#depBlue)"/>
+          <line x1="285" y1="245" x2="384" y2="245" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#depPurple)" marker-start="url(#depPurple)"/>
+          <line x1="285" y1="405" x2="384" y2="315" stroke="#10b981" stroke-width="2" marker-end="url(#depGreen)" marker-start="url(#depGreen)"/>
+
+          <line x1="672" y1="295" x2="771" y2="85" stroke="#d97706" stroke-width="2" marker-end="url(#depAmber)" marker-start="url(#depAmber)"/>
+          <line x1="672" y1="245" x2="771" y2="195" stroke="#0284c7" stroke-width="2" marker-end="url(#depBlue)" marker-start="url(#depBlue)"/>
+          <line x1="672" y1="315" x2="771" y2="315" stroke="#d97706" stroke-width="2" marker-end="url(#depAmber)" marker-start="url(#depAmber)"/>
+          <line x1="672" y1="335" x2="771" y2="430" stroke="#10b981" stroke-width="2" marker-end="url(#depGreen)" marker-start="url(#depGreen)"/>
+        </svg>
+        <div class="diagram-caption">
+          Figure 7.1 — Complete 3rd-Party Dependency Ecosystem showing all 7 external provider categories connected to Payme's WhatsApp Orchestrator and Core Remittance Engine.
+        </div>
+      </div>
+
+      <h3>Where &amp; How AI Is Used in Payme's WhatsApp Remittance Flow</h3>
+      <div class="callout callout-info">
+        <div class="callout-title">Engineering Principle: "AI Suggests, Deterministic State Machine Commits"</div>
+        Inspired by <a href="https://tempo.xyz/customer-stories/felix-pago/" target="_blank">Félix Pago</a> and <a href="https://news.remitly.com/company-and-product-news/remitly-send-with-whatsapp/" target="_blank">Remitly</a>, AI is never allowed to invent exchange rates, calculate fees, bypass KYC, or execute payments. Instead, AI acts as an <strong>unstructured-to-structured input parser</strong> and <strong>support copilot</strong> across 4 areas:
+      </div>
+
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>1. Voice-Note &amp; Free-Text Intent Extraction (NLU)</h4>
+          <ul>
+            <li><strong>Trigger:</strong> User sends a WhatsApp voice note (<code>type: "audio"</code>) or natural text such as <em>"Send $400 to my brother Ramesh in Nepal via bank deposit"</em>.</li>
+            <li><strong>Pipeline:</strong> Transcribe audio via <strong>OpenAI Whisper / Deepgram</strong> &rarr; parse with <strong>Gemini / GPT-4o Structured Outputs</strong> into <code>{ corridor: "NP", send_amount_usd: 400, delivery_mode: "BANK_DEPOSIT", beneficiary_hint: "Ramesh" }</code>.</li>
+            <li><strong>Handoff:</strong> Pre-populates <code>wa_sessions</code>, locks the real quote via Payme's FX API, and jumps straight to confirmation.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>2. Vision OCR for Bank Slips &amp; Check Photos</h4>
+          <ul>
+            <li><strong>Trigger:</strong> User uploads a photo of a handwritten bank account number, passbook, or 18-digit Mexican CLABE / Indian IFSC card in WhatsApp.</li>
+            <li><strong>Pipeline:</strong> Multimodal Vision model extracts <code>{ bank_name, account_number, routing_code, account_holder }</code> and pre-fills <code>SCREEN_BENEFICIARY</code> in the WhatsApp Flow via <code>flow_action_data</code>.</li>
+            <li><strong>Handoff:</strong> User verifies pre-filled fields in the native Flow form and Payme's Bank Validation API confirms the account.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>3. Multilingual RAG Support Copilot (Mid-Flow FAQ)</h4>
+          <ul>
+            <li><strong>Trigger:</strong> User asks a question mid-flow (e.g., <em>"What ID does my recipient need at Elektra?"</em> or <em>"Why is my transfer pending?"</em>).</li>
+            <li><strong>Pipeline:</strong> Answers from Payme's verified Corridor Knowledge Base and live <code>GET /v1/remittances/{id}/status</code> API, then appends a <strong><code>▶️ Resume Transfer</code></strong> button so the 2-hour session never drops.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>4. Conversational Fraud &amp; Coercion Scoring</h4>
+          <ul>
+            <li><strong>Trigger:</strong> Evaluated asynchronously before minting the signed 3DS2 Payment Checkout URL.</li>
+            <li><strong>Pipeline:</strong> Flags high-risk scam patterns (new beneficiary + uncharacteristic corridor + urgent coaching cues) and triggers an in-chat scam warning or step-up liveness check.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-header">
+          <span>Mermaid Diagram Source: 3rd-Party Dependencies &amp; AI Ecosystem (Copy for GitHub / Notion / Confluence)</span>
+          <button class="copy-btn" onclick="copyCode('codeMermaid3p', this)">Copy Mermaid</button>
+        </div>
+        <pre><code id="codeMermaid3p">flowchart LR
+    WA["WhatsApp Client\n(Chat + Flows + WebView)"] <--> Meta["1. Meta WhatsApp Cloud API\n& Flows Engine (v23.0)"]
+    Meta <--> Orch["Payme WA Orchestrator\n(BullMQ + 2h Redis FSM)"]
+    Orch <--> Core["Payme Core Backend\n(PostgreSQL 16 + WebView Host)"]
+
+    Orch -.->|"Voice / Text / Image"| AI["2. AI Layer (Optional)\nWhisper ASR + Gemini NLU + Vision OCR"]
+    Core <-->|"Spot & 15m Lock"| FX["3. FX Rate Provider\n(Currencycloud / XE / Wise)"]
+    Core <-->|"ID Liveness & OFAC"| KYC["4. KYC & AML Provider\n(Sumsub / Onfido / ComplyAdvantage)"]
+    Core <-->|"CLABE / IBAN / IFSC"| Bank["5. Bank Validation API\n(Plaid / Local Clearing House)"]
+    Core <-->|"3DS2 Card & ACH"| PayIn["6. Payment Gateway (Pay-In)\n(Stripe / Adyen / Checkout.com)"]
+    Core <-->|"Bank / Cash / Wallet"| PayOut["7. Payout Aggregator (Pay-Out)\n(dLocal / Thunes / TerraPay)"]</code></pre>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function switchTab(tabBarId, paneId, btnElement) {
+    const tabBar = document.getElementById(tabBarId);
+    const buttons = tabBar.querySelectorAll(".tab-btn");
+    buttons.forEach((b) => b.classList.remove("active"));
+    btnElement.classList.add("active");
+
+    const section = tabBar.closest(".doc-section");
+    const panes = section.querySelectorAll(".tab-pane");
+    panes.forEach((p) => p.classList.toggle("active", p.id === paneId));
+  }
+
+  function filterConditions(category, btnElement) {
+    const bar = document.getElementById("condFilterBar");
+    bar.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+    btnElement.classList.add("active");
+
+    const rows = document.querySelectorAll("#conditionsTable tbody tr");
+    rows.forEach((row) => {
+      if (category === "ALL" || row.getAttribute("data-cat") === category) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  }
+
+  function copyCode(elementId, btn) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = "Copied ✓";
+      setTimeout(() => { btn.textContent = orig; }, 1600);
+    });
+  }
+</script>
+</body>
+</html>
