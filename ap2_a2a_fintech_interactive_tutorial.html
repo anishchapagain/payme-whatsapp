@@ -1,0 +1,2631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Production Agentic AI in FinTech: Google A2A &amp; AP2 Interactive Workbench</title>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-dark: #0b1120;
+      --bg-code: #0f172a;
+      --bg-subtle: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-light: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --accent-blue: #2563eb;
+      --accent-blue-soft: #eff6ff;
+      --accent-indigo: #4f46e5;
+      --accent-emerald: #059669;
+      --accent-emerald-soft: #ecfdf5;
+      --accent-amber: #d97706;
+      --accent-amber-soft: #fffbeb;
+      --accent-crimson: #dc2626;
+      --accent-crimson-soft: #fef2f2;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Header */
+    .hero-header {
+      background: linear-gradient(135deg, #0b1120 0%, #1e293b 100%);
+      color: #f8fafc;
+      padding: 2.25rem 2rem 1.75rem;
+      border-bottom: 1px solid #334155;
+    }
+    .hero-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.18);
+      color: #93c5fd;
+      border: 1px solid rgba(96, 165, 250, 0.35);
+    }
+    .pill-badge.emerald {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border-color: rgba(52, 211, 153, 0.35);
+    }
+    .pill-badge.amber {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fcd34d;
+      border-color: rgba(251, 191, 36, 0.35);
+    }
+    .hero-title {
+      font-size: 1.95rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+    }
+    .hero-subtitle {
+      font-size: 1rem;
+      color: #cbd5e1;
+      max-width: 960px;
+      margin-bottom: 1.25rem;
+    }
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+    }
+    .hero-links a {
+      color: #93c5fd;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.15s ease;
+    }
+    .hero-links a:hover {
+      background: rgba(59, 130, 246, 0.25);
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    /* Navigation Tabs */
+    .nav-bar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      overflow-x: auto;
+      gap: 0.25rem;
+      padding: 0 1.5rem;
+    }
+    .nav-tab {
+      appearance: none;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 0.95rem 1.15rem;
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .nav-tab:hover {
+      color: var(--accent-blue);
+      background: var(--bg-subtle);
+    }
+    .nav-tab.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+      background: var(--accent-blue-soft);
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 0.72rem;
+      background: var(--border-light);
+      color: var(--text-primary);
+    }
+    .nav-tab.active .step-num {
+      background: var(--accent-blue);
+      color: #ffffff;
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem 3.5rem;
+    }
+    .module-section {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .module-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section Headers & Cards */
+    .section-header {
+      margin-bottom: 1.5rem;
+    }
+    .section-header h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.35rem;
+    }
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .grid-sidebar {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 1.35rem;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .grid-2, .grid-3, .grid-sidebar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    /* Interactive Role Cards */
+    .role-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .role-btn {
+      text-align: left;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .role-btn:hover {
+      border-color: var(--accent-blue);
+      background: var(--bg-subtle);
+    }
+    .role-btn.active {
+      border-color: var(--accent-blue);
+      background: var(--accent-blue-soft);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+    .role-btn-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+    .role-tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .role-tag.agentic {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .role-tag.non-agentic {
+      background: #d1fae5;
+      color: #047857;
+    }
+    .role-tag.hybrid {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    /* Code & Pre blocks */
+    .code-container {
+      position: relative;
+      background: var(--bg-code);
+      border-radius: 8px;
+      border: 1px solid #334155;
+      overflow: hidden;
+      margin-top: 0.75rem;
+    }
+    .code-header {
+      background: #1e293b;
+      padding: 0.5rem 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+    }
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-weight: 600;
+    }
+    .copy-btn:hover {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+    pre {
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: #e2e8f0;
+      max-height: 520px;
+    }
+
+    /* Callout boxes */
+    .callout {
+      padding: 0.95rem 1.1rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--accent-blue);
+      background: var(--accent-blue-soft);
+      margin: 0.85rem 0;
+      font-size: 0.9rem;
+    }
+    .callout.emerald {
+      border-left-color: var(--accent-emerald);
+      background: var(--accent-emerald-soft);
+    }
+    .callout.amber {
+      border-left-color: var(--accent-amber);
+      background: var(--accent-amber-soft);
+    }
+    .callout.crimson {
+      border-left-color: var(--accent-crimson);
+      background: var(--accent-crimson-soft);
+    }
+    .callout strong {
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 0.5rem;
+    }
+    .data-table th, .data-table td {
+      padding: 0.7rem 0.85rem;
+      border-bottom: 1px solid var(--border-light);
+      text-align: left;
+      vertical-align: top;
+    }
+    .data-table th {
+      background: var(--bg-subtle);
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .data-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Simulator Controls */
+    .sim-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg-surface);
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      margin-bottom: 1.25rem;
+    }
+    .scenario-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      padding: 0.5rem 0.9rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+    .btn.primary {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-color: var(--accent-blue);
+    }
+    .btn.primary:hover {
+      background: #1d4ed8;
+    }
+
+    .timeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .timeline-item {
+      padding: 0.75rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .timeline-item:hover {
+      border-color: var(--accent-blue);
+    }
+    .timeline-item.active {
+      background: var(--accent-blue-soft);
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+    }
+    .timeline-route {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--accent-indigo);
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+    .timeline-title {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+    }
+
+    /* Form Controls for Sandbox */
+    .form-group {
+      margin-bottom: 0.9rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.3rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 0.45rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .check-row.pass {
+      background: var(--accent-emerald-soft);
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .check-row.fail {
+      background: var(--accent-crimson-soft);
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    /* Sub-tabs for Code Briefs */
+    .subtab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .subtab-btn {
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-surface);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+    .subtab-btn.active {
+      background: var(--bg-dark);
+      color: #ffffff;
+      border-color: var(--bg-dark);
+    }
+
+    .kv-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin: 0.65rem 0;
+    }
+    .kv-list li {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      padding-left: 1rem;
+      position: relative;
+    }
+    .kv-list li::before {
+      content: "•";
+      color: var(--accent-blue);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO HEADER -->
+  <header class="hero-header">
+    <div class="hero-inner">
+      <div class="badge-row">
+        <span class="pill-badge">A2A Protocol v1.0 (Linux Foundation / Google)</span>
+        <span class="pill-badge emerald">AP2 Protocol v0.2 (SD-JWT &amp; W3C VCs)</span>
+        <span class="pill-badge amber">A2A x402 Crypto &amp; Multi-Rail FinTech</span>
+      </div>
+      <h1 class="hero-title">Production Agentic AI in FinTech: Google A2A &amp; AP2 Interactive Workbench</h1>
+      <p class="hero-subtitle">
+        An end-to-end architectural blueprint, protocol wire simulator, SD-JWT cryptographic mandate playground, and production code reference for building compliant, auditable payment and financial applications with Google's Agent2Agent (A2A) and Agent Payments Protocol (AP2).
+      </p>
+      <div class="hero-links">
+        <a href="https://ap2-protocol.org/ap2/specification/" target="_blank" rel="noopener">AP2 v0.2 Specification ↗</a>
+        <a href="https://ap2-protocol.org/ap2/payment_mandate/" target="_blank" rel="noopener">AP2 Payment Mandate Schema ↗</a>
+        <a href="https://a2a-protocol.org/latest/specification/" target="_blank" rel="noopener">A2A v1.0 Protocol Spec ↗</a>
+        <a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener">Google AP2 GitHub Repo ↗</a>
+        <a href="https://github.com/google-agentic-commerce/a2a-x402" target="_blank" rel="noopener">A2A x402 Stablecoin Extension ↗</a>
+        <a href="https://cloudsecurityalliance.org/blog/2025/10/06/secure-use-of-the-agent-payments-protocol-ap2-a-framework-for-trustworthy-ai-driven-transactions" target="_blank" rel="noopener">CSA AP2 Security &amp; Threat Model ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="nav-bar">
+    <div class="nav-inner">
+      <button class="nav-tab active" onclick="switchModule('mod-arch', this)">
+        <span class="step-num">1</span> Architecture &amp; 5 AP2 Roles
+      </button>
+      <button class="nav-tab" onclick="switchModule('mod-sim', this)">
+        <span class="step-num">2</span> Live A2A + AP2 Wire Simulator
+      </button>
+      <button class="nav-tab" onclick="switchModule('mod-sandbox', this)">
+        <span class="step-num">3</span> SD-JWT Mandate &amp; Constraint Sandbox
+      </button>
+      <button class="nav-tab" onclick="switchModule('mod-code', this)">
+        <span class="step-num">4</span> Production Code Briefs (Python &amp; Java)
+      </button>
+      <button class="nav-tab" onclick="switchModule('mod-fintech', this)">
+        <span class="step-num">5</span> FinTech Blueprints, Disputes &amp; Threat Matrix
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-container">
+
+    <!-- ==================== MODULE 1: ARCHITECTURE & 5 ROLES ==================== -->
+    <section id="mod-arch" class="module-section active">
+      <div class="section-header">
+        <h2>1. The FinTech Agentic Stack: MCP + A2A + AP2 &amp; Role Isolation</h2>
+        <p>
+          Traditional payment rails assume a human directly clicks "Buy" on a deterministic checkout screen. When autonomous LLM agents initiate transactions, <a href="https://ap2-protocol.org/" target="_blank" rel="noopener">Google's Agent Payments Protocol (AP2)</a> layers verifiable digital credentials (VDCs) over the <a href="https://a2a-protocol.org/latest/" target="_blank" rel="noopener">Agent2Agent (A2A) Protocol</a> to guarantee <strong>Authorization</strong>, <strong>Authenticity</strong>, and <strong>Accountability</strong>.
+        </p>
+      </div>
+
+      <div class="grid-3" style="margin-bottom: 1.35rem;">
+        <div class="card">
+          <div class="card-title">
+            <span>Layer 1: Model Context Protocol (MCP)</span>
+            <span class="role-tag agentic">Agent ↔ Tool</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            Connects an individual agent to its internal deterministic tools, databases, risk scorers, and ledger APIs. Does not handle cross-organization multi-agent negotiation or cryptographic payment consent.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <span>Layer 2: Agent2Agent (A2A v1.0)</span>
+            <span class="role-tag agentic">Agent ↔ Agent</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            Provides opaque cross-boundary agent discovery (<a href="https://a2a-protocol.org/latest/topics/key-concepts/" target="_blank" rel="noopener">Agent Cards</a>), stateful lifecycle management (<code>Task</code>, <code>contextId</code>, <code>input-required</code> step-up challenges), and JSON-RPC 2.0 / gRPC transport.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <span>Layer 3: Agent Payments Protocol (AP2 v0.2)</span>
+            <span class="role-tag non-agentic">Cryptographic Trust</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            An extension declared in A2A Agent Cards (<code>X-A2A-Extensions</code>) that binds user intent, merchant carts, and scoped payment instruments using <a href="https://ap2-protocol.org/ap2/specification/" target="_blank" rel="noopener">SD-JWT / W3C Verifiable Credentials</a>.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-sidebar">
+        <!-- Left Sidebar: Interactive Role Selector -->
+        <div class="card">
+          <div class="card-title">Click an AP2 Role to Inspect</div>
+          <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+            Per the <a href="https://ap2-protocol.org/ap2/specification/" target="_blank" rel="noopener">AP2 v0.2 Specification</a>, whenever an Agentic role communicates, the agent itself is treated as a potential untrusted attacker—requiring deterministic code verification of cryptographic mandates.
+          </p>
+          <div class="role-list" id="role-selector-list">
+            <button class="role-btn active" onclick="selectRole('sa', this)">
+              <div class="role-btn-top">
+                <span>1. Shopping Agent (SA)</span>
+                <span class="role-tag agentic">Expected Agentic</span>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">Orchestrates discovery, cart assembly, and mandate handshakes</span>
+            </button>
+            <button class="role-btn" onclick="selectRole('ts', this)">
+              <div class="role-btn-top">
+                <span>2. Trusted Surface (TS)</span>
+                <span class="role-tag non-agentic">MUST Be Non-Agentic</span>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">Deterministic UI &amp; hardware enclave signing user consent</span>
+            </button>
+            <button class="role-btn" onclick="selectRole('cp', this)">
+              <div class="role-btn-top">
+                <span>3. Credential Provider (CP)</span>
+                <span class="role-tag hybrid">PCI-Isolated Vault</span>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">Digital wallet / issuer vault issuing scoped payment tokens</span>
+            </button>
+            <button class="role-btn" onclick="selectRole('merchant', this)">
+              <div class="role-btn-top">
+                <span>4. Merchant (M)</span>
+                <span class="role-tag hybrid">Agentic or Deterministic</span>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">Signs Checkout JWT, verifies Checkout Mandate, issues Receipt</span>
+            </button>
+            <button class="role-btn" onclick="selectRole('mpp', this)">
+              <div class="role-btn-top">
+                <span>5. Merchant Payment Processor (MPP)</span>
+                <span class="role-tag hybrid">Settlement &amp; 3DS Rail</span>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">Verifies Payment Mandate, runs 3DS/OTP challenge, settles funds</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Panel: Role Deep Dive -->
+        <div class="card" id="role-detail-panel">
+          <!-- Dynamically populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE 2: LIVE WIRE SIMULATOR ==================== -->
+    <section id="mod-sim" class="module-section">
+      <div class="section-header">
+        <h2>2. Interactive A2A + AP2 Wire Protocol Simulator</h2>
+        <p>
+          Step through real production message traces captured from the <a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener">Google AP2 Reference Architecture</a>, <a href="https://arthurchiao.art/blog/ap2-illustrated-guide/" target="_blank" rel="noopener">A2A JSON-RPC 2.0 wire logs</a>, and the <a href="https://github.com/google-agentic-commerce/a2a-x402" target="_blank" rel="noopener">A2A x402 stablecoin extension</a>.
+        </p>
+      </div>
+
+      <div class="sim-toolbar">
+        <div class="scenario-group">
+          <button class="btn primary" id="scen-btn-hp" onclick="loadScenario('hp')">Scenario A: Human-Present Card + 3DS OTP Challenge</button>
+          <button class="btn" id="scen-btn-hnp" onclick="loadScenario('hnp')">Scenario B: Autonomous (HNP) SD-JWT Mandate Chaining</button>
+          <button class="btn" id="scen-btn-x402" onclick="loadScenario('x402')">Scenario C: A2A x402 Institutional USDC Micropayment</button>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn" onclick="stepSim(-1)">◀ Prev Step</button>
+          <button class="btn primary" onclick="stepSim(1)">Next Step ▶</button>
+        </div>
+      </div>
+
+      <div class="grid-sidebar">
+        <div class="card">
+          <div class="card-title">
+            <span id="sim-scenario-title">Sequence Timeline</span>
+            <span id="sim-step-counter" class="pill-badge" style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">Step 1 / 8</span>
+          </div>
+          <div class="timeline-steps" id="sim-timeline"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span id="sim-step-heading">Step Details</span>
+            <span id="sim-step-badge" class="role-tag agentic">JSON-RPC 2.0</span>
+          </div>
+          <p id="sim-step-desc" style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 0.85rem;"></p>
+
+          <div class="callout emerald" id="sim-security-note"></div>
+
+          <div class="grid-2">
+            <div>
+              <div class="code-container">
+                <div class="code-header">
+                  <span id="sim-req-label">A2A Request Payload</span>
+                  <button class="copy-btn" onclick="copyText('sim-req-code')">Copy JSON</button>
+                </div>
+                <pre id="sim-req-code"></pre>
+              </div>
+            </div>
+            <div>
+              <div class="code-container">
+                <div class="code-header">
+                  <span id="sim-res-label">A2A Response / Artifact</span>
+                  <button class="copy-btn" onclick="copyText('sim-res-code')">Copy JSON</button>
+                </div>
+                <pre id="sim-res-code"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE 3: SD-JWT MANDATE SANDBOX ==================== -->
+    <section id="mod-sandbox" class="module-section">
+      <div class="section-header">
+        <h2>3. Interactive AP2 v0.2 SD-JWT Mandate &amp; Constraint Sandbox</h2>
+        <p>
+          Experiment with <a href="https://ap2-protocol.org/ap2/payment_mandate/" target="_blank" rel="noopener">AP2 v0.2 Open and Closed Payment Mandates</a> (<code>mandate.payment.open.1</code> &rarr; <code>mandate.payment.1</code>). Adjust the user's pre-authorized Open Mandate constraints on the left and simulate an autonomous agent's Closed Mandate transaction to see deterministic verification in action.
+        </p>
+      </div>
+
+      <div class="grid-sidebar">
+        <!-- Left: Controls -->
+        <div class="card">
+          <div class="card-title">Configure Open &amp; Closed Mandate Parameters</div>
+
+          <div class="form-group">
+            <label>Open Mandate: Max Amount Range (USD, converted to ISO-4217 cents)</label>
+            <input type="number" id="sb-max-amount" class="form-control" value="250.00" step="10" oninput="runMandateSandbox()" />
+          </div>
+
+          <div class="form-group">
+            <label>Open Mandate: Cumulative Recurrence Budget (USD)</label>
+            <input type="number" id="sb-budget" class="form-control" value="1000.00" step="50" oninput="runMandateSandbox()" />
+          </div>
+
+          <div class="form-group">
+            <label>Previously Spent Against This Open Mandate (USD)</label>
+            <input type="number" id="sb-spent" class="form-control" value="620.00" step="20" oninput="runMandateSandbox()" />
+          </div>
+
+          <div class="form-group">
+            <label>Agent Attempted Checkout Amount (USD)</label>
+            <input type="number" id="sb-tx-amount" class="form-control" value="199.00" step="10" oninput="runMandateSandbox()" />
+          </div>
+
+          <div class="form-group">
+            <label>Open Mandate Allowed Payees (Selective Disclosure Array)</label>
+            <select id="sb-payee" class="form-control" onchange="runMandateSandbox()">
+              <option value="merchant_1|CloudInfra Corp|https://cloudinfra.example|allowed">CloudInfra Corp (In Allowed Payees List)</option>
+              <option value="merchant_2|FinData Exchange|https://findata.example|allowed">FinData Exchange (In Allowed Payees List)</option>
+              <option value="merchant_99|Untrusted Shadow LLC|https://shadow.example|blocked">Untrusted Shadow LLC (NOT in Allowed Payees — Simulates Prompt Injection)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Payment Instrument Type (<code>PaymentInstrument</code>)</label>
+            <select id="sb-instrument" class="form-control" onchange="runMandateSandbox()">
+              <option value="card|amex_dpan_4242|Corporate Amex DPAN ••••4242">Corporate Card Network Token (DPAN ••••4242)</option>
+              <option value="pisp|sepa_instant_01|eIDAS QWAC Verified PISP">Open Banking PISP (eIDAS QWAC Verified)</option>
+              <option value="UPI|upi_treasury@axis|Real-Time UPI Push">UPI / PIX Real-Time Bank Push</option>
+              <option value="x402_usdc|base_usdc_vault|Coinbase x402 USDC Smart Wallet">A2A x402 Programmable USDC Rail</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Cryptographic Binding &amp; Integrity Checks</label>
+            <select id="sb-crypto-state" class="form-control" onchange="runMandateSandbox()">
+              <option value="valid">Valid ECDSA (ES256) Signatures &amp; Matching checkout_hash</option>
+              <option value="hash_mismatch">Tampered Cart: checkout_hash Mismatch (Agent Hallucinated Price)</option>
+              <option value="expired">Expired Open Mandate (Current Time &gt; exp Claim)</option>
+              <option value="wrong_key">Invalid Holder Key Binding (Signed by Unauthorized Agent Key)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Right: Live Deterministic Verifier & Generated SD-JWT -->
+        <div class="card">
+          <div class="card-title">
+            <span>Deterministic Verification Engine (Credential Provider &amp; MPP)</span>
+            <span id="sb-overall-badge" class="pill-badge emerald">AUTHORIZED</span>
+          </div>
+
+          <div id="sb-checks-container" style="margin-bottom: 1rem;"></div>
+
+          <div class="grid-2">
+            <div>
+              <div class="code-container">
+                <div class="code-header">
+                  <span>Chained SD-JWT Payload (Open + Closed Mandate)</span>
+                  <button class="copy-btn" onclick="copyText('sb-sdjwt-code')">Copy JSON</button>
+                </div>
+                <pre id="sb-sdjwt-code"></pre>
+              </div>
+            </div>
+            <div>
+              <div class="code-container">
+                <div class="code-header">
+                  <span>Deterministic Output: Signed PaymentReceipt JWT</span>
+                  <button class="copy-btn" onclick="copyText('sb-receipt-code')">Copy JSON</button>
+                </div>
+                <pre id="sb-receipt-code"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE 4: PRODUCTION CODE BRIEFS ==================== -->
+    <section id="mod-code" class="module-section">
+      <div class="section-header">
+        <h2>4. Production Code Briefs: Building A2A + AP2 FinTech Services</h2>
+        <p>
+          Reference implementations aligned with <a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener">google-agentic-commerce/AP2</a>, <a href="https://github.com/a2aproject/a2a-python" target="_blank" rel="noopener">a2a-python</a>, <a href="https://github.com/a2aproject/a2a-java" target="_blank" rel="noopener">a2a-java</a>, and the <a href="https://cloudsecurityalliance.org/blog/2025/10/06/secure-use-of-the-agent-payments-protocol-ap2-a-framework-for-trustworthy-ai-driven-transactions" target="_blank" rel="noopener">CSA AP2 Security Guidelines</a>.
+        </p>
+      </div>
+
+      <div class="subtab-bar">
+        <button class="subtab-btn active" onclick="switchCodeTab('code-adk', this)">1. A2A AgentCard &amp; ADK Orchestrator (Python)</button>
+        <button class="subtab-btn" onclick="switchCodeTab('code-crypto', this)">2. ECDSA P-256 Mandate Verifier (Python)</button>
+        <button class="subtab-btn" onclick="switchCodeTab('code-cp', this)">3. Credential Provider &amp; 3DS Step-Up (Python)</button>
+        <button class="subtab-btn" onclick="switchCodeTab('code-sdjwt', this)">4. AP2 v0.2 SD-JWT Constraint Engine (Python)</button>
+        <button class="subtab-btn" onclick="switchCodeTab('code-java', this)">5. Enterprise Java &amp; Android Enclave (Java/Kotlin)</button>
+      </div>
+
+      <div id="code-tab-content" class="card">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- ==================== MODULE 5: FINTECH BLUEPRINTS & THREAT MATRIX ==================== -->
+    <section id="mod-fintech" class="module-section">
+      <div class="section-header">
+        <h2>5. FinTech Industry Applications, Dispute Representment &amp; Security Matrix</h2>
+        <p>
+          How banks, payment service providers (PSPs), corporate treasury platforms, and AI marketplaces deploy AP2 and A2A in regulated financial environments.
+        </p>
+      </div>
+
+      <div class="grid-2" style="margin-bottom: 1.5rem;">
+        <div class="card">
+          <div class="card-title">
+            <span>1. Retail Conversational Banking &amp; Wallet Agent</span>
+            <span class="role-tag non-agentic">PSD2 SCA + Biometrics</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            <strong>Architecture:</strong> Bank mobile app acts as both the <strong>Trusted Surface (TS)</strong> (using Android Keystore / iOS Secure Enclave) and <strong>Credential Provider (CP)</strong>. When a customer asks their assistant to book travel or pay bills, the bank's CP issues an EMVCo network token (DPAN) bound to the exact <code>checkout_hash</code>, satisfying PSD2 Strong Customer Authentication dynamic linking.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>2. Autonomous B2B Procurement &amp; Treasury Spend Control</span>
+            <span class="role-tag agentic">AP2 v0.2 Open Mandates</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            <strong>Architecture:</strong> CFO approves an <strong>Open Payment Mandate</strong> (<code>mandate.payment.open.1</code>) containing <code>payment.budget</code>, <code>payment.allowed_payees</code> (selective disclosure of approved vendors), and <code>cnf</code> binding the procurement agent's HSM key. The agent autonomously negotiates spot cloud/supply contracts over A2A and settles via virtual commercial cards or PISP rails.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>3. Cross-Border Real-Time Payment (UPI / PIX / SEPA PISP)</span>
+            <span class="role-tag hybrid">Push Rails &amp; eIDAS QWAC</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            <strong>Architecture:</strong> Uses AP2's <code>payment.allowed_pisps</code> constraint where the PISP's <code>domain_name</code> is verified against its eIDAS Qualified Website Authentication Certificate (QWAC). Enables push-payment confirmation flows where the Merchant verifies incoming RTP/UPI settlement and returns a signed <code>CheckoutReceipt</code>.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>4. Institutional Financial Data Marketplace (A2A x402)</span>
+            <span class="role-tag agentic">On-Chain USDC Settlement</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            <strong>Architecture:</strong> Quantitative research agents query remote market-intelligence agents over A2A using the <a href="https://github.com/google-agentic-commerce/a2a-x402" target="_blank" rel="noopener">A2A x402 Extension</a>. Per-query micropayments ($0.02–$5.00 in USDC) are authorized under an Open Mandate budget and settled on-chain with zero card interchange overhead.
+          </p>
+        </div>
+      </div>
+
+      <!-- Dispute Evidence Verification Chain -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-title">
+          <span>Cryptographic Dispute &amp; Chargeback Representment Pipeline (AP2 v0.2 Section: Dispute Evidence)</span>
+          <span class="pill-badge emerald" style="background:#ecfdf5; color:#047857; border-color:#a7f3d0;">Non-Repudiable Audit Trail</span>
+        </div>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.85rem;">
+          When a transaction is disputed ("I never authorized the AI to buy this" or "The agent overcharged me"), the adjudicator (Issuer / Network / PSP such as <a href="https://developer.paypal.com/community/blog/PayPal-Agent-Payments-Protocol/" target="_blank" rel="noopener">PayPal Seller Protection</a> or <a href="https://docs.connect.worldline-solutions.com/documentation/ConnectAI/agent-payments-protocol-ap2" target="_blank" rel="noopener">Worldline Connect</a>) deterministically verifies 5 cryptographic links using <code>transaction_id</code> as the lookup key:
+        </p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Verification Step</th>
+              <th>Cryptographic Artifact</th>
+              <th>Deterministic Verification Rule</th>
+              <th>Liability Allocation If Verification Fails</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Step 1: Cart Integrity</strong></td>
+              <td><code>checkout_jwt</code> (Merchant-signed ECDSA JWT)</td>
+              <td>Recompute <code>SHA-256(checkout_jwt)</code> and confirm it equals <code>checkout_hash</code> in the Checkout Mandate. (Must use non-deterministic ECDSA to prevent rainbow table attacks).</td>
+              <td><strong>Merchant / Processor Liability:</strong> Cart contents or totals were altered after mandate signing.</td>
+            </tr>
+            <tr>
+              <td><strong>Step 2: User / Agent Authorization</strong></td>
+              <td><code>CheckoutMandate</code> (<code>mandate.checkout.1</code> + optional <code>.open.1</code>)</td>
+              <td>Verify User signature (Human-Present) or verify User's Open Mandate signature + Agent's <code>cnf</code> key signature + all Open Mandate constraints (Human-Not-Present).</td>
+              <td><strong>Agent Provider / Shopping Agent Liability:</strong> Agent acted outside user's signed constraints.</td>
+            </tr>
+            <tr>
+              <td><strong>Step 3: Merchant Fulfillment Binding</strong></td>
+              <td><code>CheckoutReceipt</code> JWT</td>
+              <td>Confirm <code>CheckoutReceipt.reference == sd_hash(Closed CheckoutMandate)</code> and verify Merchant signature.</td>
+              <td><strong>Merchant Liability:</strong> Merchant failed to acknowledge or honor the authorized checkout state.</td>
+            </tr>
+            <tr>
+              <td><strong>Step 4: Payment Scope Binding</strong></td>
+              <td><code>PaymentMandate</code> (<code>mandate.payment.1</code>)</td>
+              <td>Confirm <code>PaymentMandate.transaction_id == SHA-256(checkout_jwt)</code>, verify <code>payment_amount</code> and <code>payee</code> match constraints.</td>
+              <td><strong>Credential Provider / MPP Liability:</strong> Payment credential was charged for an unbound cart or wrong amount.</td>
+            </tr>
+            <tr>
+              <td><strong>Step 5: Settlement Proof</strong></td>
+              <td><code>PaymentReceipt</code> JWT</td>
+              <td>Confirm <code>PaymentReceipt.reference == sd_hash(Closed PaymentMandate)</code> with valid <code>psp_confirmation_id</code> &amp; <code>network_confirmation_id</code>.</td>
+              <td><strong>Customer Liability (Friendly Fraud Defeated):</strong> All 5 cryptographic proofs match; user non-repudiably authorized the transaction.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Threat Matrix -->
+      <div class="card">
+        <div class="card-title">
+          <span>STRIDE &amp; CSA MAESTRO 7-Layer Security Threat Matrix for AP2</span>
+          <div style="display:flex; gap:0.4rem;">
+            <button class="btn primary" id="tm-btn-all" onclick="filterThreatMatrix('all')">All Threats</button>
+            <button class="btn" id="tm-btn-stride" onclick="filterThreatMatrix('STRIDE')">STRIDE (Crypto &amp; Wire)</button>
+            <button class="btn" id="tm-btn-maestro" onclick="filterThreatMatrix('MAESTRO')">CSA MAESTRO (Agentic Layers)</button>
+          </div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Framework / Layer</th>
+              <th>Threat Vector</th>
+              <th>FinTech Impact</th>
+              <th>Production Mitigation in A2A + AP2</th>
+            </tr>
+          </thead>
+          <tbody id="threat-matrix-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ==================== MODULE SWITCHING ====================
+    function switchModule(modId, btnEl) {
+      document.querySelectorAll('.module-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(modId).classList.add('active');
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+
+    function copyText(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text);
+    }
+
+    // ==================== MODULE 1 DATA: 5 AP2 ROLES ====================
+    const roleData = {
+      sa: {
+        title: "1. Shopping Agent (SA) — Primary Orchestrator",
+        badge: "Expected Agentic (LLM-Driven)",
+        badgeClass: "agentic",
+        summary: "The Shopping Agent is the user-facing or enterprise-delegated AI agent (built with frameworks such as Google ADK, LangGraph, or Vertex AI) that performs product/service discovery, negotiates cart terms with Merchant Agents over A2A, assembles Mandate payloads, and coordinates payment execution.",
+        responsibilities: [
+          "Captures user intent and constructs initial IntentMandate / Open Mandate content.",
+          "Communicates with Merchant Agents and Credential Providers via A2A JSON-RPC 2.0 using header X-A2A-Extensions: https://github.com/google-agentic-commerce/ap2/v1.",
+          "In Autonomous (Human-Not-Present) mode, holds an ephemeral or HSM-backed Agent Key declared in the Open Mandate's cnf (confirmation) JWK claim to sign Closed Mandates within user constraints.",
+          "Single-Flight Rule (AP2 v0.2): MUST NOT present subsequent Closed Mandates against an Open Mandate without first receiving a signed Rejection Receipt from the previous attempt.",
+          "Zero PCI Scope: Never sees raw card numbers (PAN) or CVVs; only handles opaque payment credential tokens and SD-JWT disclosures."
+        ],
+        codeLabel: "Shopping Agent Delegation & Tool Binding (Google ADK Python)",
+        code: `from google.adk.agents import RetryingLlmAgent
+from ap2.roles.shopping_agent import tools
+
+# Root Shopping Agent orchestrating specialized sub-agents over A2A
+root_shopping_agent = RetryingLlmAgent(
+    model="gemini-2.5-flash",
+    name="fintech_shopping_orchestrator",
+    instruction=\"\"\"
+    You orchestrate compliant purchases using the Agent Payments Protocol (AP2).
+    1. Delegate product discovery and IntentMandate creation to the 'shopper' sub-agent.
+    2. Collect verified shipping/billing context via 'address_collector'.
+    3. Obtain tokenized payment methods via 'payment_method_collector' from the Credential Provider.
+    4. Route finalized CartMandate and PaymentMandate to the Trusted Surface for deterministic user signing.
+    5. Never fabricate prices, SKUs, or mandate signatures.
+    \"\"\",
+    tools=[
+        tools.create_payment_mandate,
+        tools.initiate_payment,
+        tools.send_challenge_response,
+    ],
+    sub_agents=[shopper_agent, address_collector_agent, payment_method_collector_agent],
+)`
+      },
+      ts: {
+        title: "2. Trusted Surface (TS) — Deterministic Consent & Hardware Signing Boundary",
+        badge: "MUST Be Non-Agentic",
+        badgeClass: "non-agentic",
+        summary: "Per the AP2 v0.2 Specification, the Trusted Surface MUST be non-agentic deterministic code. Because an LLM-based Shopping Agent is susceptible to prompt injection or hallucination, user consent and cryptographic signature generation must happen on a tamper-evident UI surface (such as Android Digital Payment Credentials / GMSCore, iOS Secure Enclave, FIDO2 Passkey prompt, or a bank hardware token).",
+        responsibilities: [
+          "Renders the exact human-readable contents of the Checkout Mandate and Payment Mandate (items, total in ISO-4217 currency, merchant identity, or Open Mandate budget/recurrence rules) in deterministic UI code.",
+          "Collects telemetry and device attestation signals (risk_data JWT) at the moment of user consent.",
+          "Signs the Mandate using a hardware-backed private key (ECDSA P-256 / ES256) stored in TPM, Android Keystore, or Secure Enclave.",
+          "Prevents prompt-injected Shopping Agents from silently self-approving unauthorized transactions."
+        ],
+        codeLabel: "Hardware-Backed Mandate Signing on Trusted Surface (Kotlin / Android DPC)",
+        code: `// Deterministic Trusted Surface activity (Non-Agentic)
+class TrustedConsentActivity : AppCompatActivity() {
+
+    fun onUserBiometricConfirmed(
+        checkoutJwt: String,
+        paymentMandateContent: PaymentMandatePayload
+    ): SignedSdJwtMandate {
+        // 1. Deterministically compute SHA-256 hash of Merchant's Checkout JWT
+        val checkoutHash = Sha256.digestBase64Url(checkoutJwt.toByteArray())
+        require(paymentMandateContent.transactionId == checkoutHash) {
+            "Security violation: PaymentMandate transaction_id does not match checkout_jwt hash"
+        }
+
+        // 2. Sign inside hardware-backed Android Keystore / GMSCore DPC
+        val hardwarePrivateKey = KeyStoreHelper.getHardwareBackedEcKey("ap2_user_signing_key")
+        return DpcHelper.signSdJwtMandate(
+            payload = paymentMandateContent,
+            signingKey = hardwarePrivateKey,
+            algorithm = "ES256" // ECDSA P-256
+        )
+    }
+}`
+      },
+      cp: {
+        title: "3. Credential Provider (CP) — PCI-DSS Vault & Token Authority",
+        badge: "Deterministic Verification Required",
+        badgeClass: "hybrid",
+        summary: "The Credential Provider (e.g., Google Pay, PayPal Wallet, Issuer Digital Wallet, or Corporate Treasury Vault) holds the user's underlying payment instruments (cards, bank accounts, UPI/PIX handles, or smart wallets). It acts as an A2A Server that isolates PCI-DSS sensitive data from the Shopping Agent.",
+        responsibilities: [
+          "Exposes an A2A Agent Card declaring support for https://github.com/google-agentic-commerce/ap2/v1.",
+          "Filters eligible payment methods matching the Merchant's supported networks (e.g., Mastercard, Visa, Amex, PayPal, USDC).",
+          "Verifies the signed Payment Mandate (and evaluates Open Mandate constraints if autonomous) in deterministic code before releasing a payment credential token.",
+          "When queried directly by the Merchant Payment Processor (MPP) with the token and signed Payment Mandate, releases the scoped DPAN + EMV cryptogram for network authorization."
+        ],
+        codeLabel: "Credential Provider A2A AgentCard Declaration (JSON)",
+        code: `{
+  "name": "CredentialsProvider",
+  "description": "PCI-isolated digital wallet agent managing payment credentials and AP2 verification.",
+  "url": "https://wallet.fintech.example/a2a/credentials_provider",
+  "version": "1.0.0",
+  "protocolVersion": "1.0.0",
+  "preferredTransport": "JSONRPC",
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["application/json"],
+  "capabilities": {
+    "streaming": false,
+    "extensions": [
+      {
+        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+        "description": "Supports the Agent Payments Protocol (AP2).",
+        "required": true
+      }
+    ]
+  },
+  "skills": [
+    {
+      "id": "get_eligible_payment_methods",
+      "name": "Get Eligible Payment Methods",
+      "description": "Returns tokenized payment aliases matching merchant network requirements.",
+      "tags": ["payments", "wallet", "ap2"]
+    },
+    {
+      "id": "initiate_payment",
+      "name": "Verify Payment Mandate & Issue Scoped Token",
+      "description": "Deterministically validates signed AP2 PaymentMandate and binds DPAN cryptogram.",
+      "tags": ["payments", "tokenization", "ap2"]
+    }
+  ]
+}`
+      },
+      merchant: {
+        title: "4. Merchant (M) — Catalog Discovery & Checkout JWT Signer",
+        badge: "Agentic Discovery + Deterministic Verification",
+        badgeClass: "hybrid",
+        summary: "The Merchant exposes an A2A Server that handles product/service search against an IntentMandate, constructs carts with shipping and tax, cryptographically signs the Checkout JWT (or CartMandate.merchant_authorization), and verifies the customer's Checkout Mandate before fulfillment.",
+        responsibilities: [
+          "Signs the finalized Checkout object using a non-deterministic signature scheme (e.g., ECDSA ES256 rather than Ed25519) to prevent rainbow-table hash attacks on checkout_jwt.",
+          "Verifies the customer's Closed Checkout Mandate: checks signature validity, confirms checkout_hash == SHA-256(checkout_jwt), and evaluates any chained Open Checkout Mandate constraints.",
+          "Delegates payment capture to the Merchant Payment Processor (MPP) or verifies push-payment settlement.",
+          "Returns a signed CheckoutReceipt JWT binding the hash of the Closed Checkout Mandate."
+        ],
+        codeLabel: "Merchant A2A AgentCard & Checkout Verification Flow (JSON)",
+        code: `{
+  "name": "MerchantAgent",
+  "description": "Enterprise commerce agent supporting A2A catalog negotiation and AP2 Checkout Mandates.",
+  "url": "https://merchant.fintech.example/a2a/merchant_agent",
+  "version": "1.0.0",
+  "protocolVersion": "1.0.0",
+  "preferredTransport": "JSONRPC",
+  "defaultInputModes": ["application/json"],
+  "defaultOutputModes": ["application/json"],
+  "capabilities": {
+    "extensions": [
+      {
+        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+        "description": "Supports the Agent Payments Protocol (AP2).",
+        "required": true
+      }
+    ]
+  },
+  "skills": [
+    {
+      "id": "search_catalog",
+      "name": "Search Catalog with IntentMandate",
+      "description": "Matches inventory against AP2 IntentMandate and returns signed CartMandates.",
+      "tags": ["merchant", "catalog", "ap2"]
+    }
+  ]
+}`
+      },
+      mpp: {
+        title: "5. Merchant Payment Processor (MPP) & Card/Payment Network",
+        badge: "Deterministic Settlement & Risk Engine",
+        badgeClass: "hybrid",
+        summary: "The Merchant Payment Processor (e.g., Stripe, Adyen, PayPal Braintree, Worldline, or Coinbase x402 Facilitator) processes the payment credential, verifies that the Payment Mandate is cryptographically bound to the exact Checkout instance, orchestrates 3DS2 / OTP step-up challenges via A2A's 'input-required' TaskState, and emits the signed PaymentReceipt.",
+        responsibilities: [
+          "Receives the PaymentMandate and opaque credential token URL from the Merchant Agent.",
+          "Fetches the scoped payment credential (DPAN + cryptogram) from the Credential Provider by presenting the signed PaymentMandate.",
+          "If issuer risk rules trigger Strong Customer Authentication (SCA / 3DS2 / OTP), transitions the A2A Task to state: 'input-required' with a structured challenge payload.",
+          "Embeds AP2 agent modality signals (Human-Present vs. Human-Not-Present) into ISO 8583 / network authorization messages for AI-aware issuer fraud scoring.",
+          "Issues a non-repudiable PaymentReceipt JWT containing psp_confirmation_id, network_confirmation_id, and reference = sd_hash(PaymentMandate)."
+        ],
+        codeLabel: "PaymentReceipt Schema (AP2 v0.2 Specification)",
+        code: `{
+  "header": {
+    "alg": "ES256",
+    "typ": "JWT",
+    "kid": "mpp-signing-key-2026"
+  },
+  "payload": {
+    "status": "Success",
+    "iss": "https://mpp.fintech.example",
+    "iat": 1777342410,
+    "reference": "uixoHemmfrrCSbPREo9j-ziLuMkqExsPeWrwA-PK0Ck",
+    "payment_id": "pay_9f8e7d6c5b4a3f2e",
+    "psp_confirmation_id": "psp_tx_01J8Z9K4M2N3P4Q5R6",
+    "network_confirmation_id": "net_amex_88492019482"
+  }
+}`
+      }
+    };
+
+    function selectRole(roleKey, btnEl) {
+      document.querySelectorAll('#role-selector-list .role-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      const d = roleData[roleKey];
+      const panel = document.getElementById('role-detail-panel');
+      const itemsHtml = d.responsibilities.map(r => `<li>${r}</li>`).join('');
+      panel.innerHTML = `
+        <div class="card-title">
+          <span>${d.title}</span>
+          <span class="role-tag ${d.badgeClass}">${d.badge}</span>
+        </div>
+        <p style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 0.75rem;">${d.summary}</p>
+        <div class="callout">
+          <strong>Core Verification &amp; Security Responsibilities:</strong>
+          <ul class="kv-list">${itemsHtml}</ul>
+        </div>
+        <div class="code-container">
+          <div class="code-header">
+            <span>${d.codeLabel}</span>
+            <button class="copy-btn" onclick="copyText('role-code-pre')">Copy Code</button>
+          </div>
+          <pre id="role-code-pre"></pre>
+        </div>
+      `;
+      document.getElementById('role-code-pre').textContent = d.code;
+    }
+
+    // ==================== MODULE 2 DATA: SIMULATOR SCENARIOS ====================
+    const scenarios = {
+      hp: {
+        title: "Scenario A: Human-Present Card Checkout + 3DS OTP Step-Up",
+        steps: [
+          {
+            route: "1. User → ShoppingAgent → MerchantAgent",
+            title: "Capture IntentMandate & Search Merchant Catalog",
+            badge: "A2A message/send",
+            desc: "The user asks to buy an espresso coffee maker with a 30-day refund policy. The Shopping Agent confirms the user's intent and sends an A2A JSON-RPC request containing an ap2.mandates.IntentMandate data part to the Merchant Agent.",
+            security: "Security Control: Notice price ceilings are kept inside the Shopping Agent's local filter rather than leaked to the Merchant in the IntentMandate, preventing dynamic price discrimination up to the user's max budget.",
+            reqLabel: "POST /a2a/merchant_agent (X-A2A-Extensions: .../ap2/v1)",
+            req: `{
+  "jsonrpc": "2.0",
+  "id": "888a4384-2aa8-41c3-adbe-864c767bdba5",
+  "method": "message/send",
+  "params": {
+    "configuration": { "blocking": true },
+    "message": {
+      "kind": "message",
+      "messageId": "00162a36c7d645d9840e3fbda5bd625e",
+      "role": "agent",
+      "parts": [
+        {
+          "kind": "text",
+          "text": "Find products that match the user's IntentMandate."
+        },
+        {
+          "kind": "data",
+          "data": {
+            "ap2.mandates.IntentMandate": {
+              "user_cart_confirmation_required": true,
+              "natural_language_description": "espresso coffee maker",
+              "merchants": [],
+              "skus": [],
+              "requires_refundability": true,
+              "intent_expiry": "2026-10-17T12:00:00+00:00"
+            }
+          }
+        },
+        {
+          "kind": "data",
+          "data": { "shopping_agent_id": "trusted_shopping_agent" }
+        }
+      ]
+    }
+  }
+}`,
+            resLabel: "MerchantAgent Response (Candidate CartMandates)",
+            res: `{
+  "jsonrpc": "2.0",
+  "id": "888a4384-2aa8-41c3-adbe-864c767bdba5",
+  "result": {
+    "id": "f76fdfa1-b505-4707-b1cc-a7f25bbadc00",
+    "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+    "kind": "task",
+    "status": { "state": "completed" },
+    "artifacts": [
+      {
+        "artifactId": "d6dd431b-80a9-4892-b612-d4303524b674",
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "ap2.mandates.CartMandate": {
+                "contents": {
+                  "id": "cart_3",
+                  "user_cart_confirmation_required": true,
+                  "merchant_name": "Generic Merchant",
+                  "cart_expiry": "2026-10-17T11:30:00+00:00",
+                  "payment_request": {
+                    "method_data": [
+                      {
+                        "supported_methods": "CARD",
+                        "data": { "network": ["mastercard", "paypal", "amex"] }
+                      }
+                    ],
+                    "details": {
+                      "id": "order_3",
+                      "display_items": [
+                        {
+                          "label": "Professional-grade espresso machine",
+                          "amount": { "currency": "USD", "value": 599.99 },
+                          "refund_period": 60
+                        }
+                      ],
+                      "total": {
+                        "label": "Total",
+                        "amount": { "currency": "USD", "value": 599.99 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}`
+          },
+          {
+            route: "2. ShoppingAgent → CredentialsProvider → MerchantAgent",
+            title: "Fetch Verified Shipping Address & Sign Merchant CartMandate",
+            badge: "Merchant Signature",
+            desc: "After the user selects cart_3, the Shopping Agent fetches the user's shipping address from the Credential Provider and updates the Merchant cart. The Merchant computes shipping ($2.00) and tax ($1.50), bringing the final total to $603.49, and cryptographically signs merchant_authorization.",
+            security: "Cryptographic Guarantee: The Merchant's RS256/ES256 signature over the finalized cart (merchant_authorization / checkout_jwt) locks in the exact SKU, tax, shipping, and $603.49 total so neither party can alter terms later.",
+            reqLabel: "POST /a2a/merchant_agent (Update Shipping Address)",
+            req: `{
+  "jsonrpc": "2.0",
+  "id": "82fb46ac-4ff8-4012-b70a-d85d528bfede",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+      "kind": "message",
+      "role": "agent",
+      "parts": [
+        { "kind": "text", "text": "Update the cart with the user's shipping address." },
+        { "kind": "data", "data": { "cart_id": "cart_3" } },
+        {
+          "kind": "data",
+          "data": {
+            "shipping_address": {
+              "recipient": "Alex Rivera",
+              "address_line": ["123 Market St"],
+              "city": "San Francisco",
+              "region": "CA",
+              "postal_code": "94105",
+              "country": "US"
+            }
+          }
+        }
+      ]
+    }
+  }
+}`,
+            resLabel: "MerchantAgent Response (Signed CartMandate)",
+            res: `{
+  "jsonrpc": "2.0",
+  "id": "82fb46ac-4ff8-4012-b70a-d85d528bfede",
+  "result": {
+    "id": "43c9c925-df04-48a5-970b-6ec86bd3d27c",
+    "kind": "task",
+    "status": { "state": "completed" },
+    "artifacts": [
+      {
+        "artifactId": "b88f3fa6-70a8-4382-a000-9b76d60c135d",
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "ap2.mandates.CartMandate": {
+                "contents": {
+                  "id": "cart_3",
+                  "payment_request": {
+                    "details": {
+                      "id": "order_3",
+                      "display_items": [
+                        { "label": "Professional-grade espresso machine", "amount": { "currency": "USD", "value": 599.99 } },
+                        { "label": "Shipping", "amount": { "currency": "USD", "value": 2.00 } },
+                        { "label": "Tax", "amount": { "currency": "USD", "value": 1.50 } }
+                      ],
+                      "total": { "label": "Total", "amount": { "currency": "USD", "value": 603.49 } }
+                    }
+                  }
+                },
+                "merchant_authorization": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im1lcmNoYW50LWtleS0yMDI2In0.eyJjYXJ0X2lkIjoiY2FydF8zIiwidG90YWwiOjYwMy40OX0.Sig_Merchant_Base64Url"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}`
+          },
+          {
+            route: "3. ShoppingAgent → CredentialsProvider",
+            title: "Tokenize Selected Payment Instrument & Submit Signed PaymentMandate",
+            badge: "PCI Role Isolation",
+            desc: "The Shopping Agent queries eligible payment methods from the Credential Provider (e.g., 'American Express ending in 4444'), requests an opaque payment credential token, and after the user signs on the Trusted Surface, sends the signed PaymentMandate to the Credential Provider.",
+            security: "PCI-DSS v4.0 Isolation: The Shopping Agent only receives 'token': 'payment_credential_token_0' and its vault URL. Raw DPAN and EMV cryptograms never enter the LLM context window.",
+            reqLabel: "POST /a2a/credentials_provider (Signed PaymentMandate)",
+            req: `{
+  "jsonrpc": "2.0",
+  "id": "2fbe086c-6eab-46a1-b5c4-06e61ee3f90c",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+      "kind": "message",
+      "role": "agent",
+      "parts": [
+        { "kind": "text", "text": "This is the signed payment mandate" },
+        {
+          "kind": "data",
+          "data": {
+            "ap2.mandates.PaymentMandate": {
+              "payment_mandate_contents": {
+                "payment_mandate_id": "848f97b287584cd1aa3085bed1985c22",
+                "payment_details_id": "order_3",
+                "payment_details_total": {
+                  "label": "Total",
+                  "amount": { "currency": "USD", "value": 603.49 },
+                  "refund_period": 30
+                },
+                "payment_response": {
+                  "request_id": "order_3",
+                  "method_name": "CARD",
+                  "details": {
+                    "token": {
+                      "value": "payment_credential_token_0",
+                      "url": "http://CredentialsProvider/a2a/credentials_provider"
+                    }
+                  }
+                },
+                "merchant_agent": "Generic Merchant",
+                "timestamp": "2026-10-17T10:05:04Z"
+              },
+              "user_authorization": "ecdsa_p256_sig_over_cart_hash_and_payment_mandate_hash"
+            }
+          }
+        }
+      ]
+    }
+  }
+}`,
+            resLabel: "CredentialsProvider Response (Mandate Bound to Token)",
+            res: `{
+  "jsonrpc": "2.0",
+  "id": "2fbe086c-6eab-46a1-b5c4-06e61ee3f90c",
+  "result": {
+    "id": "fc67d42e-57f9-4efe-8d2a-7d7f3c31d70f",
+    "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+    "kind": "task",
+    "status": {
+      "state": "completed",
+      "timestamp": "2026-10-17T10:05:06Z"
+    }
+  }
+}`
+          },
+          {
+            route: "4. ShoppingAgent → MerchantAgent → MerchantPaymentProcessor",
+            title: "Initiate Payment & Receive 3DS2 / OTP Step-Up Challenge",
+            badge: "TaskState: input-required",
+            desc: "The Shopping Agent sends 'Initiate a payment' with the PaymentMandate to the Merchant Agent, which forwards it to the Merchant Payment Processor (MPP). Because the transaction is $603.49, the MPP triggers an issuer OTP step-up challenge by returning A2A state: 'input-required'.",
+            security: "Asynchronous Step-Up in A2A: Rather than failing or breaking the session, A2A's stateful Task lifecycle pauses in 'input-required' and returns a structured challenge object back through the Merchant Agent to the Trusted Surface.",
+            reqLabel: "POST /a2a/merchant_payment_processor_agent",
+            req: `{
+  "jsonrpc": "2.0",
+  "id": "7c7fbb73-4bb6-42b2-b5bd-d6d766078cca",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+      "kind": "message",
+      "role": "agent",
+      "parts": [
+        { "kind": "text", "text": "initiate_payment" },
+        {
+          "kind": "data",
+          "data": {
+            "ap2.mandates.PaymentMandate": {
+              "payment_mandate_contents": {
+                "payment_mandate_id": "848f97b287584cd1aa3085bed1985c22",
+                "payment_details_id": "order_3",
+                "payment_details_total": { "amount": { "currency": "USD", "value": 603.49 } }
+              },
+              "user_authorization": "ecdsa_p256_sig_over_cart_hash_and_payment_mandate_hash"
+            }
+          }
+        }
+      ]
+    }
+  }
+}`,
+            resLabel: "MPP Response (state: input-required + OTP Challenge)",
+            res: `{
+  "jsonrpc": "2.0",
+  "id": "7c7fbb73-4bb6-42b2-b5bd-d6d766078cca",
+  "result": {
+    "id": "799fbe91-a538-497f-904c-d81eda1dedbf",
+    "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+    "kind": "task",
+    "status": {
+      "state": "input-required",
+      "timestamp": "2026-10-17T10:05:20Z",
+      "message": {
+        "kind": "message",
+        "role": "agent",
+        "taskId": "799fbe91-a538-497f-904c-d81eda1dedbf",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "Please provide the challenge response to complete the payment."
+          },
+          {
+            "kind": "data",
+            "data": {
+              "challenge": {
+                "type": "otp",
+                "display_text": "The payment method issuer sent a verification code to the phone number on file. Please enter it to authorize the $603.49 transaction."
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}`
+          },
+          {
+            route: "5. MPP → CredentialsProvider → Settlement Complete",
+            title: "Relay Challenge Response, Detokenize DPAN & Emit PaymentReceipt",
+            badge: "TaskState: completed",
+            desc: "The user enters the OTP challenge response on the Trusted Surface. The Shopping Agent resumes taskId 57a672e8... with the challenge_response. The MPP presents the verified PaymentMandate to the Credential Provider to retrieve the scoped DPAN + cryptogram and completes network authorization.",
+            security: "End-to-End Auditability: The Credential Provider only releases the DPAN and EMV cryptogram to the authenticated MPP after verifying the user's signature on the PaymentMandate.",
+            reqLabel: "POST /a2a/credentials_provider (MPP Detokenization Call)",
+            req: `{
+  "jsonrpc": "2.0",
+  "id": "6724cb50-56f1-42e0-9864-64d253828cac",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+      "kind": "message",
+      "role": "agent",
+      "parts": [
+        { "kind": "text", "text": "Give me the payment method credentials for the given token." },
+        {
+          "kind": "data",
+          "data": {
+            "ap2.mandates.PaymentMandate": {
+              "payment_mandate_contents": {
+                "payment_mandate_id": "848f97b287584cd1aa3085bed1985c22",
+                "payment_details_id": "order_3",
+                "payment_details_total": { "amount": { "currency": "USD", "value": 603.49 } },
+                "payment_response": {
+                  "details": { "token": { "value": "payment_credential_token_0" } }
+                }
+              },
+              "user_authorization": "ecdsa_p256_sig_over_cart_hash_and_payment_mandate_hash"
+            }
+          }
+        }
+      ]
+    }
+  }
+}`,
+            resLabel: "CredentialsProvider → MPP Scoped DPAN + Final Settlement",
+            res: `{
+  "jsonrpc": "2.0",
+  "id": "6724cb50-56f1-42e0-9864-64d253828cac",
+  "result": {
+    "id": "65d8cfea-407e-434f-91b5-9852db1b4fbd",
+    "kind": "task",
+    "status": { "state": "completed" },
+    "artifacts": [
+      {
+        "artifactId": "253b8275-f7a1-492b-81c0-b49627e9be9b",
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "type": "CARD",
+              "alias": "American Express ending in 4444",
+              "network": [{ "name": "amex", "formats": ["DPAN"] }],
+              "token": "1111000000000000",
+              "cryptogram": "emv_cryptogram_abc123_bound_to_603_49",
+              "card_expiration": "10/2027"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}`
+          }
+        ]
+      },
+      hnp: {
+        title: "Scenario B: Autonomous (Human-Not-Present) Treasury & Procurement via AP2 v0.2 SD-JWT",
+        steps: [
+          {
+            route: "1. User → Trusted Surface (Pre-Authorization)",
+            title: "Sign Open Checkout & Payment Mandates with Agent Public Key (cnf)",
+            badge: "mandate.payment.open.1",
+            desc: "In Autonomous (Human-Not-Present) mode, the user or corporate treasurer approves an Open Payment Mandate upfront on a Trusted Surface. It embeds the Shopping Agent's EC P-256 public key in the 'cnf' claim and sets selectively disclosable constraints (amount_range, allowed_payees, reference).",
+            security: "Cryptographic Delegation (AP2 v0.2): Because the user is not present at checkout time, trust in the Agent's key is anchored by the user's ES256 signature on the Open Mandate and bounded by its deterministic constraints.",
+            reqLabel: "Open Payment Mandate SD-JWT Payload (User/Provider Signed)",
+            req: `{
+  "header": {
+    "alg": "ES256",
+    "typ": "example+sd-jwt",
+    "kid": "user-hardware-key-1"
+  },
+  "payload": {
+    "delegate_payload": [
+      { "...": "3YRtZ-lBNhI_YhggShrdHhrSuDPSpwMvJ3VWjUnhDQM" }
+    ],
+    "_sd_alg": "sha-256"
+  }
+}`,
+            resLabel: "Decoded Open Mandate Disclosures (With cnf Agent Public Key)",
+            res: `[
+  {
+    "digest": "oEH7i1gyb-zn6awwjy57LvzxkQDfD-8tvlC2XuIkgOA",
+    "decoded": [
+      "s9WPt2U4GapcJsonyEb6bjg",
+      {
+        "id": "merchant_1",
+        "name": "Demo Merchant",
+        "website": "https://demo-merchant.example"
+      }
+    ]
+  },
+  {
+    "digest": "3YRtZ-lBNhI_YhggShrdHhrSuDPSpwMvJ3VWjUnhDQM",
+    "decoded": [
+      "ZtKS5FSrIAY6HlGB4Ho7mg",
+      {
+        "vct": "mandate.payment.open.1",
+        "constraints": [
+          { "type": "payment.amount_range", "currency": "USD", "max": 20000, "min": 0 },
+          {
+            "type": "payment.allowed_payees",
+            "allowed": [{ "...": "oEH7i1gyb-zn6awwjy57LvzxkQDfD-8tvlC2XuIkgOA" }]
+          },
+          {
+            "type": "payment.reference",
+            "conditional_transaction_id": "FzLoxbbtgQGYZxoSM2NJYJtkFTSsdfUBoVEQ12k7JN8"
+          }
+        ],
+        "cnf": {
+          "jwk": {
+            "crv": "P-256",
+            "kty": "EC",
+            "x": "QpSyxPQHy38xckypDr54gZ3T42zj9iLtV4koyb5U27c",
+            "y": "37HLd7JJinxjJIn8J7HijssoeclbfhdW-gUL7feI9lw"
+          }
+        },
+        "iat": 1777342357,
+        "exp": 1777345957
+      }
+    ]
+  }
+]`
+          },
+          {
+            route: "2. ShoppingAgent → CredentialProvider & MPP (Autonomous Execution)",
+            title: "Agent Signs Closed Mandate (kb+sd-jwt) & Chains with Open Mandate",
+            badge: "mandate.payment.1",
+            desc: "When the target price drops to $199.00 (19900 cents, within the 20000 cent limit), the Shopping Agent receives the Merchant's checkout_jwt, computes transaction_id = SHA256(checkout_jwt), and signs a Closed Payment Mandate using its delegated private key (typ: 'kb+sd-jwt').",
+            security: "Selective Disclosure Privacy: The Shopping Agent only attaches the disclosure for 'merchant_1' (~WyJzOV...~), keeping any other allowed merchants or backup payment instruments in the Open Mandate completely hidden from the verifier.",
+            reqLabel: "Agent-Signed Closed Payment Mandate (typ: kb+sd-jwt)",
+            req: `{
+  "issuer_signed_jwt": {
+    "header": { "alg": "ES256", "typ": "kb+sd-jwt" },
+    "payload": {
+      "delegate_payload": [
+        { "...": "G2DuU6IjyDkD-9ItStdsUo48C5uJqDs1E9Hf5GT3TgM" }
+      ],
+      "iat": 1777342370,
+      "aud": "credential-provider",
+      "nonce": "a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3",
+      "sd_hash": "uixoHemmfrrCSbPREo9j-ziLuMkqExsPeWrwA-PK0Ck",
+      "_sd_alg": "sha-256"
+    }
+  },
+  "disclosures": [
+    {
+      "digest": "G2DuU6IjyDkD-9ItStdsUo48C5uJqDs1E9Hf5GT3TgM",
+      "decoded": [
+        "FW6McBJImqODuhQlpI4Idw",
+        {
+          "vct": "mandate.payment.1",
+          "transaction_id": "NivWhuqfzcvZNapvIEJ2-3tsdQLkiuIcye2g46WVgX8",
+          "payee": {
+            "id": "merchant_1",
+            "name": "Demo Merchant",
+            "website": "https://demo-merchant.example"
+          },
+          "payment_amount": { "amount": 19900, "currency": "USD" },
+          "payment_instrument": {
+            "id": "stub",
+            "type": "card",
+            "description": "Card ••••4242"
+          }
+        }
+      ]
+    }
+  ]
+}`,
+            resLabel: "Verifier Deterministic Evaluation & PaymentReceipt",
+            res: `{
+  "verification_steps": {
+    "vct_version_match": "PASS (mandate.payment.open.1 -> mandate.payment.1)",
+    "open_mandate_user_sig": "PASS (ES256 verified)",
+    "closed_mandate_cnf_key_sig": "PASS (Matches Open Mandate cnf.jwk)",
+    "constraint_amount_range": "PASS (19900 <= 20000 minor units USD)",
+    "constraint_allowed_payees": "PASS (merchant_1 verified via SD-JWT digest oEH7i1...)",
+    "constraint_reference": "PASS (Matches Open Checkout Mandate digest FzLoxb...)"
+  },
+  "payment_receipt": {
+    "status": "Success",
+    "iss": "https://credential-provider.example",
+    "iat": 1777342375,
+    "reference": "uixoHemmfrrCSbPREo9j-ziLuMkqExsPeWrwA-PK0Ck",
+    "payment_id": "pay_hnp_882190",
+    "psp_confirmation_id": "psp_9920184",
+    "network_confirmation_id": "net_7741029"
+  }
+}`
+          }
+        ]
+      },
+      x402: {
+        title: "Scenario C: Agent-to-Agent USDC Micropayment via A2A x402 Extension",
+        steps: [
+          {
+            route: "1. FinResearchAgent → MarketDataAgent (A2A + x402 Discovery)",
+            title: "Request Institutional Order-Book Alpha Feed & Receive x402 Payment Requirement",
+            badge: "A2A x402 Extension",
+            desc: "A quantitative research agent queries an institutional market-data agent over A2A. The MarketDataAgent responds with an x402 payment requirement specifying a 0.25 USDC micropayment on Base to unlock the artifact.",
+            security: "Machine-Speed Micropayments: Traditional card rails cannot economically process $0.25 per-API-call agent transactions due to fixed interchange fees. The A2A x402 extension combines AP2 Mandate budgets with instant on-chain stablecoin settlement.",
+            reqLabel: "POST /a2a/market_data_agent (X-A2A-Extensions: .../a2a-x402/v1)",
+            req: `{
+  "jsonrpc": "2.0",
+  "id": "x402-req-101",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "kind": "message",
+      "role": "agent",
+      "parts": [
+        {
+          "kind": "text",
+          "text": "Fetch L2 liquidity depth snapshot for BTC-USD and ETH-USD."
+        }
+      ]
+    }
+  }
+}`,
+            resLabel: "MarketDataAgent Response (TaskState: input-required / x402 Quote)",
+            res: `{
+  "jsonrpc": "2.0",
+  "id": "x402-req-101",
+  "result": {
+    "id": "task-x402-994",
+    "kind": "task",
+    "status": {
+      "state": "input-required",
+      "message": {
+        "role": "agent",
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "x402.payment_required": {
+                "scheme": "exact",
+                "network": "base-mainnet",
+                "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                "asset_symbol": "USDC",
+                "maxAmountRequired": "250000",
+                "payTo": "0x9A8f7C6d5E4b3A2f1E0d9C8b7A6f5E4d3C2b1A09",
+                "resource": "a2a://market_data_agent/l2_snapshot/20261017"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}`
+          },
+          {
+            route: "2. FinResearchAgent → CredentialsProvider (x402 Facilitator) → MarketDataAgent",
+            title: "Sign EIP-3009 / x402 Payment Header Under AP2 Open Mandate & Settle On-Chain",
+            badge: "On-Chain Finality",
+            desc: "The FinResearchAgent presents the x402 quote and its AP2 Closed Payment Mandate (0.25 USD within its daily $50.00 research budget) to its Credential Provider wallet, receives a signed x402 payment payload, and submits it to the MarketDataAgent to stream the dataset and txHash receipt.",
+            security: "Budget-Bounded Crypto Autonomy: Even with on-chain stablecoins, the agent cannot drain the treasury wallet because the Credential Provider enforces the AP2 Open Mandate's payment.budget and payment.allowed_payees rules before signing the EIP-3009 transferWithAuthorization payload.",
+            reqLabel: "POST /a2a/market_data_agent (With Signed x402 Payment Payload)",
+            req: `{
+  "jsonrpc": "2.0",
+  "id": "x402-req-102",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "taskId": "task-x402-994",
+      "kind": "message",
+      "role": "agent",
+      "parts": [
+        {
+          "kind": "data",
+          "data": {
+            "x402.payment_payload": {
+              "network": "base-mainnet",
+              "authorization": {
+                "from": "0x1122334455667788990011223344556677889900",
+                "to": "0x9A8f7C6d5E4b3A2f1E0d9C8b7A6f5E4d3C2b1A09",
+                "value": "250000",
+                "validBefore": 1777342900,
+                "nonce": "0x7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c"
+              },
+              "signature": "0x9b8a7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b...",
+              "ap2_mandate_reference": "uixoHemmfrrCSbPREo9j-ziLuMkqExsPeWrwA-PK0Ck"
+            }
+          }
+        }
+      ]
+    }
+  }
+}`,
+            resLabel: "MarketDataAgent Response (Data Artifact + On-Chain Settlement Receipt)",
+            res: `{
+  "jsonrpc": "2.0",
+  "id": "x402-req-102",
+  "result": {
+    "id": "task-x402-994",
+    "kind": "task",
+    "status": { "state": "completed" },
+    "artifacts": [
+      {
+        "artifactId": "art-l2-depth-01",
+        "name": "L2_Liquidity_Snapshot",
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "pair": "BTC-USD",
+              "spread_bps": 0.42,
+              "bid_depth_100bps_usd": 48290000,
+              "ask_depth_100bps_usd": 45110000,
+              "x402_settlement_receipt": {
+                "status": "Success",
+                "network": "base-mainnet",
+                "txHash": "0x4e8f9a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}`
+          }
+        ]
+      }
+    };
+
+    let currentScenario = 'hp';
+    let currentStepIdx = 0;
+
+    function loadScenario(scenKey) {
+      currentScenario = scenKey;
+      currentStepIdx = 0;
+      ['hp', 'hnp', 'x402'].forEach(k => {
+        const b = document.getElementById('scen-btn-' + k);
+        if (k === scenKey) b.classList.add('primary');
+        else b.classList.remove('primary');
+      });
+      renderSimulator();
+    }
+
+    function stepSim(delta) {
+      const steps = scenarios[currentScenario].steps;
+      currentStepIdx = Math.max(0, Math.min(steps.length - 1, currentStepIdx + delta));
+      renderSimulator();
+    }
+
+    function selectSimStep(idx) {
+      currentStepIdx = idx;
+      renderSimulator();
+    }
+
+    function renderSimulator() {
+      const scen = scenarios[currentScenario];
+      const step = scen.steps[currentStepIdx];
+      document.getElementById('sim-scenario-title').textContent = scen.title;
+      document.getElementById('sim-step-counter').textContent = `Step ${currentStepIdx + 1} / ${scen.steps.length}`;
+
+      const tl = document.getElementById('sim-timeline');
+      tl.innerHTML = scen.steps.map((s, idx) => `
+        <div class="timeline-item ${idx === currentStepIdx ? 'active' : ''}" onclick="selectSimStep(${idx})">
+          <div class="timeline-route">${s.route}</div>
+          <div class="timeline-title">${s.title}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('sim-step-heading').textContent = step.title;
+      document.getElementById('sim-step-badge').textContent = step.badge;
+      document.getElementById('sim-step-desc').textContent = step.desc;
+      document.getElementById('sim-security-note').innerHTML = `<strong>Architectural &amp; Security Insight:</strong> ${step.security}`;
+      document.getElementById('sim-req-label').textContent = step.reqLabel;
+      document.getElementById('sim-req-code').textContent = step.req;
+      document.getElementById('sim-res-label').textContent = step.resLabel;
+      document.getElementById('sim-res-code').textContent = step.res;
+    }
+
+    // ==================== MODULE 3: SD-JWT MANDATE SANDBOX ====================
+    function runMandateSandbox() {
+      const maxUsd = parseFloat(document.getElementById('sb-max-amount').value) || 0;
+      const budgetUsd = parseFloat(document.getElementById('sb-budget').value) || 0;
+      const spentUsd = parseFloat(document.getElementById('sb-spent').value) || 0;
+      const txUsd = parseFloat(document.getElementById('sb-tx-amount').value) || 0;
+
+      const maxCents = Math.round(maxUsd * 100);
+      const budgetCents = Math.round(budgetUsd * 100);
+      const spentCents = Math.round(spentUsd * 100);
+      const txCents = Math.round(txUsd * 100);
+
+      const payeeParts = document.getElementById('sb-payee').value.split('|');
+      const payeeId = payeeParts[0];
+      const payeeName = payeeParts[1];
+      const payeeWeb = payeeParts[2];
+      const payeeAllowed = payeeParts[3] === 'allowed';
+
+      const instParts = document.getElementById('sb-instrument').value.split('|');
+      const instType = instParts[0];
+      const instId = instParts[1];
+      const instDesc = instParts[2];
+
+      const cryptoState = document.getElementById('sb-crypto-state').value;
+
+      // Evaluate deterministic checks
+      const checkRange = txCents <= maxCents && txCents > 0;
+      const checkBudget = (spentCents + txCents) <= budgetCents;
+      const checkPayee = payeeAllowed;
+      const checkHash = cryptoState !== 'hash_mismatch';
+      const checkExp = cryptoState !== 'expired';
+      const checkKey = cryptoState !== 'wrong_key';
+
+      const allPass = checkRange && checkBudget && checkPayee && checkHash && checkExp && checkKey;
+
+      const checks = [
+        {
+          name: "1. Schema Version & Cryptographic Binding (vct: mandate.payment.1 & checkout_hash)",
+          pass: checkHash,
+          detail: checkHash
+            ? "PASS — transaction_id matches SHA-256(checkout_jwt)"
+            : "FAIL — checkout_hash mismatch! Cart was modified or hallucinated."
+        },
+        {
+          name: "2. Holder Key Binding (cnf.jwk) & Temporal Validity (exp)",
+          pass: checkExp && checkKey,
+          detail: !checkExp
+            ? "FAIL — Open Mandate expired (current timestamp > exp)"
+            : (!checkKey ? "FAIL — Closed Mandate signature does not match Open Mandate cnf.jwk" : "PASS — Agent ES256 signature matches delegated cnf.jwk")
+        },
+        {
+          name: `3. Constraint: payment.amount_range (<= ${maxCents} minor units / $${maxUsd.toFixed(2)})`,
+          pass: checkRange,
+          detail: checkRange
+            ? `PASS — Requested ${txCents} cents ($${txUsd.toFixed(2)}) <= ${maxCents} cents`
+            : `FAIL — Requested ${txCents} cents ($${txUsd.toFixed(2)}) exceeds max ${maxCents} cents`
+        },
+        {
+          name: `4. Constraint: payment.budget (Cumulative <= $${budgetUsd.toFixed(2)})`,
+          pass: checkBudget,
+          detail: checkBudget
+            ? `PASS — Cumulative $${(spentUsd + txUsd).toFixed(2)} <= $${budgetUsd.toFixed(2)} budget`
+            : `FAIL — Cumulative $${(spentUsd + txUsd).toFixed(2)} exceeds $${budgetUsd.toFixed(2)} budget`
+        },
+        {
+          name: "5. Constraint: payment.allowed_payees (SD-JWT Selective Disclosure Match)",
+          pass: checkPayee,
+          detail: checkPayee
+            ? `PASS — Payee '${payeeName}' verified in selectively disclosed allowed array`
+            : `FAIL — Payee '${payeeName}' is NOT present in Open Mandate allowed_payees`
+        }
+      ];
+
+      const badge = document.getElementById('sb-overall-badge');
+      if (allPass) {
+        badge.textContent = "AUTHORIZED (Receipt Status: Success)";
+        badge.className = "pill-badge emerald";
+      } else {
+        badge.textContent = "REJECTED (Receipt Status: Error)";
+        badge.className = "pill-badge";
+        badge.style.background = "#fef2f2";
+        badge.style.color = "#dc2626";
+        badge.style.borderColor = "#fecaca";
+      }
+
+      document.getElementById('sb-checks-container').innerHTML = checks.map(c => `
+        <div class="check-row ${c.pass ? 'pass' : 'fail'}">
+          <span>${c.name}</span>
+          <span>${c.detail}</span>
+        </div>
+      `).join('');
+
+      const sdJwtObj = {
+        open_payment_mandate_sd_jwt: {
+          header: { alg: "ES256", typ: "example+sd-jwt", kid: "user-trusted-surface-key-1" },
+          vct: "mandate.payment.open.1",
+          constraints: [
+            { type: "payment.amount_range", currency: "USD", min: 0, max: maxCents },
+            { type: "payment.budget", currency: "USD", max: budgetUsd },
+            { type: "payment.agent_recurrence", frequency: "MONTHLY", max_occurrences: 12 },
+            {
+              type: "payment.allowed_payees",
+              _sd_disclosed: [
+                { id: "merchant_1", name: "CloudInfra Corp", website: "https://cloudinfra.example" },
+                { id: "merchant_2", name: "FinData Exchange", website: "https://findata.example" }
+              ]
+            }
+          ],
+          cnf: {
+            jwk: { kty: "EC", crv: "P-256", x: "QpSyxPQHy38xckypDr54gZ3T42zj9iLtV4koyb5U27c" }
+          },
+          iat: 1777342357,
+          exp: cryptoState === 'expired' ? 1700000000 : 1777349557
+        },
+        closed_payment_mandate_kb_sd_jwt: {
+          header: { alg: "ES256", typ: "kb+sd-jwt" },
+          vct: "mandate.payment.1",
+          transaction_id: checkHash ? "NivWhuqfzcvZNapvIEJ2-3tsdQLkiuIcye2g46WVgX8" : "TAMPERED_HASH_999999999999",
+          payee: { id: payeeId, name: payeeName, website: payeeWeb },
+          payment_amount: { amount: txCents, currency: "USD" },
+          payment_instrument: { id: instId, type: instType, description: instDesc },
+          sd_hash: "uixoHemmfrrCSbPREo9j-ziLuMkqExsPeWrwA-PK0Ck"
+        }
+      };
+
+      let errorReason = "constraint_violation";
+      let errorDesc = "Closed Payment Mandate failed deterministic evaluation.";
+      if (!checkHash) {
+        errorReason = "invalid_transaction_id_hash";
+        errorDesc = "PaymentMandate transaction_id does not match SHA-256 hash of Merchant checkout_jwt.";
+      } else if (!checkExp) {
+        errorReason = "mandate_expired";
+        errorDesc = "Open Payment Mandate exp timestamp has passed.";
+      } else if (!checkKey) {
+        errorReason = "invalid_holder_key_binding";
+        errorDesc = "Closed Mandate signature does not match Open Mandate cnf.jwk public key.";
+      } else if (!checkRange) {
+        errorReason = "amount_range_exceeded";
+        errorDesc = `Payment amount ${txCents} minor units exceeds payment.amount_range.max (${maxCents}).`;
+      } else if (!checkBudget) {
+        errorReason = "budget_exceeded";
+        errorDesc = `Cumulative spend $${(spentUsd + txUsd).toFixed(2)} exceeds payment.budget.max ($${budgetUsd.toFixed(2)}).`;
+      } else if (!checkPayee) {
+        errorReason = "payee_not_allowed";
+        errorDesc = `Payee '${payeeName}' is not in selectively disclosed payment.allowed_payees array.`;
+      }
+
+      const receiptObj = allPass
+        ? {
+            status: "Success",
+            iss: "https://mpp.fintech.example",
+            iat: 1777342395,
+            reference: "uixoHemmfrrCSbPREo9j-ziLuMkqExsPeWrwA-PK0Ck",
+            payment_id: "pay_live_" + txCents,
+            psp_confirmation_id: "psp_conf_8841209",
+            network_confirmation_id: "net_conf_3391042"
+          }
+        : {
+            status: "Error",
+            iss: "https://mpp.fintech.example",
+            iat: 1777342395,
+            reference: "uixoHemmfrrCSbPREo9j-ziLuMkqExsPeWrwA-PK0Ck",
+            payment_id: "pay_rejected_" + txCents,
+            error: errorReason,
+            error_description: errorDesc
+          };
+
+      document.getElementById('sb-sdjwt-code').textContent = JSON.stringify(sdJwtObj, null, 2);
+      document.getElementById('sb-receipt-code').textContent = JSON.stringify(receiptObj, null, 2);
+    }
+
+    // ==================== MODULE 4 DATA: PRODUCTION CODE BRIEFS ====================
+    const codeTabs = {
+      "code-adk": {
+        title: "1. A2A Server & Google ADK Shopping Agent Setup (Python)",
+        desc: "Exposes an A2A-compliant agent declaring the AP2 extension URI (https://github.com/google-agentic-commerce/ap2/v1) and orchestrates IntentMandate creation, product search, and cart selection.",
+        filename: "shopping_agent_a2a.py",
+        code: `from typing import Any
+from google.adk.agents import RetryingLlmAgent
+from a2a.types import AgentCard, AgentCapabilities, AgentExtension, AgentSkill
+
+AP2_EXTENSION_URI = "https://github.com/google-agentic-commerce/ap2/v1"
+
+def build_merchant_agent_card(base_url: str) -> AgentCard:
+    """Declares an A2A v1.0 AgentCard with the mandatory AP2 payment extension."""
+    return AgentCard(
+        name="FinTechMerchantAgent",
+        description="Institutional commerce agent supporting AP2 verifiable mandates.",
+        url=f"{base_url}/a2a/merchant_agent",
+        version="1.0.0",
+        protocolVersion="1.0.0",
+        preferredTransport="JSONRPC",
+        defaultInputModes=["application/json", "text/plain"],
+        defaultOutputModes=["application/json"],
+        capabilities=AgentCapabilities(
+            streaming=True,
+            extensions=[
+                AgentExtension(
+                    uri=AP2_EXTENSION_URI,
+                    description="Supports the Agent Payments Protocol (AP2).",
+                    required=True,
+                )
+            ],
+        ),
+        skills=[
+            AgentSkill(
+                id="search_catalog",
+                name="Search Catalog with IntentMandate",
+                description="Matches catalog items to an AP2 IntentMandate and returns signed CartMandates.",
+                tags=["merchant", "ap2", "catalog"],
+            )
+        ],
+    )
+
+# Shopper sub-agent built with Google ADK
+shopper_subagent = RetryingLlmAgent(
+    model="gemini-2.5-flash",
+    name="shopper",
+    instruction=\"\"\"
+    You help the user craft an IntentMandate for their purchase:
+    1. Gather item description, preferred merchants/SKUs, and refundability requirements.
+    2. Call 'create_intent_mandate'. Never include the user's max price ceiling inside the
+       IntentMandate sent to the merchant; use price only as a local filter when ranking CartMandates.
+    3. Present the IntentMandate details to the user for explicit confirmation before calling 'find_products'.
+    4. Display returned CartMandate options (item, total_price, cart_expiry, refund_period, merchant_name).
+    5. Once the user picks an option, call 'update_chosen_cart_mandate' with the chosen cart_id.
+    \"\"\",
+    tools=[
+        create_intent_mandate,
+        find_products,
+        update_chosen_cart_mandate,
+    ],
+)`
+      },
+      "code-crypto": {
+        title: "2. Deterministic Mandate Models & ECDSA P-256 Verification (Python)",
+        desc: "Per the AP2 v0.2 Specification, validation MUST happen in deterministic code regardless of whether a role is agentic. Checkout JWTs MUST use non-deterministic ECDSA (ES256 / SECP256R1) to prevent rainbow-table attacks on checkout_hash.",
+        filename: "mandate_crypto_verifier.py",
+        code: `import base64
+import hashlib
+import json
+from datetime import datetime, timezone
+from pydantic import BaseModel
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.exceptions import InvalidSignature
+
+class Amount(BaseModel):
+    currency: str  # ISO-4217 3-letter code, e.g., "USD"
+    amount: int    # Minor units (cents), e.g., 27999 = $279.99
+
+class MerchantInfo(BaseModel):
+    id: str
+    name: str
+    website: str | None = None
+
+class PaymentInstrument(BaseModel):
+    id: str
+    type: str      # e.g., "card", "UPI", "pisp", "x402"
+    description: str | None = None
+
+class ClosedPaymentMandate(BaseModel):
+    vct: str = "mandate.payment.1"
+    transaction_id: str  # base64url SHA-256 hash of merchant's checkout_jwt
+    payee: MerchantInfo
+    payment_amount: Amount
+    payment_instrument: PaymentInstrument
+    iat: int
+    exp: int
+
+def compute_checkout_hash(checkout_jwt: str) -> str:
+    """Computes base64url-encoded SHA-256 digest of the merchant-signed checkout_jwt."""
+    digest = hashlib.sha256(checkout_jwt.encode("ascii")).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+
+def verify_closed_payment_mandate(
+    mandate: ClosedPaymentMandate,
+    signature_hex: str,
+    checkout_jwt: str,
+    signer_public_key_hex: str,
+) -> tuple[bool, str]:
+    """Deterministically verifies a Closed Payment Mandate (AP2 v0.2)."""
+    # 1. Enforce exact schema version matching (vct claim)
+    if mandate.vct != "mandate.payment.1":
+        return False, f"Unsupported vct schema version: {mandate.vct}"
+
+    # 2. Verify temporal validity
+    now_epoch = int(datetime.now(timezone.utc).timestamp())
+    if mandate.exp <= now_epoch:
+        return False, "PaymentMandate has expired (exp <= now)"
+
+    # 3. Verify cryptographic binding to Merchant's checkout_jwt
+    expected_tx_id = compute_checkout_hash(checkout_jwt)
+    if mandate.transaction_id != expected_tx_id:
+        return False, "transaction_id mismatch: PaymentMandate is not bound to checkout_jwt"
+
+    # 4. Verify ECDSA P-256 (ES256) signature over canonical mandate payload
+    canonical_bytes = json.dumps(mandate.model_dump(), sort_keys=True, separators=(",", ":")).encode("utf-8")
+    pub_key = ec.EllipticCurvePublicKey.from_encoded_point(
+        ec.SECP256R1(), bytes.fromhex(signer_public_key_hex.lstrip("0x"))
+    )
+    try:
+        pub_key.verify(
+            bytes.fromhex(signature_hex),
+            canonical_bytes,
+            ec.ECDSA(hashes.SHA256()),
+        )
+        return True, "VALID"
+    except InvalidSignature:
+        return False, "ECDSA signature verification failed"`
+      },
+      "code-cp": {
+        title: "3. Credential Provider Vault & A2A 3DS/OTP Step-Up Challenge Handler (Python)",
+        desc: "Shows how the Credential Provider isolates raw payment credentials (DPAN + EMV cryptogram) and how the Merchant Payment Processor uses A2A's 'input-required' TaskState for 3DS2 / OTP challenges.",
+        filename: "credentials_and_stepup_executor.py",
+        code: `from typing import Any
+import uuid
+
+class MerchantPaymentProcessorExecutor:
+    """Processes AP2 PaymentMandates, triggers 3DS/OTP step-up when required, and emits Receipts."""
+
+    HIGH_VALUE_STEP_UP_THRESHOLD_USD = 500.00
+
+    def handle_initiate_payment(
+        self,
+        context_id: str,
+        task_id: str,
+        payment_mandate: dict[str, Any],
+        challenge_response: str | None = None,
+    ) -> dict[str, Any]:
+        contents = payment_mandate["payment_mandate_contents"]
+        total_usd = contents["payment_details_total"]["amount"]["value"]
+
+        # 1. Trigger A2A 'input-required' state if transaction requires 3DS2 / OTP step-up
+        if total_usd >= self.HIGH_VALUE_STEP_UP_THRESHOLD_USD and not challenge_response:
+            return {
+                "id": task_id,
+                "contextId": context_id,
+                "kind": "task",
+                "status": {
+                    "state": "input-required",
+                    "message": {
+                        "kind": "message",
+                        "role": "agent",
+                        "taskId": task_id,
+                        "parts": [
+                            {
+                                "kind": "text",
+                                "text": "Please provide the challenge response to complete the payment."
+                            },
+                            {
+                                "kind": "data",
+                                "data": {
+                                    "challenge": {
+                                        "type": "otp",
+                                        "display_text": "Enter the issuer verification code sent to your device."
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+
+        # 2. Verify OTP challenge response if present
+        if challenge_response and challenge_response != "123456":
+            return {
+                "id": task_id,
+                "contextId": context_id,
+                "kind": "task",
+                "status": {"state": "failed"}
+            }
+
+        # 3. Exchange verified PaymentMandate + opaque token with Credential Provider for scoped DPAN
+        token_info = contents["payment_response"]["details"]["token"]
+        scoped_dpan = self._fetch_dpan_from_credential_provider(token_info["url"], payment_mandate)
+
+        # 4. Authorize on card network with AP2 agent-presence signal & return completed Task
+        return {
+            "id": task_id,
+            "contextId": context_id,
+            "kind": "task",
+            "status": {
+                "state": "completed",
+                "message": {
+                    "kind": "message",
+                    "role": "agent",
+                    "parts": [
+                        {
+                            "kind": "data",
+                            "data": {
+                                "ap2.PaymentReceipt": {
+                                    "status": "Success",
+                                    "iss": "https://mpp.fintech.example",
+                                    "payment_id": f"pay_{uuid.uuid4().hex[:12]}",
+                                    "psp_confirmation_id": f"psp_{uuid.uuid4().hex[:10]}",
+                                    "network_confirmation_id": f"net_{scoped_dpan['network'][0]['name']}_99412"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }`
+      },
+      "code-sdjwt": {
+        title: "4. AP2 v0.2 SD-JWT Open-to-Closed Constraint Evaluator (Python)",
+        desc: "Evaluates Open Payment Mandate constraints (payment.amount_range, payment.budget, payment.agent_recurrence, payment.allowed_payees, payment.execution_date) for autonomous (Human-Not-Present) transactions.",
+        filename: "sdjwt_constraint_engine.py",
+        code: `from datetime import datetime
+from typing import Any
+
+class OpenMandateConstraintEvaluator:
+    """Deterministic evaluator for AP2 v0.2 Open Payment Mandate (mandate.payment.open.1)."""
+
+    def __init__(self, ledger_store: dict[str, dict[str, Any]]):
+        # Tracks cumulative spend and presentation timestamps per Open Mandate digest
+        self.ledger = ledger_store
+
+    def evaluate_all(
+        self,
+        open_mandate_id: str,
+        open_constraints: list[dict[str, Any]],
+        closed_mandate: dict[str, Any],
+    ) -> tuple[bool, str]:
+        state = self.ledger.setdefault(
+            open_mandate_id, {"accumulated_spend_minor": 0, "occurrences": 0}
+        )
+        tx_amount = closed_mandate["payment_amount"]["amount"]
+        tx_currency = closed_mandate["payment_amount"]["currency"]
+        payee = closed_mandate["payee"]
+
+        for c in open_constraints:
+            ctype = c.get("type")
+
+            if ctype == "payment.amount_range":
+                if tx_currency != c["currency"]:
+                    return False, f"Currency mismatch: {tx_currency} != {c['currency']}"
+                min_amt = c.get("min", 0)
+                if not (min_amt <= tx_amount <= c["max"]):
+                    return False, f"Amount {tx_amount} outside allowed range [{min_amt}, {c['max']}]"
+
+            elif ctype == "payment.budget":
+                if tx_currency != c["currency"]:
+                    return False, "Budget currency mismatch"
+                max_minor = int(round(c["max"] * 100))
+                if state["accumulated_spend_minor"] + tx_amount > max_minor:
+                    return False, "Cumulative spend exceeds payment.budget.max"
+
+            elif ctype == "payment.allowed_payees":
+                # Only selectively disclosed payees needed for evaluation are provided
+                allowed_ids = {m["id"] for m in c.get("allowed", [])}
+                if payee["id"] not in allowed_ids:
+                    return False, f"Payee {payee['id']} not in allowed_payees disclosure"
+
+            elif ctype == "payment.agent_recurrence":
+                max_occ = c.get("max_occurrences")
+                if max_occ is not None and (state["occurrences"] + 1) > max_occ:
+                    return False, f"Exceeded max_occurrences ({max_occ})"
+
+            elif ctype == "payment.execution_date":
+                exec_str = closed_mandate.get("execution_date")
+                if exec_str:
+                    exec_dt = datetime.fromisoformat(exec_str.replace("Z", "+00:00"))
+                    if "not_before" in c and exec_dt < datetime.fromisoformat(c["not_before"].replace("Z", "+00:00")):
+                        return False, "Execution date is earlier than not_before"
+                    if "not_after" in c and exec_dt > datetime.fromisoformat(c["not_after"].replace("Z", "+00:00")):
+                        return False, "Execution date is later than not_after"
+
+        # Commit updated spend to deterministic ledger after all constraints pass
+        state["accumulated_spend_minor"] += tx_amount
+        state["occurrences"] += 1
+        return True, "ALL_CONSTRAINTS_SATISFIED"`
+      },
+      "code-java": {
+        title: "5. Enterprise Java Implementation (a2a-java + AP2 Mandate Lifecycle)",
+        desc: "Demonstrates the Java Mandate chain (IntentMandate -> CartMandate -> PaymentMandate) and deterministic verification using the official a2a-java SDK pattern.",
+        filename: "Ap2PaymentService.java",
+        code: `package com.fintech.ap2;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Ap2PaymentService {
+
+    public PaymentResponse executeVerifiedAgentPayment(
+            MandateVerifier mandateVerifier,
+            AP2Client ap2Client
+    ) throws Exception {
+
+        // 1. Capture User Intent in an IntentMandate
+        IntentMandate intentMandate = new IntentMandate(
+                "intent-123",
+                "shopping-agent-456",
+                "merchant-agent-789",
+                new BigDecimal("250.00"),
+                true // Requires human confirmation on Trusted Surface
+        );
+        intentMandate.setAllowedCategories(Collections.singletonList("enterprise_software"));
+
+        // 2. Construct CartMandate referencing parent IntentMandate ID
+        List<CartMandate.CartItem> items = List.of(
+                new CartMandate.CartItem(
+                        "sku-api-tier-1",
+                        "Real-Time FX Liquidity Feed (Monthly)",
+                        new BigDecimal("199.00"),
+                        1
+                )
+        );
+        CartMandate cartMandate = new CartMandate(
+                "cart-456",
+                "shopping-agent-456",
+                "merchant-agent-789",
+                intentMandate.getId(),
+                items,
+                "USD",
+                Instant.now().plus(30, ChronoUnit.MINUTES)
+        );
+
+        // 3. Construct PaymentMandate bound to CartMandate ID and tokenized instrument
+        Map<String, Object> paymentDetails = new HashMap<>();
+        paymentDetails.put("paymentMethodId", "token_amex_dpan_4444");
+
+        PaymentMandate paymentMandate = new PaymentMandate(
+                "payment-789",
+                "shopping-agent-456",
+                "merchant-agent-789",
+                "order-fx-321",
+                new BigDecimal("199.00"),
+                "USD",
+                cartMandate.getId(),
+                paymentDetails,
+                Instant.now().plus(15, ChronoUnit.MINUTES)
+        );
+
+        // 4. Deterministic Verification of Mandate Chain (Signatures, TTL, Parent Hashes)
+        PaymentRequest paymentRequest = PaymentRequest.builder()
+                .amount(new BigDecimal("199.00"))
+                .currencyCode("USD")
+                .requestingAgentId("shopping-agent-456")
+                .receivingAgentId("merchant-agent-789")
+                .description("FX Liquidity Feed Settlement")
+                .build();
+
+        if (!mandateVerifier.verifyIntentMandate(intentMandate, paymentRequest) ||
+            !mandateVerifier.verifyCartMandate(cartMandate, intentMandate, paymentRequest) ||
+            !mandateVerifier.verifyPaymentMandate(paymentMandate, cartMandate, paymentRequest)) {
+            throw new SecurityException("AP2 Cryptographic Mandate Chain Verification Failed");
+        }
+
+        // 5. Execute settlement over A2A JSON-RPC transport
+        return ap2Client.createPayment(paymentRequest).get();
+    }
+}`
+      }
+    };
+
+    function switchCodeTab(tabKey, btnEl) {
+      document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      const d = codeTabs[tabKey];
+      const container = document.getElementById('code-tab-content');
+      container.innerHTML = `
+        <div class="card-title">
+          <span>${d.title}</span>
+          <span class="role-tag non-agentic">${d.filename}</span>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem;">${d.desc}</p>
+        <div class="code-container">
+          <div class="code-header">
+            <span>${d.filename}</span>
+            <button class="copy-btn" onclick="copyText('code-tab-pre')">Copy Code</button>
+          </div>
+          <pre id="code-tab-pre"></pre>
+        </div>
+      `;
+      document.getElementById('code-tab-pre').textContent = d.code;
+    }
+
+    // ==================== MODULE 5 DATA: THREAT MATRIX ====================
+    const threats = [
+      {
+        category: "STRIDE",
+        layer: "STRIDE T1: Spoofing",
+        vector: "Forged Mandate Signatures or Fake Agent Cards",
+        impact: "Unauthorized fund transfers or rogue merchant impersonation",
+        mitigation: "Hardware-backed ECDSA P-256 (ES256) keys in Trusted Surface (TPM/HSM/Android DPC) + signed A2A AgentCard verification (DID / mTLS / eIDAS QWAC)."
+      },
+      {
+        category: "STRIDE",
+        layer: "STRIDE T2: Tampering",
+        vector: "Altering Cart Line Items or Price in Transit",
+        impact: "User pays $600 for a $60 item or receives wrong SKU",
+        mitigation: "Closed Checkout & Payment Mandates bind to SHA-256(checkout_jwt) via checkout_hash and transaction_id; non-deterministic ECDSA prevents rainbow tables."
+      },
+      {
+        category: "STRIDE",
+        layer: "STRIDE T3: Info Disclosure",
+        vector: "Leaking Raw Card PAN/CVV or Full Vendor Allowlist to LLM Agents",
+        impact: "PCI-DSS breach or competitive vendor list exposure",
+        mitigation: "Role separation keeps raw PAN inside Credential Provider (Shopping Agent only sees opaque token URL); SD-JWT selective disclosure reveals only the active payee."
+      },
+      {
+        category: "STRIDE",
+        layer: "STRIDE T6: Repudiation",
+        vector: "Friendly Fraud (User Denies Delegated AI Purchase)",
+        impact: "Chargeback losses and disputed liability across bank/merchant/agent",
+        mitigation: "5-part cryptographic dispute chain linking checkout_jwt -> CheckoutMandate -> CheckoutReceipt -> PaymentMandate -> PaymentReceipt."
+      },
+      {
+        category: "MAESTRO",
+        layer: "MAESTRO L1 & L3: Foundation Model & Framework",
+        vector: "Prompt Injection & Hallucinated Purchases",
+        impact: "Malicious web/catalog content tricks Shopping Agent into buying from attacker merchant",
+        mitigation: "Trusted Surface MUST be non-agentic deterministic code; in HNP mode, Open Mandate payment.allowed_payees and payment.amount_range block unapproved merchants deterministically."
+      },
+      {
+        category: "MAESTRO",
+        layer: "MAESTRO L2: Data Operations",
+        vector: "RAG / Embedding Memory Poisoning & Double-Spend Replay",
+        impact: "Agent reuses an Open Mandate across multiple merchants simultaneously",
+        mitigation: "AP2 v0.2 Single-Flight Rule: Shopping Agents MUST NOT present a subsequent Open Mandate without a signed rejection PaymentReceipt from the prior attempt."
+      },
+      {
+        category: "MAESTRO",
+        layer: "MAESTRO L6 & L7: Compliance & Ecosystem",
+        vector: "Dynamic Policy Evasion (Splitting Txns to Bypass PSD2 SCA)",
+        impact: "Agent splits a $1,000 purchase into ten $100 checkouts to evade step-up auth",
+        mitigation: "Open Mandate payment.budget and payment.agent_recurrence track cumulative spend and frequency deterministically at the Credential Provider & MPP."
+      }
+    ];
+
+    function filterThreatMatrix(filterVal) {
+      ['all', 'stride', 'maestro'].forEach(k => {
+        const b = document.getElementById('tm-btn-' + k);
+        if (k === filterVal.toLowerCase()) b.classList.add('primary');
+        else b.classList.remove('primary');
+      });
+      const rows = threats.filter(t => filterVal === 'all' || t.category === filterVal);
+      document.getElementById('threat-matrix-body').innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${r.layer}</strong></td>
+          <td>${r.vector}</td>
+          <td>${r.impact}</td>
+          <td>${r.mitigation}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Initialize all views on load
+    window.addEventListener('DOMContentLoaded', () => {
+      selectRole('sa', document.querySelector('#role-selector-list .role-btn'));
+      renderSimulator();
+      runMandateSandbox();
+      switchCodeTab('code-adk', document.querySelector('.subtab-btn'));
+      filterThreatMatrix('all');
+    });
+  </script>
+</body>
+</html>
