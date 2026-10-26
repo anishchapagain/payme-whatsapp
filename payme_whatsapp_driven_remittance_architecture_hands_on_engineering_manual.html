@@ -1,0 +1,3903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payme WhatsApp-Driven Remittance Architecture &amp; Hands-On Engineering Manual</title>
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-slate: #0f172a;
+      --bg-slate-mid: #1e293b;
+      --bg-emerald-dark: #064e3b;
+      --bg-emerald-mid: #047857;
+      --bg-emerald-light: #ecfdf5;
+      --accent-green: #10b981;
+      --accent-wa: #25d366;
+      --accent-wa-dark: #075e54;
+      --accent-blue: #0284c7;
+      --accent-amber: #d97706;
+      --accent-purple: #7c3aed;
+      --text-main: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-light: #e2e8f0;
+      --border-emerald: #a7f3d0;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-page);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Layout Shell */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sticky Sidebar */
+    .sidebar {
+      background: var(--bg-slate);
+      color: #f8fafc;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 18px;
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #047857);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .brand-sub {
+      font-size: 11.5px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .nav-group-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      font-weight: 700;
+      margin-bottom: 6px;
+      padding-left: 10px;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      text-decoration: none;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      font-size: 10px;
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid #334155;
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    /* Main Content Container */
+    .main-content {
+      max-width: 1180px;
+      padding: 36px 44px 80px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Hero Header */
+    .hero-banner {
+      background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%);
+      color: #ffffff;
+      padding: 36px 40px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-emerald {
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .badge-blue {
+      background: rgba(56, 189, 248, 0.2);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .badge-amber {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fde68a;
+      border: 1px solid rgba(251, 191, 36, 0.35);
+    }
+
+    .hero-banner h1 {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-banner p {
+      color: #cbd5e1;
+      font-size: 15.5px;
+      max-width: 880px;
+      margin-bottom: 24px;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .metric-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #34d399;
+      margin-bottom: 3px;
+    }
+
+    .metric-lbl {
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+
+    /* Section Styling */
+    .doc-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 32px 36px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-eyebrow {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--bg-emerald-mid);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .doc-section h2 {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      letter-spacing: -0.015em;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .doc-section h3 {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 24px 0 10px;
+    }
+
+    .doc-section p {
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin: 18px 0;
+      border-left: 4px solid var(--accent-green);
+      background: var(--bg-emerald-light);
+      color: #065f46;
+      font-size: 14px;
+    }
+
+    .callout-warn {
+      border-left-color: var(--accent-amber);
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .callout-info {
+      border-left-color: var(--accent-blue);
+      background: #f0f9ff;
+      color: #075985;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 18px 0;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: var(--text-main);
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Grid Cards */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin: 18px 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 18px 0;
+    }
+
+    .info-card {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      background: #ffffff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-card ul {
+      padding-left: 18px;
+      color: var(--text-secondary);
+      font-size: 13.5px;
+    }
+
+    .info-card li {
+      margin-bottom: 6px;
+    }
+
+    /* SVG Diagram Containers */
+    .diagram-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin: 20px 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .diagram-caption {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    /* Interactive WhatsApp Simulator */
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      margin-top: 20px;
+      align-items: start;
+    }
+
+    .phone-frame {
+      background: #111827;
+      border-radius: 34px;
+      padding: 12px;
+      box-shadow: var(--shadow-lg);
+      border: 3px solid #334155;
+    }
+
+    .phone-screen {
+      background: #efeae2;
+      border-radius: 24px;
+      overflow: hidden;
+      min-height: 610px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .wa-header {
+      background: var(--accent-wa-dark);
+      color: #ffffff;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wa-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .wa-contact-name {
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .wa-verified {
+      display: inline-flex;
+      width: 15px;
+      height: 15px;
+      background: #25d366;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 10px;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .wa-status {
+      font-size: 11px;
+      color: #d1fae5;
+    }
+
+    .wa-chat-body {
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      max-height: 500px;
+    }
+
+    .wa-msg {
+      max-width: 86%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+      position: relative;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .wa-msg-user {
+      background: #d9fdd3;
+      color: #111827;
+      align-self: flex-end;
+      border-top-right-radius: 2px;
+    }
+
+    .wa-msg-bot {
+      background: #ffffff;
+      color: #111827;
+      align-self: flex-start;
+      border-top-left-radius: 2px;
+    }
+
+    .wa-msg-header {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 5px;
+      color: #0f172a;
+    }
+
+    .wa-msg-footer {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    .wa-btn-list {
+      margin-top: 8px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wa-btn {
+      padding: 8px 6px;
+      text-align: center;
+      color: #0284c7;
+      font-weight: 600;
+      font-size: 12.5px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+    }
+
+    .wa-btn:last-child {
+      border-bottom: none;
+    }
+
+    /* Native WhatsApp Flow Bottom Sheet Overlay */
+    .wa-flow-sheet {
+      background: #ffffff;
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.18);
+      padding: 16px;
+      border: 2px solid #10b981;
+      margin-top: 6px;
+    }
+
+    .wa-flow-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .wa-flow-field {
+      margin-bottom: 8px;
+    }
+
+    .wa-flow-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 2px;
+    }
+
+    .wa-flow-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 12px;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .wa-flow-submit {
+      width: 100%;
+      background: #10b981;
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px;
+      font-weight: 700;
+      font-size: 12.5px;
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    /* Simulator Stepper Controls */
+    .sim-stepper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .step-pill {
+      padding: 8px 13px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      background: #f8fafc;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .step-pill:hover {
+      border-color: var(--accent-green);
+      color: var(--bg-emerald-dark);
+    }
+
+    .step-pill.active {
+      background: var(--bg-emerald-dark);
+      color: #ffffff;
+      border-color: var(--bg-emerald-dark);
+    }
+
+    /* Code Blocks & Tabs */
+    .code-panel {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin: 14px 0;
+      border: 1px solid #1e293b;
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #94a3b8;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      border-bottom: 1px solid #334155;
+    }
+
+    .copy-btn {
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      color: #064e3b;
+    }
+
+    pre {
+      padding: 16px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #e2e8f0;
+    }
+
+    code {
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 12.5px;
+    }
+
+    p code, li code, td code {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-size: 12px;
+    }
+
+    /* Tab Bar for Code Modules */
+    .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      background: #f8fafc;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-slate);
+      color: #34d399;
+      border-color: var(--bg-slate);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* Checklist Styling */
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      font-size: 13.5px;
+    }
+
+    .check-icon {
+      color: var(--accent-green);
+      font-weight: 900;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    @media (max-width: 1024px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: relative;
+        height: auto;
+      }
+      .sim-grid, .grid-3, .grid-2, .hero-metrics {
+        grid-template-columns: 1fr;
+      }
+      .main-content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Sticky Left Navigation -->
+  <aside class="sidebar">
+    <div class="brand-box">
+      <div class="brand-logo">PM</div>
+      <div>
+        <div class="brand-title">Payme Engineering</div>
+        <div class="brand-sub">WhatsApp Remittance Manual</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Architecture &amp; Benchmarks</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#sec-benchmarks">1. Industry Benchmark Review <span class="nav-badge">Ria / Félix</span></a></li>
+        <li><a class="nav-link" href="#sec-architecture">2. Payme System Architecture <span class="nav-badge">SVG</span></a></li>
+        <li><a class="nav-link" href="#sec-lifecycle">3. 9-Stage Remittance Flowchart <span class="nav-badge">Lifecycle</span></a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Interactive Walkthrough</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#sec-simulator">4. Live Chat &amp; API Simulator <span class="nav-badge">Interactive</span></a></li>
+        <li><a class="nav-link" href="#sec-sequences">5. Sequence Diagrams <span class="nav-badge">2 SVGs</span></a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Hands-On API &amp; Code</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#sec-roundtrip">5B. Request &amp; Response Loop <span class="nav-badge">Webhooks</span></a></li>
+        <li><a class="nav-link" href="#sec-sessions">5C. Website Click &amp; 2h Sessions <span class="nav-badge">Tokens</span></a></li>
+        <li><a class="nav-link" href="#sec-templates">6. Build &amp; Push Templates <span class="nav-badge">UI &amp; JSON</span></a></li>
+        <li><a class="nav-link" href="#sec-interactive">7. Interactive &amp; WhatsApp Flows <span class="nav-badge">Flow JSON</span></a></li>
+        <li><a class="nav-link" href="#sec-backend">8. Backend &amp; Crypto Endpoints <span class="nav-badge">Node / Py</span></a></li>
+        <li><a class="nav-link" href="#sec-compliance">9. KYC, PCI-DSS &amp; Go-Live <span class="nav-badge">Checklist</span></a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
+      <div><strong>Target Platform:</strong> Meta WhatsApp Cloud API (v23.0+ / Flow JSON v7.0)</div>
+      <div style="margin-top:4px;"><strong>Integration Mode:</strong> Hybrid Chat + WhatsApp Flows + Existing Payme Web KYC &amp; 3DS2 Checkout</div>
+    </div>
+  </aside>
+
+  <!-- Main Engineering Manual Content -->
+  <main class="main-content">
+    <!-- Hero Banner -->
+    <header class="hero-banner">
+      <div class="hero-badges">
+        <span class="badge badge-emerald">WhatsApp Cloud API v23.0+</span>
+        <span class="badge badge-blue">WhatsApp Flows JSON v7.0 (Data API v3.0)</span>
+        <span class="badge badge-amber">PCI-DSS v4.0 &amp; 3D Secure 2.0 Handoff</span>
+      </div>
+      <h1>Payme WhatsApp-Driven Remittance Flow: End-to-End Technical Manual</h1>
+      <p>
+        A complete engineering blueprint for extending <strong>Payme's existing Web and Mobile remittance platform</strong> into a conversational WhatsApp remittance channel—modeled on production patterns from <a href="https://www.riamoneytransfer.com/en/blog/how-to-send-money-on-whatsapp/" target="_blank" style="color:#6ee7b7;">Ria Money Transfer</a>, <a href="https://stripe.com/customers/felix" target="_blank" style="color:#6ee7b7;">Félix Pago</a>, and <a href="https://www.remitly.com/blog/money-transfer/how-to-send-money-with-remitly-using-whatsapp/" target="_blank" style="color:#6ee7b7;">Remitly</a> while reusing Payme's core FX Quote, Beneficiary, KYC, and Payment Gateway APIs.
+      </p>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <div class="metric-val">3 Core Primitives</div>
+          <div class="metric-lbl">Templates, Free-Form Interactive Messages &amp; Encrypted Flows</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">RSA-2048 + AES-GCM</div>
+          <div class="metric-lbl">End-to-End Encrypted In-Chat Beneficiary &amp; Quote Forms</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">Zero Chat PAN/CVV</div>
+          <div class="metric-lbl">Signed <code>cta_url</code> Handoff to Existing Payme KYC &amp; 3DS2 Checkout</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">&lt; 8s SLA</div>
+          <div class="metric-lbl">Real-time Flow <code>data_exchange</code> &amp; Webhook State Machine</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1: INDUSTRY BENCHMARKS -->
+    <section class="doc-section" id="sec-benchmarks">
+      <div class="section-eyebrow">Section 1 • Industry Benchmark Analysis</div>
+      <h2>How Ria Money Transfer, Félix Pago, and Remitly Architect WhatsApp Remittance</h2>
+      <p>
+        Leading remittance providers do <strong>not</strong> collect raw payment card numbers or sensitive government ID documents inside plain-text chat messages. Instead, they combine <strong>in-chat structured data collection</strong> (Corridor, Send Amount, Live FX Quote, Payout Method, and Beneficiary Details) with a <strong>secure, tokenized single-tap webview handoff</strong> for KYC verification and PCI-DSS 3D Secure payment capture, returning the user immediately to WhatsApp for receipt delivery and real-time tracking.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>Entry &amp; Chat Initiation</th>
+              <th>Quote, Delivery Mode &amp; Beneficiary Collection</th>
+              <th>KYC &amp; Payment Execution</th>
+              <th>Limits &amp; Post-Payment Lifecycle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong><a href="https://www.riamoneytransfer.com/en/blog/how-to-send-money-on-whatsapp/" target="_blank">Ria Money Transfer</a></strong><br/>
+                <span style="font-size:12px;color:#64748b;">US &rarr; 180+ Countries<br/>Official WA: <code>+1 (240) 820-2742</code></span>
+              </td>
+              <td>
+                User taps a website <code>wa.me</code> deep link or messages <em>"Hi"</em> to Ria's verified U.S. WhatsApp number (<a href="https://www.riamoneytransfer.com/en-us/send-money-with-whatsapp/" target="_blank">Ria WhatsApp Portal</a>).
+              </td>
+              <td>
+                Guided in-chat prompts &amp; interactive menus:
+                <br/>1. Select destination country (180+ corridors)
+                <br/>2. Enter USD send amount (live FX rate &amp; fee displayed)
+                <br/>3. Select delivery method (<strong>Bank Deposit</strong> or <strong>Cash Pickup</strong>)
+                <br/>4. Enter or reuse saved recipient's exact ID name + bank account or cash pickup city/agent.
+              </td>
+              <td>
+                Chat presents a pre-payment summary, then sends an interactive checkout link to <strong>Ria's secure website</strong> (<a href="https://help.riamoneytransfer.com/hc/en-us/articles/44590303358353-Is-it-safe-to-send-money-via-WhatsApp" target="_blank">Ria Safety Guide</a>). Paid via <strong>Visa/Mastercard Debit Card</strong> with <strong>3D Secure (3DS)</strong> OTP verification. Card numbers never enter chat.
+              </td>
+              <td>
+                <strong>Limits:</strong> $1.00–$999.99 per transfer (including fees), $999.99/day, $7,999.99/month.<br/>
+                <strong>Receipt:</strong> Instant WhatsApp confirmation message with Reference Number (PIN) for cash pickup &amp; repeat-send shortcut.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong><a href="https://stripe.com/customers/felix" target="_blank">Félix Pago</a></strong><br/>
+                <span style="font-size:12px;color:#64748b;">US &rarr; 9 LATAM Corridors<br/>$5B+ Volume / 1M+ Users</span>
+              </td>
+              <td>
+                WhatsApp-native AI conversational assistant + structured WhatsApp Flows (<a href="https://tempo.xyz/customer-stories/felix-pago/" target="_blank">Tempo Case Study</a>). Supports text &amp; voice notes in Spanish/English.
+              </td>
+              <td>
+                Conversational AI extracts corridor (Mexico, Guatemala, Honduras, etc.) and amount, or opens a native <strong>WhatsApp Flow</strong> form to capture CLABE/bank card or cash pickup store (Elektra, OXXO, Coppel) with a flat $2.99 fee.
+              </td>
+              <td>
+                Generates a single-use pre-authenticated <strong><a href="https://stripe.com/customers/felix" target="_blank">Stripe Payments</a></strong> link (~90% auth rate using network tokens, Debit Card, Apple Pay, Google Pay, ACH). Behind the scenes, settles via USDC stablecoins (<a href="https://www.dlocal.com/press-releases/dlocal-and-felix-launch-instant-stablecoin-funded-whatsapp-remittances-across-latin-america/" target="_blank">dLocal &amp; Bridge</a>).
+              </td>
+              <td>
+                <strong>Speed:</strong> Sub-second settlement; recipient receives local currency within seconds.<br/>
+                <strong>Receipt:</strong> Image/PDF receipt card pushed directly into the WhatsApp thread.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong><a href="https://www.remitly.com/blog/money-transfer/how-to-send-money-with-remitly-using-whatsapp/" target="_blank">Remitly</a></strong><br/>
+                <span style="font-size:12px;color:#64748b;">US/UK/BR &rarr; LATAM &amp; Global<br/>Official WA: <code>+1 (217) 802-0009</code></span>
+              </td>
+              <td>
+                User messages <em>"Hello"</em> to Remitly's verified Virtual Assistant (<a href="https://news.remitly.com/company-and-product-news/remitly-send-with-whatsapp/" target="_blank">Remitly Newsroom</a>), selects language, and accepts WhatsApp messaging opt-in.
+              </td>
+              <td>
+                User taps <strong>"Send money"</strong> interactive button, selects destination country (e.g., Mexico, Colombia, Peru, India), enters USD amount, and previews promotional/standard exchange rate and fee breakdown in chat.
+              </td>
+              <td>
+                Handoff via CTA URL button to Remitly's authenticated web flow to finalize recipient compliance details and fund via Debit/Credit Card, Fast ACH, or Apple Pay (<a href="https://www.remitly.com/us/en/home/whatsapp" target="_blank">Remitly WhatsApp Hub</a>).
+              </td>
+              <td>
+                <strong>Tracking &amp; Support:</strong> Real-time transfer tracking and AI FAQ support inside the same WhatsApp thread, plus <em>Request Money</em> campaigns (<a href="https://ir.remitly.com/news-releases/news-release-details/remitly-expands-whatsapp-send-new-markets-launches-request-money" target="_blank">Remitly IR</a>).
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">Crucial Architectural Insight: "WhatsApp Templates" vs. Interactive Messages vs. WhatsApp Flows</div>
+        When users interact with Ria, Félix Pago, or Remitly on WhatsApp, what looks like a "template" to collect amount, beneficiary, and delivery options is actually a combination of <strong>three distinct Meta Cloud API primitives</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/send-messages" target="_blank">Meta Service &amp; Interactive Messages Docs</a>):
+        <ol style="margin-top:8px;padding-left:20px;">
+          <li><strong>Message Templates (<code>type: "template"</code>):</strong> Require prior Meta approval (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/templates/overview" target="_blank">Template Fundamentals</a>). Used to <strong>initiate</strong> messages outside the 24-hour customer service window (e.g., FX rate alerts, abandoned transfer nudges, or pushing a confirmed <code>UTILITY</code> transfer receipt / cash pickup PIN) OR to attach a <code>FLOW</code> button to an outbound campaign.</li>
+          <li><strong>Free-Form Interactive Messages (<code>type: "interactive"</code>):</strong> Require <strong>zero Meta approval</strong> and are free to send within 24 hours of the user's last message (<a href="https://developer.8x8.com/connect/docs/whatsapp/interactive-message-api-library/" target="_blank">Interactive Message API Library</a>). Includes <strong>Interactive List Menus</strong> (up to 10 rows for choosing Country or Saved Beneficiary), <strong>Reply Buttons</strong> (up to 3 quick-tap buttons for <em>Bank Deposit</em>, <em>Cash Pickup</em>, <em>Wallet</em>), and <strong>CTA URL Buttons</strong> (<code>cta_url</code> for opening Payme's KYC or Payment Checkout URL).</li>
+          <li><strong>WhatsApp Flows (<code>interactive.type: "flow"</code>):</strong> Meta's native in-app form engine (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/flows" target="_blank">WhatsApp Flows Overview</a>). Renders rich multi-screen forms (Dropdowns, TextInputs, RadioButtons, DatePickers) inside a native slide-up drawer. Connected to Payme's backend via an encrypted <code>data_exchange</code> endpoint (<a href="https://docs.kapso.ai/docs/whatsapp/flows/flow-json" target="_blank">Flow JSON v7.0</a>) to validate bank accounts, fetch live FX quotes, and create beneficiaries without leaving WhatsApp.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- SECTION 2: iSEND TARGET ARCHITECTURE -->
+    <section class="doc-section" id="sec-architecture">
+      <div class="section-eyebrow">Section 2 • System Architecture</div>
+      <h2>Payme Hybrid WhatsApp Remittance Architecture Reusing Existing Core APIs</h2>
+      <p>
+        Because <strong>Payme</strong> already operates a production Web and Mobile remittance platform, you do <strong>not</strong> need to rebuild your FX engine, compliance/KYC pipeline, or payment gateway. Instead, you deploy a lightweight stateless <strong>Payme WhatsApp Orchestrator Service</strong> backed by Redis session state that acts as a conversational adapter in front of your existing Payme Core APIs.
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 1040 520" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Payme WhatsApp Remittance System Architecture Diagram">
+          <defs>
+            <linearGradient id="gradWa" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#075e54"/>
+              <stop offset="100%" stop-color="#10b981"/>
+            </linearGradient>
+            <linearGradient id="gradOrch" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0f172a"/>
+              <stop offset="100%" stop-color="#1e293b"/>
+            </linearGradient>
+            <linearGradient id="gradCore" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0369a1"/>
+              <stop offset="100%" stop-color="#0284c7"/>
+            </linearGradient>
+            <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
+            </marker>
+            <marker id="arrowBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+            </marker>
+            <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+            </marker>
+          </defs>
+
+          <!-- Background Zones -->
+          <rect x="15" y="15" width="215" height="490" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <text x="122" y="42" text-anchor="middle" font-size="12" font-weight="800" fill="#065f46">1. CLIENT &amp; ENTRY LAYER</text>
+
+          <rect x="255" y="15" width="215" height="490" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="362" y="42" text-anchor="middle" font-size="12" font-weight="800" fill="#1e40af">2. META WHATSAPP PLATFORM</text>
+
+          <rect x="495" y="15" width="250" height="490" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="620" y="42" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">3. iSEND WA ORCHESTRATOR</text>
+
+          <rect x="770" y="15" width="255" height="490" rx="12" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5"/>
+          <text x="897" y="42" text-anchor="middle" font-size="12" font-weight="800" fill="#0369a1">4. EXISTING iSEND CORE APIs</text>
+
+          <!-- Zone 1 Nodes -->
+          <rect x="32" y="65" width="180" height="80" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="2"/>
+          <text x="122" y="92" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Payme Web / Mobile App</text>
+          <text x="122" y="112" text-anchor="middle" font-size="11" fill="#475569">"Send via WhatsApp" CTA</text>
+          <text x="122" y="129" text-anchor="middle" font-size="10.5" fill="#047857" font-family="monospace">wa.me/1800PAYME?text=...</text>
+
+          <rect x="32" y="185" width="180" height="120" rx="8" fill="url(#gradWa)"/>
+          <text x="122" y="215" text-anchor="middle" font-size="13" font-weight="800" fill="#ffffff">WhatsApp Mobile Client</text>
+          <text x="122" y="238" text-anchor="middle" font-size="11" fill="#d1fae5">• Interactive Lists &amp; Buttons</text>
+          <text x="122" y="256" text-anchor="middle" font-size="11" fill="#d1fae5">• Native WhatsApp Flow UI</text>
+          <text x="122" y="274" text-anchor="middle" font-size="11" fill="#d1fae5">• Template Receipts &amp; Alerts</text>
+
+          <rect x="32" y="345" width="180" height="130" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+          <text x="122" y="372" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">In-App Secure Webview</text>
+          <text x="122" y="392" text-anchor="middle" font-size="11" fill="#78350f">Opened via Signed cta_url</text>
+          <text x="122" y="414" text-anchor="middle" font-size="11" fill="#92400e">1. Existing Payme Web KYC</text>
+          <text x="122" y="432" text-anchor="middle" font-size="11" fill="#92400e">2. Existing 3DS2 Checkout</text>
+          <text x="122" y="454" text-anchor="middle" font-size="10.5" fill="#b45309" font-family="monospace">pay.payme.com/wa/{jwt}</text>
+
+          <!-- Zone 2 Nodes -->
+          <rect x="272" y="80" width="180" height="95" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+          <text x="362" y="108" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e3a8a">Graph API (Messages)</text>
+          <text x="362" y="128" text-anchor="middle" font-size="10.5" fill="#475569" font-family="monospace">POST /{PHONE_ID}/messages</text>
+          <text x="362" y="148" text-anchor="middle" font-size="10.5" fill="#475569" font-family="monospace">POST /{WABA}/message_templates</text>
+
+          <rect x="272" y="205" width="180" height="95" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+          <text x="362" y="232" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e3a8a">Cloud API Webhooks</text>
+          <text x="362" y="252" text-anchor="middle" font-size="10.5" fill="#475569">Inbound Text, Button, List,</text>
+          <text x="362" y="268" text-anchor="middle" font-size="10.5" fill="#475569">&amp; Flow nfm_reply Events</text>
+          <text x="362" y="286" text-anchor="middle" font-size="10" fill="#1d4ed8" font-family="monospace">X-Hub-Signature-256</text>
+
+          <rect x="272" y="330" width="180" height="110" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+          <text x="362" y="356" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5b21b6">WhatsApp Flows Engine</text>
+          <text x="362" y="376" text-anchor="middle" font-size="10.5" fill="#475569">Dynamic Screen Exchange</text>
+          <text x="362" y="395" text-anchor="middle" font-size="10.5" fill="#6d28d9" font-family="monospace">RSA-OAEP + AES-128-GCM</text>
+          <text x="362" y="415" text-anchor="middle" font-size="10.5" fill="#475569">INIT / data_exchange / BACK</text>
+
+          <!-- Zone 3 Nodes -->
+          <rect x="512" y="75" width="215" height="105" rx="8" fill="url(#gradOrch)"/>
+          <text x="620" y="102" text-anchor="middle" font-size="12.5" font-weight="700" fill="#34d399">Webhook &amp; State Router</text>
+          <text x="620" y="122" text-anchor="middle" font-size="11" fill="#e2e8f0">• Signature Verification</text>
+          <text x="620" y="140" text-anchor="middle" font-size="11" fill="#e2e8f0">• Conversation State Machine</text>
+          <text x="620" y="158" text-anchor="middle" font-size="11" fill="#e2e8f0">• Template &amp; CTA Dispatcher</text>
+
+          <rect x="512" y="205" width="215" height="90" rx="8" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+          <text x="620" y="232" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Redis Session &amp; Token Store</text>
+          <text x="620" y="252" text-anchor="middle" font-size="11" fill="#475569">• WA Phone &harr; Payme User ID</text>
+          <text x="620" y="270" text-anchor="middle" font-size="11" fill="#475569">• Active Quote &amp; flow_token TTL</text>
+
+          <rect x="512" y="325" width="215" height="120" rx="8" fill="url(#gradOrch)"/>
+          <text x="620" y="352" text-anchor="middle" font-size="12.5" font-weight="700" fill="#a78bfa">Encrypted Flow Endpoint</text>
+          <text x="620" y="372" text-anchor="middle" font-size="11" fill="#e2e8f0">• RSA Private Key Unwrap</text>
+          <text x="620" y="390" text-anchor="middle" font-size="11" fill="#e2e8f0">• AES-GCM Decrypt / Flip IV</text>
+          <text x="620" y="408" text-anchor="middle" font-size="11" fill="#e2e8f0">• Live FX &amp; Bank Validation</text>
+          <text x="620" y="426" text-anchor="middle" font-size="10.5" fill="#94a3b8" font-family="monospace">POST /api/wa/flows-endpoint</text>
+
+          <!-- Zone 4 Nodes -->
+          <rect x="788" y="65" width="220" height="75" rx="8" fill="url(#gradCore)"/>
+          <text x="898" y="92" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Customer &amp; KYC Service</text>
+          <text x="898" y="112" text-anchor="middle" font-size="11" fill="#e0f2fe">MSISDN Lookup, Tier Limits,</text>
+          <text x="898" y="127" text-anchor="middle" font-size="11" fill="#e0f2fe">ID Verification Web Session</text>
+
+          <rect x="788" y="160" width="220" height="75" rx="8" fill="url(#gradCore)"/>
+          <text x="898" y="187" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">FX Rate &amp; Quote Engine</text>
+          <text x="898" y="207" text-anchor="middle" font-size="11" fill="#e0f2fe">Corridor Rates, Fee Matrix,</text>
+          <text x="898" y="222" text-anchor="middle" font-size="11" fill="#e0f2fe">15-Min Locked Quote ID</text>
+
+          <rect x="788" y="255" width="220" height="75" rx="8" fill="url(#gradCore)"/>
+          <text x="898" y="282" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Beneficiary &amp; Payout Network</text>
+          <text x="898" y="302" text-anchor="middle" font-size="11" fill="#e0f2fe">Saved Recipients, Bank/CLABE,</text>
+          <text x="898" y="317" text-anchor="middle" font-size="11" fill="#e0f2fe">Cash Pickup Agent Directory</text>
+
+          <rect x="788" y="350" width="220" height="115" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+          <text x="898" y="378" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6ee7b7">Payment &amp; Settlement Core</text>
+          <text x="898" y="398" text-anchor="middle" font-size="11" fill="#d1fae5">• 3DS2 Debit / ACH Checkout</text>
+          <text x="898" y="416" text-anchor="middle" font-size="11" fill="#d1fae5">• Remittance Ledger &amp; MTCN</text>
+          <text x="898" y="434" text-anchor="middle" font-size="11" fill="#d1fae5">• Event Webhook Emitter</text>
+          <text x="898" y="452" text-anchor="middle" font-size="10" fill="#34d399" font-family="monospace">payment.captured &rarr; WA Receipt</text>
+
+          <!-- Connectors -->
+          <line x1="122" y1="145" x2="122" y2="180" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+          <line x1="212" y1="225" x2="268" y2="135" stroke="#0284c7" stroke-width="2" marker-start="url(#arrowBlue)"/>
+          <line x1="212" y1="250" x2="268" y2="250" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+          <line x1="212" y1="280" x2="268" y2="375" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowBlue)" marker-start="url(#arrowBlue)"/>
+          <line x1="122" y1="305" x2="122" y2="340" stroke="#d97706" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrowAmber)"/>
+
+          <line x1="512" y1="125" x2="456" y2="125" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowBlue)"/>
+          <line x1="452" y1="250" x2="508" y2="150" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+          <line x1="452" y1="385" x2="508" y2="385" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowBlue)" marker-start="url(#arrowBlue)"/>
+
+          <line x1="620" y1="180" x2="620" y2="202" stroke="#0f172a" stroke-width="2" marker-end="url(#arrowBlue)"/>
+          <line x1="620" y1="325" x2="620" y2="298" stroke="#0f172a" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+          <line x1="727" y1="115" x2="784" y2="105" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowBlue)"/>
+          <line x1="727" y1="140" x2="784" y2="195" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowBlue)"/>
+          <line x1="727" y1="365" x2="784" y2="295" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowBlue)"/>
+          <line x1="727" y1="395" x2="784" y2="210" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+          <!-- Webview to Payment Core & Callback to Orchestrator -->
+          <path d="M 212 435 L 480 485 L 784 435" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowAmber)"/>
+          <path d="M 788 395 L 727 165" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+        </svg>
+        <div class="diagram-caption">
+          Figure 2.1 — Payme Hybrid WhatsApp Architecture: In-chat conversational orchestration + encrypted WhatsApp Flows paired with signed Webview handoffs to existing Payme KYC and PCI-DSS 3DS2 Payment Checkout APIs.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: 9-STAGE REMITTANCE LIFECYCLE FLOWCHART -->
+    <section class="doc-section" id="sec-lifecycle">
+      <div class="section-eyebrow">Section 3 • Complete Remittance Lifecycle</div>
+      <h2>End-to-End 9-Stage WhatsApp Remittance Flowchart for Payme</h2>
+      <p>
+        Every transaction initiated through Payme's WhatsApp channel progresses through a deterministic 9-stage state machine tracked in Redis (`payme:wa:session:{wa_id}`). This prevents users from getting lost in free-text loops and guarantees regulatory compliance before payment capture.
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 1040 430" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Payme 9-Stage WhatsApp Remittance Lifecycle Flowchart">
+          <defs>
+            <marker id="flowArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#047857"/>
+            </marker>
+            <marker id="flowArrWarn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+            </marker>
+          </defs>
+
+          <!-- Row 1: Stages 1 to 5 -->
+          <!-- Stage 1 -->
+          <rect x="20" y="30" width="175" height="92" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+          <text x="107" y="54" text-anchor="middle" font-size="11" font-weight="800" fill="#047857">STAGE 1: ENTRY</text>
+          <text x="107" y="73" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Deep Link / Template</text>
+          <text x="107" y="91" text-anchor="middle" font-size="10.5" fill="#475569">wa.me link from Web/App</text>
+          <text x="107" y="106" text-anchor="middle" font-size="10.5" fill="#475569">or Marketing FX Template</text>
+
+          <line x1="195" y1="76" x2="225" y2="76" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Stage 2 -->
+          <rect x="230" y="30" width="175" height="92" rx="10" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+          <text x="317" y="54" text-anchor="middle" font-size="11" font-weight="800" fill="#0284c7">STAGE 2: IDENTITY</text>
+          <text x="317" y="73" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">MSISDN &amp; Account Check</text>
+          <text x="317" y="91" text-anchor="middle" font-size="10.5" fill="#475569">Match wa_id to Payme User</text>
+          <text x="317" y="106" text-anchor="middle" font-size="10.5" fill="#475569">Load KYC Tier &amp; Saved Benes</text>
+
+          <line x1="405" y1="76" x2="435" y2="76" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Stage 3 -->
+          <rect x="440" y="30" width="175" height="92" rx="10" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+          <text x="527" y="54" text-anchor="middle" font-size="11" font-weight="800" fill="#0284c7">STAGE 3: QUOTE &amp; FX</text>
+          <text x="527" y="73" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Corridor &amp; Send Amount</text>
+          <text x="527" y="91" text-anchor="middle" font-size="10.5" fill="#475569">Interactive List / Flow Screen</text>
+          <text x="527" y="106" text-anchor="middle" font-size="10.5" fill="#475569">Lock 15-min FX &amp; Fee Quote</text>
+
+          <line x1="615" y1="76" x2="645" y2="76" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Stage 4 -->
+          <rect x="650" y="30" width="175" height="92" rx="10" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+          <text x="737" y="54" text-anchor="middle" font-size="11" font-weight="800" fill="#0284c7">STAGE 4: PAYOUT MODE</text>
+          <text x="737" y="73" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Select Delivery Method</text>
+          <text x="737" y="91" text-anchor="middle" font-size="10.5" fill="#475569">• Bank Deposit (CLABE/ACH)</text>
+          <text x="737" y="106" text-anchor="middle" font-size="10.5" fill="#475569">• Cash Pickup / Mobile Wallet</text>
+
+          <line x1="825" y1="76" x2="855" y2="76" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Stage 5 -->
+          <rect x="860" y="30" width="160" height="92" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+          <text x="940" y="54" text-anchor="middle" font-size="11" font-weight="800" fill="#6d28d9">STAGE 5: BENEFICIARY</text>
+          <text x="940" y="73" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">WhatsApp Flow Form</text>
+          <text x="940" y="91" text-anchor="middle" font-size="10.5" fill="#475569">Pick Saved Recipient OR</text>
+          <text x="940" y="106" text-anchor="middle" font-size="10.5" fill="#475569">Encrypted Flow New Bene</text>
+
+          <!-- Connector down to Row 2 -->
+          <path d="M 940 122 L 940 175 L 845 175 L 845 210" fill="none" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Row 2: Stages 6 to 9 (Right to Left) -->
+          <!-- Stage 6: KYC Gate -->
+          <rect x="740" y="215" width="210" height="105" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+          <text x="845" y="239" text-anchor="middle" font-size="11" font-weight="800" fill="#b45309">STAGE 6: COMPLIANCE / KYC GATE</text>
+          <text x="845" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Verify KYC Status &amp; Limits</text>
+          <text x="845" y="276" text-anchor="middle" font-size="10.5" fill="#78350f">If unverified: send signed cta_url</text>
+          <text x="845" y="292" text-anchor="middle" font-size="10.5" fill="#78350f">to existing Payme Web KYC &rarr; Webhook</text>
+          <text x="845" y="308" text-anchor="middle" font-size="10" fill="#92400e" font-family="monospace">kyc.approved resumes chat</text>
+
+          <line x1="740" y1="267" x2="695" y2="267" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Stage 7: Pre-Payment Disclosure -->
+          <rect x="495" y="215" width="195" height="105" rx="10" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+          <text x="592" y="239" text-anchor="middle" font-size="11" font-weight="800" fill="#0284c7">STAGE 7: SUMMARY &amp; REG E</text>
+          <text x="592" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Pre-Payment Disclosure</text>
+          <text x="592" y="276" text-anchor="middle" font-size="10.5" fill="#475569">Show Send Amt, Fee, FX Rate,</text>
+          <text x="592" y="292" text-anchor="middle" font-size="10.5" fill="#475569">Total Charged &amp; Net Payout</text>
+          <text x="592" y="308" text-anchor="middle" font-size="10" fill="#0369a1">Confirm / Edit Reply Buttons</text>
+
+          <line x1="495" y1="267" x2="450" y2="267" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Stage 8: Payment Handoff -->
+          <rect x="245" y="215" width="200" height="105" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+          <text x="345" y="239" text-anchor="middle" font-size="11" font-weight="800" fill="#b45309">STAGE 8: PCI-DSS CHECKOUT</text>
+          <text x="345" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Signed 3DS2 Payment Link</text>
+          <text x="345" y="276" text-anchor="middle" font-size="10.5" fill="#78350f">Push interactive cta_url button</text>
+          <text x="345" y="292" text-anchor="middle" font-size="10.5" fill="#78350f">User pays via Debit Card (3DS2)</text>
+          <text x="345" y="308" text-anchor="middle" font-size="10.5" fill="#78350f">or ACH on Payme Web Checkout</text>
+
+          <line x1="245" y1="267" x2="200" y2="267" stroke="#047857" stroke-width="2" marker-end="url(#flowArr)"/>
+
+          <!-- Stage 9: Settlement & Utility Receipt -->
+          <rect x="20" y="215" width="175" height="105" rx="10" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+          <text x="107" y="239" text-anchor="middle" font-size="11" font-weight="800" fill="#6ee7b7">STAGE 9: RECEIPT &amp; TRACK</text>
+          <text x="107" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Push Utility Template</text>
+          <text x="107" y="276" text-anchor="middle" font-size="10.5" fill="#d1fae5">Send MTCN / Pickup PIN,</text>
+          <text x="107" y="292" text-anchor="middle" font-size="10.5" fill="#d1fae5">PDF Receipt &amp; Live Status</text>
+          <text x="107" y="308" text-anchor="middle" font-size="10" fill="#34d399" font-family="monospace">payme_transfer_receipt</text>
+
+          <!-- Legend Bar at Bottom -->
+          <rect x="20" y="355" width="1000" height="52" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+          <circle cx="50" cy="381" r="7" fill="#0284c7"/>
+          <text x="65" y="385" font-size="11.5" font-weight="600" fill="#334155">Free-Form Interactive Message (24h Window)</text>
+
+          <circle cx="345" cy="381" r="7" fill="#7c3aed"/>
+          <text x="360" y="385" font-size="11.5" font-weight="600" fill="#334155">Encrypted WhatsApp Flow (Native In-Chat Form)</text>
+
+          <circle cx="660" cy="381" r="7" fill="#d97706"/>
+          <text x="675" y="385" font-size="11.5" font-weight="600" fill="#334155">Signed External Webview Handoff (KYC / 3DS2)</text>
+
+          <circle cx="945" cy="381" r="7" fill="#064e3b"/>
+          <text x="960" y="385" font-size="11.5" font-weight="600" fill="#334155">Meta Template</text>
+        </svg>
+        <div class="diagram-caption">
+          Figure 3.1 — Payme 9-Stage Conversational State Machine mapping each remittance milestone to the optimal WhatsApp Business Platform message primitive.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: INTERACTIVE SIMULATOR -->
+    <section class="doc-section" id="sec-simulator">
+      <div class="section-eyebrow">Section 4 • Interactive Hands-On Walkthrough</div>
+      <h2>Interactive Payme WhatsApp Flow &amp; Cloud API Payload Simulator</h2>
+      <p>
+        Click through each of the <strong>7 lifecycle steps</strong> below to inspect how the customer experiences the remittance flow inside WhatsApp alongside the <strong>exact Cloud API / Webhook JSON payload</strong> exchanged between Meta and the Payme Orchestrator.
+      </p>
+
+      <div class="sim-stepper" id="simStepper">
+        <button class="step-pill active" onclick="selectSimStep(0)">Step 1: Entry &amp; Greeting</button>
+        <button class="step-pill" onclick="selectSimStep(1)">Step 2: Corridor List Menu</button>
+        <button class="step-pill" onclick="selectSimStep(2)">Step 3: Payout Mode Buttons</button>
+        <button class="step-pill" onclick="selectSimStep(3)">Step 4: Launch WhatsApp Flow</button>
+        <button class="step-pill" onclick="selectSimStep(4)">Step 5: Native Flow Form (Encrypted)</button>
+        <button class="step-pill" onclick="selectSimStep(5)">Step 6: KYC &amp; 3DS2 Payment CTA</button>
+        <button class="step-pill" onclick="selectSimStep(6)">Step 7: Utility Receipt Template</button>
+      </div>
+
+      <div class="sim-grid">
+        <!-- Left: Phone Mockup -->
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="wa-header">
+              <div class="wa-avatar">PM</div>
+              <div>
+                <div class="wa-contact-name">Payme Money Transfer <span class="wa-verified">&#10003;</span></div>
+                <div class="wa-status">Official Business Account • Online</div>
+              </div>
+            </div>
+            <div class="wa-chat-body" id="waChatBody">
+              <!-- Populated dynamically by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Synchronized Payload Inspector -->
+        <div>
+          <div class="callout" style="margin-top:0;">
+            <div class="callout-title" id="simStepTitle">Step 1: Entry via Website Deep Link or Outbound Template</div>
+            <div id="simStepDesc">User clicks "Send via WhatsApp" on Payme's website (`https://wa.me/18005550199?text=Send%20money%20to%20Mexico`) or replies to an outbound FX rate alert template.</div>
+          </div>
+
+          <div class="code-panel">
+            <div class="code-header">
+              <span id="simCodeLabel">POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages</span>
+              <button class="copy-btn" onclick="copyCode('simCodeBlock', this)">Copy JSON</button>
+            </div>
+            <pre><code id="simCodeBlock"></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: SEQUENCE DIAGRAMS -->
+    <section class="doc-section" id="sec-sequences">
+      <div class="section-eyebrow">Section 5 • Technical Sequence Diagrams</div>
+      <h2>End-to-End Remittance &amp; Encrypted Flow Sequence Diagrams</h2>
+      <p>
+        The two sequence diagrams below detail (1) the full conversational lifecycle across WhatsApp, the Payme Orchestrator, and Payme's existing Core APIs, and (2) the cryptographic handshake required for dynamic <strong>WhatsApp Flows (`data_exchange`)</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/flows/guides/implementingyourflowendpoint" target="_blank">Meta Flow Endpoint Docs</a>, <a href="https://help.1msg.io/docs/api-1msg/whatsapp-flow/flow-encryption" target="_blank">Flow Encryption Spec</a>).
+      </p>
+
+      <h3>5.1 Full-Lifecycle Sequence Diagram (Chat + Flow + Web KYC + 3DS2 Payment)</h3>
+      <div class="diagram-box">
+        <svg viewBox="0 0 1040 680" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Full Lifecycle Sequence Diagram">
+          <defs>
+            <marker id="seqArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a"/>
+            </marker>
+            <marker id="seqArrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#047857"/>
+            </marker>
+            <marker id="seqArrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+            </marker>
+            <marker id="seqArrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+            </marker>
+          </defs>
+
+          <!-- Participant Headers -->
+          <rect x="25" y="15" width="130" height="44" rx="6" fill="#075e54"/>
+          <text x="90" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Sender (WA App)</text>
+
+          <rect x="225" y="15" width="145" height="44" rx="6" fill="#1e3a8a"/>
+          <text x="297" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Meta Cloud API</text>
+
+          <rect x="440" y="15" width="165" height="44" rx="6" fill="#0f172a"/>
+          <text x="522" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="#34d399">Payme WA Orchestrator</text>
+
+          <rect x="670" y="15" width="155" height="44" rx="6" fill="#0284c7"/>
+          <text x="747" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Payme Core APIs</text>
+
+          <rect x="880" y="15" width="140" height="44" rx="6" fill="#b45309"/>
+          <text x="950" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">KYC &amp; 3DS2 Web</text>
+
+          <!-- Lifelines -->
+          <line x1="90" y1="59" x2="90" y2="655" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="297" y1="59" x2="297" y2="655" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="522" y1="59" x2="522" y2="655" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="747" y1="59" x2="747" y2="655" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="950" y1="59" x2="950" y2="655" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+          <!-- Step 1 -->
+          <line x1="90" y1="90" x2="293" y2="90" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="191" y="83" text-anchor="middle" font-size="10.5" font-weight="600" fill="#065f46">1. Tap wa.me link / Send "Hi"</text>
+
+          <line x1="297" y1="108" x2="518" y2="108" stroke="#0f172a" stroke-width="1.8" marker-end="url(#seqArr)"/>
+          <text x="407" y="101" text-anchor="middle" font-size="10.5" fill="#334155">POST /webhook (messages[].text)</text>
+
+          <!-- Step 2 -->
+          <line x1="522" y1="132" x2="743" y2="132" stroke="#0284c7" stroke-width="1.8" marker-end="url(#seqArrBlue)"/>
+          <text x="632" y="125" text-anchor="middle" font-size="10.5" fill="#0369a1">2. GET /users/by-phone/{wa_id}</text>
+          <line x1="747" y1="150" x2="526" y2="150" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#seqArrBlue)"/>
+          <text x="632" y="145" text-anchor="middle" font-size="10" fill="#475569">{user_id, kyc_status, saved_beneficiaries}</text>
+
+          <!-- Step 3 -->
+          <line x1="522" y1="178" x2="301" y2="178" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="411" y="171" text-anchor="middle" font-size="10.5" font-weight="600" fill="#047857">3. POST /{PHONE_ID}/messages (type: "flow")</text>
+          <line x1="297" y1="194" x2="94" y2="194" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="195" y="187" text-anchor="middle" font-size="10.5" fill="#065f46">Render "Start Transfer" Flow CTA</text>
+
+          <!-- Step 4: Encrypted Flow Exchange -->
+          <rect x="70" y="212" width="695" height="120" rx="6" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+          <text x="82" y="229" font-size="10.5" font-weight="800" fill="#5b21b6">ENCRYPTED WHATSAPP FLOW (IN-CHAT QUOTE, PAYOUT METHOD &amp; BENEFICIARY FORM)</text>
+
+          <line x1="90" y1="248" x2="293" y2="248" stroke="#0f172a" stroke-width="1.8" marker-end="url(#seqArr)"/>
+          <text x="191" y="242" text-anchor="middle" font-size="10" fill="#334155">4a. Submit Amount ($500), Country (MX), Mode (Bank)</text>
+
+          <line x1="297" y1="264" x2="518" y2="264" stroke="#0f172a" stroke-width="1.8" marker-end="url(#seqArr)"/>
+          <text x="407" y="258" text-anchor="middle" font-size="10" fill="#5b21b6">POST /api/wa/flows-endpoint (AES-GCM + RSA-OAEP)</text>
+
+          <line x1="522" y1="282" x2="743" y2="282" stroke="#0284c7" stroke-width="1.8" marker-end="url(#seqArrBlue)"/>
+          <text x="632" y="276" text-anchor="middle" font-size="10" fill="#0369a1">4b. POST /quotes &amp; POST /beneficiaries/validate</text>
+
+          <line x1="522" y1="304" x2="301" y2="304" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="407" y="298" text-anchor="middle" font-size="10" fill="#047857">Encrypted Next Screen / SUCCESS + nfm_reply Webhook</text>
+
+          <line x1="297" y1="322" x2="518" y2="322" stroke="#0f172a" stroke-width="1.8" marker-end="url(#seqArr)"/>
+          <text x="407" y="317" text-anchor="middle" font-size="10" fill="#334155">4c. Webhook: interactive.type = "nfm_reply" (flow_token)</text>
+
+          <!-- Step 5: KYC Check & Signed Payment URL -->
+          <line x1="522" y1="358" x2="743" y2="358" stroke="#0284c7" stroke-width="1.8" marker-end="url(#seqArrBlue)"/>
+          <text x="632" y="351" text-anchor="middle" font-size="10.5" fill="#0369a1">5. POST /remittances/draft &amp; /checkout-sessions</text>
+
+          <line x1="747" y1="378" x2="526" y2="378" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#seqArrBlue)"/>
+          <text x="632" y="372" text-anchor="middle" font-size="10" fill="#475569">{tx_id: "TX-9081", checkout_url: "https://pay.payme.com/..."}</text>
+
+          <!-- Step 6: Push Interactive CTA URL -->
+          <line x1="522" y1="408" x2="301" y2="408" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="407" y="401" text-anchor="middle" font-size="10.5" font-weight="600" fill="#047857">6. POST /{PHONE_ID}/messages (type: "cta_url")</text>
+
+          <line x1="297" y1="426" x2="94" y2="426" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="195" y="419" text-anchor="middle" font-size="10.5" fill="#065f46">Show Reg-E Summary + "Pay $502.99 Securely"</text>
+
+          <!-- Step 7: Webview KYC / 3DS2 Checkout -->
+          <line x1="90" y1="462" x2="946" y2="462" stroke="#d97706" stroke-width="2" marker-end="url(#seqArrAmber)"/>
+          <text x="518" y="455" text-anchor="middle" font-size="10.5" font-weight="700" fill="#b45309">7. Tap CTA Button &rarr; Complete KYC (if required) &amp; Debit Card 3D Secure 2.0 OTP in Webview</text>
+
+          <line x1="950" y1="492" x2="751" y2="492" stroke="#d97706" stroke-width="1.8" marker-end="url(#seqArrAmber)"/>
+          <text x="850" y="485" text-anchor="middle" font-size="10.5" fill="#92400e">8. Authorize &amp; Capture Payment</text>
+
+          <!-- Step 8: Core Event Webhook -> Utility Receipt Template -->
+          <line x1="747" y1="525" x2="526" y2="525" stroke="#0284c7" stroke-width="1.8" marker-end="url(#seqArrBlue)"/>
+          <text x="632" y="518" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0369a1">9. POST /webhooks/payme-core (payment.captured)</text>
+
+          <line x1="522" y1="560" x2="301" y2="560" stroke="#047857" stroke-width="2" marker-end="url(#seqArrGreen)"/>
+          <text x="407" y="553" text-anchor="middle" font-size="10.5" font-weight="700" fill="#047857">10. POST /{PHONE_ID}/messages (template: "payme_transfer_receipt")</text>
+
+          <line x1="297" y1="582" x2="94" y2="582" stroke="#047857" stroke-width="2" marker-end="url(#seqArrGreen)"/>
+          <text x="195" y="575" text-anchor="middle" font-size="10.5" font-weight="700" fill="#065f46">Deliver Receipt + Cash Pickup PIN / Tracking CTA</text>
+
+          <!-- Step 9: Payout Delivered Notification -->
+          <line x1="747" y1="618" x2="526" y2="618" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#seqArrBlue)"/>
+          <text x="632" y="611" text-anchor="middle" font-size="10" fill="#475569">11. Async Event: payout.disbursed</text>
+
+          <line x1="522" y1="636" x2="94" y2="636" stroke="#047857" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#seqArrGreen)"/>
+          <text x="308" y="630" text-anchor="middle" font-size="10" fill="#047857">Push Status Update: "Funds deposited into BBVA Mexico account ••4821"</text>
+        </svg>
+        <div class="diagram-caption">
+          Figure 5.1 — End-to-End Sequence Diagram illustrating how WhatsApp Flows and Interactive CTA URLs bridge into Payme's existing KYC and Payment APIs.
+        </div>
+      </div>
+
+      <h3>5.2 Encrypted WhatsApp Flows (`data_exchange`) Handshake Sequence</h3>
+      <p>
+        When a user opens an Payme WhatsApp Flow to calculate live corridor FX or add a new beneficiary, Meta's servers invoke your `endpoint_uri` directly using hybrid encryption: a per-request <strong>128-bit AES-GCM key</strong> wrapped with your phone number's <strong>2048-bit RSA Public Key (`RSA-OAEP-SHA256`)</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/flows/guides/whatsapp-business-encryption" target="_blank">Meta Business Encryption Docs</a>).
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 980 330" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="WhatsApp Flows Encryption Sequence Diagram">
+          <rect x="40" y="15" width="170" height="40" rx="6" fill="#075e54"/>
+          <text x="125" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">WhatsApp Client</text>
+
+          <rect x="385" y="15" width="190" height="40" rx="6" fill="#5b21b6"/>
+          <text x="480" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Meta Flows Proxy</text>
+
+          <rect x="740" y="15" width="200" height="40" rx="6" fill="#0f172a"/>
+          <text x="840" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="#34d399">Payme Flow Endpoint</text>
+
+          <line x1="125" y1="55" x2="125" y2="310" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="480" y1="55" x2="480" y2="310" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="840" y1="55" x2="840" y2="310" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+          <!-- One-time setup -->
+          <rect x="360" y="68" width="590" height="36" rx="6" fill="#ecfdf5" stroke="#10b981"/>
+          <text x="655" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">One-Time Setup: Upload 2048-bit RSA Public Key via POST /{PHONE_NUMBER_ID}/whatsapp_business_encryption</text>
+
+          <!-- Runtime -->
+          <line x1="125" y1="130" x2="475" y2="130" stroke="#0f172a" stroke-width="1.8" marker-end="url(#seqArr)"/>
+          <text x="300" y="123" text-anchor="middle" font-size="11" fill="#0f172a">1. User submits Screen (action: INIT or data_exchange)</text>
+
+          <line x1="480" y1="162" x2="835" y2="162" stroke="#5b21b6" stroke-width="1.8" marker-end="url(#seqArr)"/>
+          <text x="660" y="148" text-anchor="middle" font-size="10.5" font-weight="600" fill="#5b21b6">2. POST {encrypted_aes_key, encrypted_flow_data, initial_vector}</text>
+          <text x="660" y="160" text-anchor="middle" font-size="9.5" fill="#64748b">+ Header: X-Hub-Signature-256 (HMAC-SHA256 using App Secret)</text>
+
+          <rect x="685" y="176" width="305" height="62" rx="6" fill="#f8fafc" stroke="#64748b"/>
+          <text x="837" y="194" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0f172a">3. Decrypt &amp; Process (&lt; 8s timeout):</text>
+          <text x="837" y="210" text-anchor="middle" font-size="10" fill="#334155">• RSA-OAEP(SHA-256) unwrap 128-bit aes_key</text>
+          <text x="837" y="225" text-anchor="middle" font-size="10" fill="#334155">• AES-128-GCM decrypt body (last 16B = authTag)</text>
+
+          <line x1="840" y1="262" x2="485" y2="262" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="660" y="254" text-anchor="middle" font-size="10.5" font-weight="700" fill="#047857">4. 200 OK (text/plain): Base64(AES-GCM(nextScreenJSON, aes_key, ~IV))</text>
+
+          <line x1="480" y1="290" x2="130" y2="290" stroke="#047857" stroke-width="1.8" marker-end="url(#seqArrGreen)"/>
+          <text x="300" y="283" text-anchor="middle" font-size="11" fill="#065f46">5. Render Next Screen (or close Flow on screen: "SUCCESS")</text>
+        </svg>
+        <div class="diagram-caption">
+          Figure 5.2 — Cryptographic data exchange between WhatsApp Client, Meta Flows Proxy, and Payme's Flow Endpoint using inverted IV (`~initial_vector`) for response encryption.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5B: VALIDATING YOUR 3-ACTOR FLOW & HOW USER RESPONSES RETURN TO SERVER -->
+    <section class="doc-section" id="sec-roundtrip">
+      <div class="section-eyebrow">Section 5B • 3-Actor Flow Verification &amp; Webhook Response Collection</div>
+      <h2>How Server JSON Is Sent to WhatsApp &amp; How User Responses Return to Your Server</h2>
+      <p>
+        Your architectural assumption—<strong>(1) User opens WhatsApp from a link on Payme's website &rarr; (2) Meta WhatsApp Cloud API &rarr; (3) Existing Payme Server processes each step, hands off to existing KYC &amp; Payment web pages (in-app WebView), and pushes the final Confirmation + Payment ID + Tracking back to WhatsApp</strong>—is <strong>100% the industry-standard architecture</strong> used by <a href="https://www.riamoneytransfer.com/en/blog/how-to-send-money-on-whatsapp/" target="_blank">Ria Money Transfer</a> and <a href="https://www.remitly.com/blog/money-transfer/how-to-send-money-with-remitly-using-whatsapp/" target="_blank">Remitly</a>.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Key Technical Distinction: Pre-Approved Templates vs. Real-Time Interactive JSON</div>
+        <ul style="padding-left:18px;margin-top:6px;">
+          <li><strong>When the user clicks the WhatsApp link on Payme's website (<code>https://wa.me/18005550199?text=Send%20Money</code>):</strong> The user sends the first message, which automatically opens a <strong>free 24-hour Customer Service Window</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/send-messages" target="_blank">Meta Service Messages Docs</a>).</li>
+          <li><strong>During this 24-hour window, you do NOT need pre-approved Message Templates for every chat question:</strong> Instead, your Payme server dynamically sends <strong>JSON payloads (<code>type: "interactive"</code> or <code>type: "text"</code>)</strong> directly to <code>POST /{PHONE_NUMBER_ID}/messages</code> to ask for Country, Send Amount, Delivery Mode, and Beneficiary details.</li>
+          <li><strong>When ARE Pre-Approved Message Templates (<code>type: "template"</code>) used?</strong> Templates (built either in the <strong>Meta WhatsApp Manager UI</strong> or via <code>POST /{WABA_ID}/message_templates</code> JSON API) are used when your server initiates contact outside the 24-hour window OR for guaranteed transactional delivery such as the <strong>Post-Payment Confirmation Receipt &amp; Payment ID</strong> and asynchronous <strong>Payout Status Alerts</strong>.</li>
+        </ul>
+      </div>
+
+      <h3>1. Visual Round-Trip Architecture: How User Inputs Travel Back to Payme Server</h3>
+      <p>
+        WhatsApp Cloud API is <strong>asynchronous</strong>. Your server sends a question/menu via an outbound <code>POST /{PHONE_NUMBER_ID}/messages</code> JSON call. When the user taps a button, selects a list item, types an amount, or submits a form, Meta immediately sends an <strong>Inbound HTTP POST Webhook JSON payload</strong> to your server's webhook URL (<code>POST https://api.payme.com/webhooks/whatsapp</code>). Your server looks up the user's phone number (<code>from</code>) in your database/Redis state table, saves their answer, advances their state to the next step, and sends the next outbound JSON message.
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 1040 390" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3-Actor Round Trip and In-App WebView Handoff Diagram">
+          <defs>
+            <marker id="rtGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
+            </marker>
+            <marker id="rtBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+            </marker>
+            <marker id="rtAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+            </marker>
+          </defs>
+
+          <!-- Actor 1: User WhatsApp + In-App WebView -->
+          <rect x="20" y="20" width="250" height="345" rx="12" fill="#f0fdf4" stroke="#10b981" stroke-width="2"/>
+          <text x="145" y="46" text-anchor="middle" font-size="12.5" font-weight="800" fill="#065f46">1. USER (WHATSAPP APP)</text>
+
+          <rect x="38" y="62" width="214" height="58" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+          <text x="145" y="84" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">A. Opens via Payme Website Link</text>
+          <text x="145" y="104" text-anchor="middle" font-size="10.5" fill="#047857" font-family="monospace">wa.me/18005550199?text=Send</text>
+
+          <rect x="38" y="135" width="214" height="82" rx="8" fill="#075e54"/>
+          <text x="145" y="158" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">B. In-Chat Basic Steps</text>
+          <text x="145" y="176" text-anchor="middle" font-size="10.5" fill="#d1fae5">• Taps Country List / Buttons</text>
+          <text x="145" y="192" text-anchor="middle" font-size="10.5" fill="#d1fae5">• Enters Amount &amp; Beneficiary</text>
+          <text x="145" y="208" text-anchor="middle" font-size="10.5" fill="#6ee7b7">• Taps "Track Payment" Button</text>
+
+          <rect x="38" y="232" width="214" height="115" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+          <text x="145" y="254" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">C. WhatsApp In-App WebView</text>
+          <text x="145" y="272" text-anchor="middle" font-size="10.5" fill="#78350f">Opened when user taps cta_url:</text>
+          <text x="145" y="290" text-anchor="middle" font-size="10.5" fill="#92400e">1. Existing Payme KYC Page</text>
+          <text x="145" y="306" text-anchor="middle" font-size="10.5" fill="#92400e">2. Existing Payme Payment Page</text>
+          <text x="145" y="326" text-anchor="middle" font-size="10" fill="#b45309" font-family="monospace">Closes &rarr; Returns to WA Chat</text>
+
+          <!-- Actor 2: Meta WhatsApp Cloud API -->
+          <rect x="395" y="20" width="240" height="225" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+          <text x="515" y="46" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e40af">2. WHATSAPP CLOUD API</text>
+
+          <rect x="415" y="68" width="200" height="68" rx="8" fill="#ffffff" stroke="#60a5fa" stroke-width="1.5"/>
+          <text x="515" y="92" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e3a8a">Inbound Webhook Dispatcher</text>
+          <text x="515" y="110" text-anchor="middle" font-size="10" fill="#475569">Converts user tap/text/form into</text>
+          <text x="515" y="124" text-anchor="middle" font-size="10" fill="#0284c7" font-family="monospace">HTTP POST JSON to Payme Server</text>
+
+          <rect x="415" y="154" width="200" height="68" rx="8" fill="#ffffff" stroke="#60a5fa" stroke-width="1.5"/>
+          <text x="515" y="178" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e3a8a">Outbound Message Endpoint</text>
+          <text x="515" y="196" text-anchor="middle" font-size="10" fill="#0284c7" font-family="monospace">POST /{PHONE_ID}/messages</text>
+          <text x="515" y="210" text-anchor="middle" font-size="10" fill="#475569">Renders JSON as WA UI / Template</text>
+
+          <!-- Actor 3: Existing Payme Server -->
+          <rect x="755" y="20" width="265" height="345" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+          <text x="887" y="46" text-anchor="middle" font-size="12.5" font-weight="800" fill="#34d399">3. EXISTING iSEND SERVER</text>
+
+          <rect x="775" y="65" width="225" height="82" rx="8" fill="#1e293b" stroke="#475569"/>
+          <text x="887" y="87" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">WhatsApp Webhook Controller</text>
+          <text x="887" y="105" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Parses text / list_reply / button_reply</text>
+          <text x="887" y="121" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Advances User State in Redis/DB</text>
+          <text x="887" y="137" text-anchor="middle" font-size="10.5" fill="#34d399">• Sends next step JSON to WA API</text>
+
+          <rect x="775" y="162" width="225" height="75" rx="8" fill="#1e293b" stroke="#475569"/>
+          <text x="887" y="184" text-anchor="middle" font-size="11.5" font-weight="700" fill="#38bdf8">Core Quote &amp; Beneficiary APIs</text>
+          <text x="887" y="202" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Calculates FX Rate &amp; Fees</text>
+          <text x="887" y="218" text-anchor="middle" font-size="10.5" fill="#cbd5e1">• Creates Draft Transfer Record</text>
+
+          <rect x="775" y="252" width="225" height="95" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+          <text x="887" y="274" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6ee7b7">Existing KYC &amp; Payment Backend</text>
+          <text x="887" y="292" text-anchor="middle" font-size="10.5" fill="#d1fae5">• Serves WebView KYC &amp; Checkout</text>
+          <text x="887" y="308" text-anchor="middle" font-size="10.5" fill="#d1fae5">• Generates Payment ID (MTCN)</text>
+          <text x="887" y="324" text-anchor="middle" font-size="10.5" fill="#34d399">• Triggers WA Receipt &amp; Tracking</text>
+
+          <!-- Arrows for Step Loop -->
+          <line x1="252" y1="155" x2="410" y2="102" stroke="#10b981" stroke-width="2" marker-end="url(#rtGreen)"/>
+          <text x="330" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">1. User Reply / Tap</text>
+
+          <line x1="615" y1="102" x2="770" y2="102" stroke="#10b981" stroke-width="2" marker-end="url(#rtGreen)"/>
+          <text x="692" y="94" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">2. Webhook POST JSON</text>
+
+          <line x1="775" y1="188" x2="620" y2="188" stroke="#0284c7" stroke-width="2" marker-end="url(#rtBlue)"/>
+          <text x="692" y="180" text-anchor="middle" font-size="10" font-weight="700" fill="#0284c7">3. Next Step JSON</text>
+
+          <line x1="415" y1="188" x2="256" y2="188" stroke="#0284c7" stroke-width="2" marker-end="url(#rtBlue)"/>
+          <text x="335" y="180" text-anchor="middle" font-size="10" font-weight="700" fill="#0284c7">4. Render Menu / CTA</text>
+
+          <!-- WebView Direct Connection to Existing Payme Server -->
+          <line x1="252" y1="295" x2="770" y2="295" stroke="#d97706" stroke-width="2.2" stroke-dasharray="5 3" marker-end="url(#rtAmber)" marker-start="url(#rtAmber)"/>
+          <text x="515" y="286" text-anchor="middle" font-size="10.5" font-weight="700" fill="#b45309">5. Direct HTTPS Session: User Completes Existing KYC &amp; Payment in WebView</text>
+
+          <!-- Final Confirmation Push -->
+          <path d="M 775 325 L 515 325 L 515 226" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#rtGreen)"/>
+          <text x="645" y="342" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">6. Push Confirmation + Payment ID + Track Button</text>
+        </svg>
+        <div class="diagram-caption">
+          Figure 5B.1 — Your exact 3-Actor Flow: (1) User on WhatsApp + In-App WebView, (2) WhatsApp Cloud API, and (3) Existing Payme Server orchestrating chat steps, KYC/Payment handoff, final confirmation receipt, and payment tracking.
+        </div>
+      </div>
+
+      <h3>2. Exact "Outbound Server JSON &rarr; Inbound User Response Webhook JSON" for Every Step</h3>
+      <p>
+        Click through the 5 tabs below to see the exact JSON your server sends to WhatsApp and the exact JSON webhook Meta sends back to your server when the user responds at each stage (including post-payment tracking).
+      </p>
+
+      <div class="tab-bar" id="roundtripTabs">
+        <button class="tab-btn active" onclick="switchTab('roundtripTabs', 'rt-pane-1', this)">A. Website Link &amp; Text Input</button>
+        <button class="tab-btn" onclick="switchTab('roundtripTabs', 'rt-pane-2', this)">B. List Menu Selection (Country/Bene)</button>
+        <button class="tab-btn" onclick="switchTab('roundtripTabs', 'rt-pane-3', this)">C. Button Tap (Bank vs. Cash Pickup)</button>
+        <button class="tab-btn" onclick="switchTab('roundtripTabs', 'rt-pane-4', this)">D. Flow Form Submit (nfm_reply)</button>
+        <button class="tab-btn" onclick="switchTab('roundtripTabs', 'rt-pane-5', this)">E. KYC/Payment WebView &amp; Live Tracking</button>
+      </div>
+
+      <!-- RT Pane 1 -->
+      <div class="tab-pane active" id="rt-pane-1">
+        <p>
+          <strong>How it starts on Payme's Website:</strong> You place a button on your website or mobile app pointing to <code>https://wa.me/18005550199?text=Send%20money%20with%20Payme</code>. When the user clicks it and hits send in WhatsApp, or when the user types an amount like <code>500</code> in chat, Meta posts a <code>type: "text"</code> webhook to your server:
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Inbound Webhook to Payme Server: messages[0].type === "text"</span>
+            <button class="copy-btn" onclick="copyCode('codeRtText', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeRtText">// 1. INBOUND WEBHOOK RECEIVED BY iSEND SERVER (POST https://api.payme.com/webhooks/whatsapp)
+{
+  "object": "whatsapp_business_account",
+  "entry": [{
+    "id": "WABA_ID_546151681",
+    "changes": [{
+      "field": "messages",
+      "value": {
+        "messaging_product": "whatsapp",
+        "contacts": [{ "profile": { "name": "Carlos Rivera" }, "wa_id": "17135550142" }],
+        "messages": [{
+          "from": "17135550142",
+          "id": "wamid.HBgLMTcxMzU1NTAxNDIVAgASGCA4",
+          "timestamp": "1760678100",
+          "type": "text",
+          "text": {
+            "body": "500"
+          }
+        }]
+      }
+    }]
+  }]
+}
+
+// 2. HOW iSEND SERVER EXTRACTS THE VALUE:
+// const userPhone = req.body.entry[0].changes[0].value.messages[0].from; // "17135550142"
+// const textInput = req.body.entry[0].changes[0].value.messages[0].text.body.trim(); // "500"
+// If session.step === "AWAITING_AMOUNT", server parses 500.00 USD, calls Payme Quote API,
+// saves quote_id in session, and sends the Delivery Method Buttons JSON!</code></pre>
+        </div>
+      </div>
+
+      <!-- RT Pane 2 -->
+      <div class="tab-pane" id="rt-pane-2">
+        <p>
+          <strong>How List Selection Works:</strong> Your server sends an Interactive List JSON (<code>interactive.type: "list"</code>) with up to 10 rows (e.g., Countries or Saved Beneficiaries). When the user taps a row, Meta sends back an <code>interactive.type: "list_reply"</code> webhook containing the exact <code>id</code> you defined (e.g., <code>"corridor_NP"</code> or <code>"bene_44102"</code>):
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Outbound List JSON &rarr; Inbound list_reply Webhook JSON</span>
+            <button class="copy-btn" onclick="copyCode('codeRtList', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeRtList">// 1. OUTBOUND JSON SENT FROM iSEND SERVER TO WHATSAPP (POST /{PHONE_NUMBER_ID}/messages)
+{
+  "messaging_product": "whatsapp",
+  "to": "17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "list",
+    "body": { "text": "Select the country you want to send money to:" },
+    "action": {
+      "button": "Select Country",
+      "sections": [{
+        "title": "Popular Corridors",
+        "rows": [
+          { "id": "corridor_NP", "title": "🇳🇵 Nepal (NPR)", "description": "1 USD = 134.80 NPR • Bank & Cash Pickup" },
+          { "id": "corridor_MX", "title": "🇲🇽 Mexico (MXN)", "description": "1 USD = 19.75 MXN • Instant SPEI & Cash" }
+        ]
+      }]
+    }
+  }
+}
+
+// 2. INBOUND WEBHOOK RETURNED TO iSEND SERVER WHEN USER SELECTS "Nepal (NPR)"
+{
+  "entry": [{
+    "changes": [{
+      "value": {
+        "messages": [{
+          "from": "17135550142",
+          "id": "wamid.HBgLMTcxMzU1NTAxNDIVAgASGCB1",
+          "timestamp": "1760678125",
+          "type": "interactive",
+          "interactive": {
+            "type": "list_reply",
+            "list_reply": {
+              "id": "corridor_NP",
+              "title": "🇳🇵 Nepal (NPR)",
+              "description": "1 USD = 134.80 NPR • Bank & Cash Pickup"
+            }
+          }
+        }]
+      }
+    }]
+  }]
+}
+// Server reads: message.interactive.list_reply.id === "corridor_NP"
+// Updates session: { corridor: "NP", step: "AWAITING_AMOUNT" }</code></pre>
+        </div>
+      </div>
+
+      <!-- RT Pane 3 -->
+      <div class="tab-pane" id="rt-pane-3">
+        <p>
+          <strong>How Reply Buttons Work:</strong> Your server sends up to 3 buttons (<code>interactive.type: "button"</code>) for Payout Mode (<em>Bank Deposit</em>, <em>Cash Pickup</em>, <em>Mobile Wallet</em>). When the user taps one, Meta returns an <code>interactive.type: "button_reply"</code> webhook with the button's <code>id</code>:
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Outbound Reply Buttons JSON &rarr; Inbound button_reply Webhook JSON</span>
+            <button class="copy-btn" onclick="copyCode('codeRtButton', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeRtButton">// 1. OUTBOUND JSON SENT FROM iSEND SERVER TO WHATSAPP (POST /{PHONE_NUMBER_ID}/messages)
+{
+  "messaging_product": "whatsapp",
+  "to": "17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "button",
+    "body": { "text": "You are sending $500.00 USD (67,400 NPR). Choose how your recipient will receive the money:" },
+    "action": {
+      "buttons": [
+        { "type": "reply", "reply": { "id": "payout_BANK_DEPOSIT", "title": "🏦 Bank Deposit" } },
+        { "type": "reply", "reply": { "id": "payout_CASH_PICKUP", "title": "💵 Cash Pickup" } },
+        { "type": "reply", "reply": { "id": "payout_WALLET", "title": "📱 eSewa / Khalti" } }
+      ]
+    }
+  }
+}
+
+// 2. INBOUND WEBHOOK RETURNED TO iSEND SERVER WHEN USER TAPS "🏦 Bank Deposit"
+{
+  "entry": [{
+    "changes": [{
+      "value": {
+        "messages": [{
+          "from": "17135550142",
+          "id": "wamid.HBgLMTcxMzU1NTAxNDIVAgASGCB9",
+          "timestamp": "1760678150",
+          "type": "interactive",
+          "interactive": {
+            "type": "button_reply",
+            "button_reply": {
+              "id": "payout_BANK_DEPOSIT",
+              "title": "🏦 Bank Deposit"
+            }
+          }
+        }]
+      }
+    }]
+  }]
+}
+// Server reads: message.interactive.button_reply.id === "payout_BANK_DEPOSIT"</code></pre>
+        </div>
+      </div>
+
+      <!-- RT Pane 4 -->
+      <div class="tab-pane" id="rt-pane-4">
+        <p>
+          <strong>How Multi-Field Form Responses Return (`nfm_reply`):</strong> When the user fills out Beneficiary Details inside the native WhatsApp Flow form and taps Submit, Meta delivers the entire form payload back to your webhook as a JSON string inside <code>messages[0].interactive.nfm_reply.response_json</code>:
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Inbound Flow Submission Webhook: interactive.type === "nfm_reply"</span>
+            <button class="copy-btn" onclick="copyCode('codeRtNfmReply', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeRtNfmReply">// INBOUND WEBHOOK DELIVERED TO iSEND SERVER WHEN USER SUBMITS THE WHATSAPP FLOW FORM
+{
+  "entry": [{
+    "changes": [{
+      "value": {
+        "messages": [{
+          "context": {
+            "from": "18005550199",
+            "id": "wamid.ORIGINAL_FLOW_MESSAGE_ID"
+          },
+          "from": "17135550142",
+          "id": "wamid.FLOW_RESPONSE_MESSAGE_ID",
+          "timestamp": "1760678210",
+          "type": "interactive",
+          "interactive": {
+            "type": "nfm_reply",
+            "nfm_reply": {
+              "name": "flow",
+              "body": "Sent",
+              "response_json": "{\"flow_token\":\"payme_ft_usr8821_01\",\"quote_id\":\"QT-9928174\",\"beneficiary_id\":\"BEN-44102\",\"beneficiary_full_name\":\"Ramesh Adhikari\",\"institution_id\":\"NABIL_BANK_NP\",\"account_number\":\"01100174829101\",\"confirmed\":true}"
+            }
+          }
+        }]
+      }
+    }]
+  }]
+}
+
+// HOW iSEND SERVER PARSES IT:
+// const formResult = JSON.parse(message.interactive.nfm_reply.response_json);
+// Now Payme Server has quote_id, beneficiary_id, and bank account details,
+// and immediately sends the KYC + Payment WebView link!</code></pre>
+        </div>
+      </div>
+
+      <!-- RT Pane 5 -->
+      <div class="tab-pane" id="rt-pane-5">
+        <p>
+          <strong>How KYC/Payment WebView Handoff, Final Confirmation, and Payment Tracking Work:</strong>
+          <br/>1. Your server sends an <code>interactive.type: "cta_url"</code> button containing a signed session link to your existing Payme KYC/Payment page (`https://app.payme.com/wa-checkout?session=JWT`).
+          <br/>2. When tapped inside WhatsApp on iOS/Android, it opens in **WhatsApp's In-App Browser (WebView)**.
+          <br/>3. Once the user completes KYC and Payment on your website, your existing backend triggers <code>POST /{PHONE_NUMBER_ID}/messages</code> to push the **Final Confirmation &amp; Payment ID (`PAY-84920411`)** with a **"Track Payment Progress"** button right inside WhatsApp!
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Post-Payment Confirmation Push + Live In-Chat Payment Tracking Loop</span>
+            <button class="copy-btn" onclick="copyCode('codeRtTracking', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeRtTracking">// 1. AFTER KYC & PAYMENT SUCCEED ON EXISTING WEBSITE, iSEND SERVER PUSHES CONFIRMATION TO WHATSAPP:
+{
+  "messaging_product": "whatsapp",
+  "to": "17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "button",
+    "header": { "type": "text", "text": "Payment Confirmed! ✅" },
+    "body": {
+      "text": "Your remittance is now processing!\n\n• Payment ID: PAY-84920411\n• Amount Sent: $500.00 USD\n• Payout Amount: 67,400.00 NPR\n• Recipient: Ramesh Adhikari (Nabil Bank ••9101)\n• Current Status: 🟡 Processing Bank Deposit (ETA: 10 mins)\n\nTap 'Check Status' anytime below to track live payout progress right here in WhatsApp."
+    },
+    "footer": { "text": "Web tracking also available at app.payme.com/track/PAY-84920411" },
+    "action": {
+      "buttons": [
+        { "type": "reply", "reply": { "id": "track_PAY-84920411", "title": "🔄 Check Status" } },
+        { "type": "reply", "reply": { "id": "receipt_pdf_PAY-84920411", "title": "📄 Download Receipt" } }
+      ]
+    }
+  }
+}
+
+// 2. WHEN USER TAPS "🔄 Check Status", WHATSAPP SENDS THIS WEBHOOK TO iSEND SERVER:
+// message.interactive.button_reply.id === "track_PAY-84920411"
+// Payme Server queries existing GET /v1/remittances/PAY-84920411/status and replies in chat:
+{
+  "messaging_product": "whatsapp",
+  "to": "17135550142",
+  "type": "text",
+  "text": {
+    "body": "📦 Live Tracking for Payment ID: *PAY-84920411*\n\n✅ 11:42 AM — KYC Verified\n✅ 11:44 AM — Payment Captured ($501.99 USD)\n✅ 11:45 AM — FX Converted (67,400.00 NPR)\n🟢 11:49 AM — *Deposited into Nabil Bank Account ••9101*\n\nBank Reference: NBL-20261017-99412"
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5C: FIRST WEBSITE CLICK, 2-HOUR SESSION TOKENS & RE-OPENING FROM WEBSITE -->
+    <section class="doc-section" id="sec-sessions">
+      <div class="section-eyebrow">Section 5C • Website Click Handoff, 2-Hour Session TTL &amp; Re-Entry Logic</div>
+      <h2>What Happens on First Website Click, How 2-Hour Sessions Work, and What Happens on Re-Click</h2>
+      <p>
+        When a customer clicks <strong>"Send via WhatsApp"</strong> on <code>payme.com</code>, you bridge an unauthenticated or logged-in browser session into a stateful, <strong>2-hour (`7,200-second`) conversational remittance instance</strong> keyed by the user's verified WhatsApp phone number (`wa_id`).
+      </p>
+
+      <h3>1. Step-by-Step: What Happens When the User First Clicks "Send via WhatsApp" on Payme's Website?</h3>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Step 1A: Website Mints a Pre-Seeded Handoff Token</h4>
+          <ul>
+            <li>When the user clicks <strong>"Send via WhatsApp"</strong> on <code>payme.com</code> (optionally after picking a country/amount on your website calculator), your frontend calls <code>POST /v1/wa-handoff/init</code> on the Payme server.</li>
+            <li>Your server creates a temporary handoff record in Redis (TTL: 15 mins) with a short reference ID such as <code>PMW-9F3K82</code> storing any website context (e.g., <code>web_user_id</code> if logged in, <code>corridor: "NP"</code>, <code>amount_usd: 500</code>).</li>
+            <li>The website opens the official WhatsApp Universal Click-to-Chat URL (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/about-the-platform" target="_blank">Meta Click-to-Chat</a>):<br/>
+              <code>https://wa.me/18005550199?text=Start%20Payme%20Transfer%20%5BRef%3A%20PMW-9F3K82%5D</code>
+            </li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>Step 1B: User Taps Send &rarr; Meta Fires Inbound Webhook</h4>
+          <ul>
+            <li>On mobile, the OS launches the WhatsApp app directly into the verified <strong>Payme Money Transfer</strong> chat with the message box pre-filled: <code>Start Payme Transfer [Ref: PMW-9F3K82]</code>. (On desktop, you can also display a QR code of that exact <code>wa.me</code> link).</li>
+            <li>The moment the user taps <strong>Send (➤)</strong>, WhatsApp delivers the message to Meta Cloud API, which immediately sends an HTTP <code>POST</code> webhook to your Payme server.</li>
+            <li>Your server extracts <code>PMW-9F3K82</code>, links the website context to the user's WhatsApp phone number (<code>messages[0].from</code>), and creates the <strong>2-hour active session</strong>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>2. Exact Information Exchanged Between User &harr; WhatsApp &harr; Payme Server on First Click</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Hop</th>
+              <th>Direction</th>
+              <th>Exact Data / Fields Exchanged</th>
+              <th>Why Payme Server Needs It</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hop 1</strong></td>
+              <td><strong>Payme Website &rarr; User's WhatsApp App</strong></td>
+              <td>
+                URL: <code>https://wa.me/18005550199?text=Start%20Payme%20Transfer%20[Ref:%20PMW-9F3K82]</code>
+              </td>
+              <td>Opens WhatsApp to Payme's official business number and pre-fills the single-use Handoff Reference Token (<code>PMW-9F3K82</code>) so the user doesn't have to type anything.</td>
+            </tr>
+            <tr>
+              <td><strong>Hop 2</strong></td>
+              <td><strong>User's WhatsApp App &rarr; Meta Cloud API &rarr; Payme Server Webhook</strong></td>
+              <td>
+                • <code>messages[0].from</code>: <code>"17135550142"</code> (Verified E.164 Phone)<br/>
+                • <code>contacts[0].profile.name</code>: <code>"Carlos Rivera"</code><br/>
+                • <code>messages[0].id</code>: <code>"wamid.HBgLMT..."</code> (Message ID)<br/>
+                • <code>messages[0].timestamp</code>: <code>"1760678100"</code><br/>
+                • <code>messages[0].text.body</code>: <code>"Start Payme Transfer [Ref: PMW-9F3K82]"</code><br/>
+                • Header: <code>X-Hub-Signature-256: sha256=...</code>
+              </td>
+              <td>
+                1. <strong>Phone Identity:</strong> WhatsApp guarantees <code>from</code> is the user's real phone number.<br/>
+                2. <strong>Web Context Binding:</strong> Matches <code>PMW-9F3K82</code> to any quote started on the website.<br/>
+                3. <strong>Idempotency:</strong> Uses <code>wamid</code> to ignore duplicate webhook retries.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Hop 3</strong></td>
+              <td><strong>Payme Server &rarr; Meta Cloud API &rarr; User's WhatsApp App</strong></td>
+              <td>
+                <code>POST /{PHONE_NUMBER_ID}/messages</code> with Interactive Greeting / Country List JSON (or pre-filled Quote confirmation if <code>PMW-9F3K82</code> already had Country &amp; Amount).
+              </td>
+              <td>Starts the guided conversational flow and stores the <strong>2-hour session state</strong> in Redis (`payme:wa:session:17135550142`).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>3. The 4 Session IDs &amp; Special Tokens Managing the 2-Hour Active Instance</h3>
+      <p>
+        WhatsApp itself is stateless regarding your business workflow—it only maintains a <strong>24-hour customer service messaging window</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/send-messages" target="_blank">Meta Service Messages Docs</a>). To enforce a <strong>2-hour (`7,200-second`) active remittance session</strong>, your Payme server manages 4 coordinated tokens:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Token / Identifier</th>
+              <th>Format Example</th>
+              <th>TTL / Expiry</th>
+              <th>Where It Lives &amp; How It Secures the 2-Hour Instance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Website Handoff Nonce (<code>ref_id</code>)</strong></td>
+              <td><code>PMW-9F3K82</code></td>
+              <td><strong>15 Minutes</strong> (Single-use)</td>
+              <td>Generated when clicking "Send via WhatsApp" on the website. Stored in Redis <code>payme:wa:handoff:PMW-9F3K82</code>. Deleted immediately once claimed by the first WhatsApp webhook so it cannot be replayed.</td>
+            </tr>
+            <tr>
+              <td><strong>2. Conversational Session ID (<code>session_id</code>)</strong></td>
+              <td><code>sess_01J9WA8821</code><br/>(under key <code>payme:wa:session:{wa_id}</code>)</td>
+              <td><strong>2 Hours (`7200s` Sliding or Fixed TTL)</strong></td>
+              <td>Your master 2-hour remittance instance in Redis/DB. Stores <code>session_id</code>, <code>step</code>, <code>corridor</code>, <code>send_amount_usd</code>, <code>quote_id</code>, <code>beneficiary_id</code>, <code>draft_tx_id</code>, and <code>expires_at</code>. Automatically expires after 2 hours of inactivity via Redis <code>EX 7200</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>3. WhatsApp Flow Token (<code>flow_token</code>)</strong></td>
+              <td><code>ft_sess_01J9WA8821_q99</code></td>
+              <td><strong>2 Hours</strong> (bound to <code>session_id</code>)</td>
+              <td>Passed in <code>action.parameters.flow_token</code> when launching a native WhatsApp Flow form (<a href="https://help.1msg.io/docs/api-1msg/whatsapp-flow/flow-encryption" target="_blank">Flow Token Spec</a>). Meta echoes it in every encrypted screen request and in <code>nfm_reply</code>. If the user submits an old Flow form in chat after 2 hours, your server checks <code>flow_token</code> in Redis, sees it expired, and prompts for a fresh quote.</td>
+            </tr>
+            <tr>
+              <td><strong>4. WebView KYC &amp; Payment JWT (<code>webview_jwt</code>)</strong></td>
+              <td><code>eyJhbGciOiJIUzI1Ni...</code></td>
+              <td><strong>30 Mins (Payment) / 2 Hours (KYC)</strong></td>
+              <td>Signed JWT inside the <code>cta_url</code> link (<code>https://app.payme.com/wa-checkout?token=...</code>). Contains <code>{ session_id, draft_tx_id, wa_phone, exp }</code> so your existing Payme KYC and Payment pages authenticate the user seamlessly inside WhatsApp's In-App WebView.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>4. What Happens When the User Clicks "Send via WhatsApp" from the Website AGAIN?</h3>
+      <p>
+        Users frequently return to the website, change an amount on the web calculator, or click <strong>"Send via WhatsApp"</strong> a second time. Your server handles re-entry deterministically across <strong>3 scenarios</strong>:
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 1020 320" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Website Re-Click and 2-Hour Session Decision Tree">
+          <defs>
+            <marker id="reArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a"/>
+            </marker>
+          </defs>
+
+          <!-- Root Node -->
+          <rect x="20" y="115" width="210" height="80" rx="10" fill="#0f172a"/>
+          <text x="125" y="145" text-anchor="middle" font-size="12" font-weight="800" fill="#34d399">User Clicks Website Link Again</text>
+          <text x="125" y="165" text-anchor="middle" font-size="10.5" fill="#cbd5e1">Webhook arrives with wa_id</text>
+          <text x="125" y="181" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="monospace">Check Redis: payme:wa:session:{wa_id}</text>
+
+          <!-- Branch 1: Active Session (< 2h) -->
+          <path d="M 230 135 L 300 55 L 350 55" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#reArr)"/>
+          <rect x="355" y="15" width="640" height="86" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+          <text x="375" y="38" font-size="12" font-weight="800" fill="#065f46">SCENARIO A: Active Session Exists (&lt; 2 Hours Old) &amp; Unpaid Draft in Progress</text>
+          <text x="375" y="58" font-size="11" fill="#0f172a">• Do NOT silently wipe their progress or create duplicate draft transactions.</text>
+          <text x="375" y="75" font-size="11" fill="#0f172a">• Send Interactive Reply Buttons:  [ ▶️ Resume Current ($500 &rarr; Nepal) ]   [ 🔄 Start New with Latest Web Quote ]</text>
+          <text x="375" y="92" font-size="10.5" fill="#047857" font-family="monospace">• If "Resume": jump to session.step &amp; reset TTL to 7200s. If "Start New": cancel old draft &amp; mint new session_id.</text>
+
+          <!-- Branch 2: Expired Session (> 2h) -->
+          <line x1="230" y1="155" x2="350" y2="155" stroke="#0f172a" stroke-width="2" marker-end="url(#reArr)"/>
+          <rect x="355" y="115" width="640" height="82" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+          <text x="375" y="138" font-size="12" font-weight="800" fill="#0369a1">SCENARIO B: Previous Session Expired (&gt; 2 Hours Old — Redis Key Gone)</text>
+          <text x="375" y="158" font-size="11" fill="#0f172a">• Any old unpaid quote is marked EXPIRED (protects Payme from stale FX rates after 2 hours).</text>
+          <text x="375" y="175" font-size="11" fill="#0f172a">• Server creates a fresh 2-hour session_id, loads saved beneficiaries from Payme Core, and starts with live FX rates.</text>
+
+          <!-- Branch 3: Previous Session Paid -->
+          <path d="M 230 175 L 300 255 L 350 255" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#reArr)"/>
+          <rect x="355" y="212" width="640" height="86" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+          <text x="375" y="235" font-size="12" font-weight="800" fill="#92400e">SCENARIO C: Previous Transfer Was Already Paid (session.step === "COMPLETED")</text>
+          <text x="375" y="255" font-size="11" fill="#0f172a">• Server detects last transfer (e.g., Payment ID PAY-84920411) is already paid/processing.</text>
+          <text x="375" y="272" font-size="11" fill="#0f172a">• Sends quick-choice buttons: [ 💸 Send Another Transfer ]  [ 📦 Track Transfer PAY-84920411 ]</text>
+          <text x="375" y="289" font-size="10.5" fill="#b45309" font-family="monospace">• Tapping "Send Another Transfer" mints a new 2-hour session_id while keeping PAY-84920411 trackable.</text>
+        </svg>
+        <div class="diagram-caption">
+          Figure 5C.1 — Re-Entry Decision Tree when a customer clicks "Send via WhatsApp" on the Payme website a second time.
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-header">
+          <span>src/services/waSessionAndReentryManager.js (Website Handoff + 2-Hour Redis TTL + Re-Click Handler)</span>
+          <button class="copy-btn" onclick="copyCode('codeSessionReentry', this)">Copy Code</button>
+        </div>
+        <pre><code id="codeSessionReentry">import crypto from "node:crypto";
+
+const TWO_HOURS_SECONDS = 7200; // 2-hour active remittance session TTL
+const HANDOFF_TTL_SECONDS = 900; // 15-minute website-to-WhatsApp click token TTL
+
+// 1. CALLED BY iSEND WEBSITE WHEN USER CLICKS "SEND VIA WHATSAPP"
+// Endpoint: POST https://api.payme.com/v1/wa-handoff/init
+export async function createWebsiteToWhatsAppLink(req, res, redis) {
+  const { webUserId, corridor, sendAmountUsd } = req.body;
+  const refId = "PMW-" + crypto.randomBytes(3).toString("hex").toUpperCase();
+
+  // Save pre-seeded website context in Redis for 15 minutes
+  await redis.set(
+    `payme:wa:handoff:${refId}`,
+    JSON.stringify({ webUserId, corridor, sendAmountUsd, createdAt: Date.now() }),
+    "EX",
+    HANDOFF_TTL_SECONDS
+  );
+
+  const prefilledText = encodeURIComponent(`Start Payme Transfer [Ref: ${refId}]`);
+  return res.json({
+    refId,
+    whatsappLaunchUrl: `https://wa.me/${process.env.PAYME_WA_NUMBER}?text=${prefilledText}`,
+  });
+}
+
+// 2. CALLED BY WHATSAPP WEBHOOK WHEN USER CLICKS WEBSITE LINK (FIRST TIME OR RE-CLICK)
+export async function handleWebsiteEntryWebhook(message, redis, paymeCoreApi) {
+  const waPhone = message.from; // e.g., "17135550142"
+  const text = message.text?.body || "";
+  const refMatch = text.match(/\[Ref:\s*(PMW-[A-F0-9]+)\]/i);
+
+  // Consume single-use website handoff token if present
+  let webContext = null;
+  if (refMatch) {
+    const handoffKey = `payme:wa:handoff:${refMatch[1].toUpperCase()}`;
+    const rawHandoff = await redis.get(handoffKey);
+    if (rawHandoff) {
+      webContext = JSON.parse(rawHandoff);
+      await redis.del(handoffKey); // Single-use nonce
+    }
+  }
+
+  // Check if an active 2-hour session already exists for this WhatsApp phone number
+  const sessionKey = `payme:wa:session:${waPhone}`;
+  const existingRaw = await redis.get(sessionKey);
+  const existingSession = existingRaw ? JSON.parse(existingRaw) : null;
+
+  // SCENARIO A: User has an unfinished in-progress session (< 2 hours old)
+  if (existingSession && existingSession.step !== "IDLE" && existingSession.step !== "COMPLETED") {
+    // Store the new webContext as a pending option in case they choose "Start Fresh"
+    existingSession.pendingWebContext = webContext;
+    await redis.set(sessionKey, JSON.stringify(existingSession), "EX", TWO_HOURS_SECONDS);
+
+    return sendWhatsAppJson(waPhone, {
+      type: "interactive",
+      interactive: {
+        type: "button",
+        header: { type: "text", text: "Unfinished Transfer Found ⏳" },
+        body: {
+          text: `You have an active transfer in progress (${existingSession.amountUsd ? "$" + existingSession.amountUsd + " USD" : "Draft"} to ${existingSession.corridor || "recipient"}).\n\nWould you like to resume where you left off or start a new transfer?`
+        },
+        footer: { text: "Active session valid for 2 hours" },
+        action: {
+          buttons: [
+            { type: "reply", reply: { id: "session_RESUME", title: "▶️ Resume Current" } },
+            { type: "reply", reply: { id: "session_RESTART", title: "🔄 Start New Transfer" } }
+          ]
+        }
+      }
+    });
+  }
+
+  // SCENARIO B & C: No active session (First click, OR >2h expired, OR previous was COMPLETED)
+  const newSession = {
+    sessionId: `sess_${crypto.randomUUID()}`,
+    waPhone,
+    webUserId: webContext?.webUserId || existingSession?.webUserId || null,
+    corridor: webContext?.corridor || null,
+    amountUsd: webContext?.sendAmountUsd || null,
+    step: webContext?.corridor && webContext?.sendAmountUsd
+      ? "AWAITING_DELIVERY_MODE"
+      : "AWAITING_CORRIDOR",
+    createdAt: Date.now(),
+    expiresAt: Date.now() + TWO_HOURS_SECONDS * 1000,
+  };
+
+  // Save with 2-hour (7200s) TTL in Redis
+  await redis.set(sessionKey, JSON.stringify(newSession), "EX", TWO_HOURS_SECONDS);
+
+  // If website already passed corridor & amount (e.g., $500 to NP), skip straight to Delivery Method!
+  if (newSession.step === "AWAITING_DELIVERY_MODE") {
+    const quote = await paymeCoreApi.post("/v1/quotes", {
+      corridor: newSession.corridor,
+      sendAmountUsd: newSession.amountUsd,
+    });
+    newSession.quoteId = quote.id;
+    newSession.payoutFormatted = quote.payoutFormatted;
+    await redis.set(sessionKey, JSON.stringify(newSession), "EX", TWO_HOURS_SECONDS);
+
+    return sendWhatsAppJson(waPhone, {
+      type: "interactive",
+      interactive: {
+        type: "button",
+        header: { type: "text", text: "Payme Quote Loaded from Website ✅" },
+        body: {
+          text: `We loaded your website selection:\n• Send: *$${newSession.amountUsd} USD*\n• Receive: *${quote.payoutFormatted}* (${newSession.corridor})\n\nSelect how your recipient will receive the money:`
+        },
+        action: {
+          buttons: [
+            { type: "reply", reply: { id: "mode_BANK_DEPOSIT", title: "🏦 Bank Deposit" } },
+            { type: "reply", reply: { id: "mode_CASH_PICKUP", title: "💵 Cash Pickup" } }
+          ]
+        }
+      }
+    });
+  }
+
+  // Otherwise start at Step 1 (Select Country List)
+  return sendCorridorListMenu(waPhone);
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 6: HOW TO CREATE, LOAD, AND PUSH WHATSAPP TEMPLATES -->
+    <section class="doc-section" id="sec-templates">
+      <div class="section-eyebrow">Section 6 • Template Management API</div>
+      <h2>How to Build Message Templates (WhatsApp Manager UI vs. Server JSON API) &amp; Push to Clients</h2>
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>Option A: Build in Meta WhatsApp Manager UI (No-Code)</h4>
+          <ul>
+            <li>Go to <strong>Meta Business Suite &rarr; WhatsApp Manager &rarr; Account Tools &rarr; Message Templates</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/templates/overview" target="_blank">Meta Template Fundamentals</a>).</li>
+            <li>Click <strong>Create Template</strong>, select Category (<code>Utility</code> or <code>Marketing</code>), enter the template name (e.g., <code>payme_transfer_receipt</code>), and choose languages.</li>
+            <li>Add Header, Body with variables (<code>{{sender_name}}</code>, <code>{{reference_code}}</code>), Footer, and Buttons (URL, Quick Reply, or WhatsApp Flow), then click <strong>Submit for Review</strong>.</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>Option B: Build Programmatically via Server JSON API</h4>
+          <ul>
+            <li>Your Payme server sends a <code>POST https://graph.facebook.com/v23.0/{WABA_ID}/message_templates</code> JSON payload (shown in Tabs 1 &amp; 2 below) to create the template automatically across environments.</li>
+            <li>Once approved by Meta (typically 1–5 minutes for Utility templates), your server pushes the template to customers by sending a JSON payload to <code>POST /{PHONE_NUMBER_ID}/messages</code> with <code>"type": "template"</code> (Tab 4 below).</li>
+          </ul>
+        </div>
+      </div>
+      <p>
+        In the WhatsApp Business Platform, <strong>Message Templates</strong> are managed at the <strong>WhatsApp Business Account (`WABA_ID`)</strong> level via the <a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/whatsapp-business-account/template-api" target="_blank">Graph API Message Templates endpoint</a> (`/{WABA_ID}/message_templates`), while <strong>pushing</strong> a template to a client is executed at the <strong>Business Phone Number (`PHONE_NUMBER_ID`)</strong> level via `POST /{PHONE_NUMBER_ID}/messages` (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/templates/utility-templates/utility-templates" target="_blank">Meta Utility Templates Docs</a>).
+      </p>
+
+      <div class="tab-bar" id="templateTabs">
+        <button class="tab-btn active" onclick="switchTab('templateTabs', 'tpl-pane-1', this)">1. Create Utility Receipt Template</button>
+        <button class="tab-btn" onclick="switchTab('templateTabs', 'tpl-pane-2', this)">2. Create Template with Embedded Flow</button>
+        <button class="tab-btn" onclick="switchTab('templateTabs', 'tpl-pane-3', this)">3. Load / Sync Templates (GET)</button>
+        <button class="tab-btn" onclick="switchTab('templateTabs', 'tpl-pane-4', this)">4. Push Template to Client (POST)</button>
+      </div>
+
+      <!-- Tab 1: Create Utility Receipt Template -->
+      <div class="tab-pane active" id="tpl-pane-1">
+        <p>
+          Register `payme_transfer_receipt` as a `UTILITY` template using named parameters (`parameter_format: "named"`) so your backend can push compliant receipts and cash pickup reference codes immediately after payment capture (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/templates/utility-templates/utility-templates" target="_blank">Meta Utility Templates Spec</a>).
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>POST https://graph.facebook.com/v23.0/{WABA_ID}/message_templates (Create Utility Receipt)</span>
+            <button class="copy-btn" onclick="copyCode('codeTplCreateReceipt', this)">Copy cURL</button>
+          </div>
+          <pre><code id="codeTplCreateReceipt">curl -X POST "https://graph.facebook.com/v23.0/${WABA_ID}/message_templates" \
+  -H "Authorization: Bearer ${WHATSAPP_SYSTEM_USER_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "payme_transfer_receipt",
+    "language": "en_US",
+    "category": "UTILITY",
+    "parameter_format": "named",
+    "components": [
+      {
+        "type": "HEADER",
+        "format": "TEXT",
+        "text": "Payme Transfer Confirmed ✅"
+      },
+      {
+        "type": "BODY",
+        "text": "Hi {{sender_name}}, your transfer of {{send_amount}} to {{beneficiary_name}} ({{destination_country}}) is on its way!\n\n• Payout Amount: {{payout_amount}}\n• Delivery Method: {{delivery_method}}\n• Reference / Pickup Code: {{reference_code}}\n• Estimated Arrival: {{eta_window}}",
+        "example": {
+          "body_text_named_params": [
+            { "param_name": "sender_name", "example": "Carlos" },
+            { "param_name": "send_amount", "example": "$500.00 USD" },
+            { "param_name": "beneficiary_name", "example": "Maria Elena Gomez" },
+            { "param_name": "destination_country", "example": "Mexico" },
+            { "param_name": "payout_amount", "example": "$9,875.00 MXN" },
+            { "param_name": "delivery_method", "example": "BBVA Bank Deposit" },
+            { "param_name": "reference_code", "example": "PAY-84920411" },
+            { "param_name": "eta_window", "example": "Within 15 minutes" }
+          ]
+        }
+      },
+      {
+        "type": "FOOTER",
+        "text": "Thank you for trusting Payme Money Transfer."
+      },
+      {
+        "type": "BUTTONS",
+        "buttons": [
+          {
+            "type": "URL",
+            "text": "Track Transfer",
+            "url": "https://app.payme.com/track/{{1}}",
+            "example": ["https://app.payme.com/track/PAY-84920411"]
+          },
+          {
+            "type": "QUICK_REPLY",
+            "text": "Repeat This Transfer"
+          }
+        ]
+      }
+    ]
+  }'</code></pre>
+        </div>
+      </div>
+
+      <!-- Tab 2: Create Template with Embedded WhatsApp Flow -->
+      <div class="tab-pane" id="tpl-pane-2">
+        <p>
+          To initiate a transfer outside the 24-hour window (e.g., when a user clicks "Send via WhatsApp" on your web calculator and you push a proactive prompt, or during an FX rate campaign), attach a `"type": "FLOW"` button directly to a template (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/flows/guides/sendingaflow" target="_blank">Meta Send a Flow as Template Guide</a>).
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>POST https://graph.facebook.com/v23.0/{WABA_ID}/message_templates (Template + Flow Button)</span>
+            <button class="copy-btn" onclick="copyCode('codeTplCreateFlow', this)">Copy cURL</button>
+          </div>
+          <pre><code id="codeTplCreateFlow">curl -X POST "https://graph.facebook.com/v23.0/${WABA_ID}/message_templates" \
+  -H "Authorization: Bearer ${WHATSAPP_SYSTEM_USER_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "payme_remittance_quickstart_flow",
+    "language": "en_US",
+    "category": "UTILITY",
+    "parameter_format": "named",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Hi {{sender_name}}, ready to send money to {{corridor_name}}? Today'\''s promotional rate is 1 USD = {{fx_rate}}. Tap below to enter your amount and recipient details right inside WhatsApp.",
+        "example": {
+          "body_text_named_params": [
+            { "param_name": "sender_name", "example": "Carlos" },
+            { "param_name": "corridor_name", "example": "Mexico" },
+            { "param_name": "fx_rate", "example": "19.75 MXN" }
+          ]
+        }
+      },
+      {
+        "type": "BUTTONS",
+        "buttons": [
+          {
+            "type": "FLOW",
+            "text": "Start Money Transfer",
+            "flow_id": "1633450807827276",
+            "flow_action": "data_exchange"
+          }
+        ]
+      }
+    ]
+  }'</code></pre>
+        </div>
+      </div>
+
+      <!-- Tab 3: Load / Sync Approved Templates -->
+      <div class="tab-pane" id="tpl-pane-3">
+        <p>
+          Before pushing a template to a client, query `GET /{WABA_ID}/message_templates` (or subscribe to the `message_template_status_update` webhook) to cache approved templates, verify `status === "APPROVED"`, and inspect their required parameter schemas (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/templates/template-management" target="_blank">Meta Template Management Docs</a>).
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>GET https://graph.facebook.com/v23.0/{WABA_ID}/message_templates?fields=name,status,category,language,components</span>
+            <button class="copy-btn" onclick="copyCode('codeTplLoad', this)">Copy cURL &amp; Response</button>
+          </div>
+          <pre><code id="codeTplLoad"># 1. Request to load all Payme templates and filter APPROVED ones in your cache
+curl -X GET "https://graph.facebook.com/v23.0/${WABA_ID}/message_templates?fields=id,name,status,category,language,parameter_format,components&limit=50" \
+  -H "Authorization: Bearer ${WHATSAPP_SYSTEM_USER_TOKEN}"
+
+# 2. Sample JSON Response from Meta Graph API
+{
+  "data": [
+    {
+      "id": "948102394810293",
+      "name": "payme_transfer_receipt",
+      "status": "APPROVED",
+      "category": "UTILITY",
+      "language": "en_US",
+      "parameter_format": "NAMED",
+      "components": [
+        { "type": "HEADER", "format": "TEXT", "text": "Payme Transfer Confirmed ✅" },
+        { "type": "BODY", "text": "Hi {{sender_name}}, your transfer of {{send_amount}}..." },
+        { "type": "BUTTONS", "buttons": [
+            { "type": "URL", "text": "Track Transfer", "url": "https://app.payme.com/track/{{1}}" },
+            { "type": "QUICK_REPLY", "text": "Repeat This Transfer" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "948102394810999",
+      "name": "payme_remittance_quickstart_flow",
+      "status": "APPROVED",
+      "category": "UTILITY",
+      "language": "en_US",
+      "parameter_format": "NAMED"
+    }
+  ]
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Tab 4: Push Template to Client -->
+      <div class="tab-pane" id="tpl-pane-4">
+        <p>
+          Once `status` is `APPROVED`, push the template to the user's phone number (`to`) using `POST /{PHONE_NUMBER_ID}/messages`. Below are both patterns: (A) pushing a template with an embedded `FLOW` button + `flow_token`, and (B) pushing the post-payment `payme_transfer_receipt` utility template.
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages (Push Template to Client)</span>
+            <button class="copy-btn" onclick="copyCode('codeTplPush', this)">Copy Payloads</button>
+          </div>
+          <pre><code id="codeTplPush"># PATTERN A: Push Template that Opens the Native Payme WhatsApp Flow
+curl -X POST "https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages" \
+  -H "Authorization: Bearer ${WHATSAPP_SYSTEM_USER_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messaging_product": "whatsapp",
+    "recipient_type": "individual",
+    "to": "+17135550142",
+    "type": "template",
+    "template": {
+      "name": "payme_remittance_quickstart_flow",
+      "language": { "code": "en_US" },
+      "components": [
+        {
+          "type": "body",
+          "parameters": [
+            { "type": "text", "parameter_name": "sender_name", "text": "Carlos" },
+            { "type": "text", "parameter_name": "corridor_name", "text": "Mexico" },
+            { "type": "text", "parameter_name": "fx_rate", "text": "19.75 MXN" }
+          ]
+        },
+        {
+          "type": "button",
+          "sub_type": "flow",
+          "index": "0",
+          "parameters": [
+            {
+              "type": "action",
+              "action": {
+                "flow_token": "payme_ft_usr8821_mx_9941",
+                "flow_action_data": {
+                  "default_corridor": "MX",
+                  "default_send_usd": "500",
+                  "locked_fx_rate": "19.75"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }'
+
+# PATTERN B: Push Post-Payment Utility Receipt Template
+curl -X POST "https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages" \
+  -H "Authorization: Bearer ${WHATSAPP_SYSTEM_USER_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messaging_product": "whatsapp",
+    "recipient_type": "individual",
+    "to": "+17135550142",
+    "type": "template",
+    "template": {
+      "name": "payme_transfer_receipt",
+      "language": { "code": "en_US" },
+      "components": [
+        {
+          "type": "body",
+          "parameters": [
+            { "type": "text", "parameter_name": "sender_name", "text": "Carlos" },
+            { "type": "text", "parameter_name": "send_amount", "text": "$500.00 USD" },
+            { "type": "text", "parameter_name": "beneficiary_name", "text": "Maria Elena Gomez" },
+            { "type": "text", "parameter_name": "destination_country", "text": "Mexico" },
+            { "type": "text", "parameter_name": "payout_amount", "text": "$9,875.00 MXN" },
+            { "type": "text", "parameter_name": "delivery_method", "text": "BBVA Mexico Bank Deposit" },
+            { "type": "text", "parameter_name": "reference_code", "text": "PAY-84920411" },
+            { "type": "text", "parameter_name": "eta_window", "text": "Within 15 minutes" }
+          ]
+        },
+        {
+          "type": "button",
+          "sub_type": "url",
+          "index": "0",
+          "parameters": [
+            { "type": "text", "text": "PAY-84920411" }
+          ]
+        }
+      ]
+    }
+  }'</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: INTERACTIVE MESSAGES & WHATSAPP FLOWS JSON -->
+    <section class="doc-section" id="sec-interactive">
+      <div class="section-eyebrow">Section 7 • In-Chat Collection &amp; WhatsApp Flows JSON</div>
+      <h2>Collecting Amount, Delivery Method, and Beneficiary Details Inside WhatsApp</h2>
+      <p>
+        Once the user is inside the <strong>24-hour customer service window</strong>, you combine fast single-tap <strong>Interactive Messages</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/interactive-list-messages" target="_blank">List Menus</a>, <a href="https://developer.8x8.com/connect/docs/whatsapp/interactive-message-api-library/" target="_blank">Reply Buttons</a>, and <a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/interactive-cta-url-messages" target="_blank">CTA URL Buttons</a>) with a multi-screen <strong>WhatsApp Flow (`payme_remittance_flow_v1.json`)</strong> (<a href="https://docs.kapso.ai/docs/whatsapp/flows/flow-json" target="_blank">Flow JSON v7.0 Spec</a>) so the user never has to type error-prone bank account numbers or beneficiary names as unstructured chat messages.
+      </p>
+
+      <div class="tab-bar" id="flowTabs">
+        <button class="tab-btn active" onclick="switchTab('flowTabs', 'flw-pane-1', this)">1. Complete WhatsApp Flow JSON (v7.0)</button>
+        <button class="tab-btn" onclick="switchTab('flowTabs', 'flw-pane-2', this)">2. Send Interactive Flow Message</button>
+        <button class="tab-btn" onclick="switchTab('flowTabs', 'flw-pane-3', this)">3. Interactive List &amp; Reply Buttons</button>
+        <button class="tab-btn" onclick="switchTab('flowTabs', 'flw-pane-4', this)">4. Interactive KYC &amp; Payment CTA URL</button>
+      </div>
+
+      <!-- Pane 1: Complete WhatsApp Flow JSON -->
+      <div class="tab-pane active" id="flw-pane-1">
+        <p>
+          This 3-screen <strong>WhatsApp Flow JSON (`version: "7.0"`, `data_api_version: "3.0"`)</strong> handles:
+          <br/>• <code>SCREEN_QUOTE</code>: Selecting destination corridor, entering USD send amount, and choosing payout method (`bank_deposit`, `cash_pickup`, `mobile_wallet`).
+          <br/>• <code>SCREEN_BENEFICIARY</code>: Dynamically populated by your `data_exchange` endpoint with live FX calculations, saved recipients, or fields to add a new beneficiary (Full Legal Name as on ID, Bank/Agent Network, Account/CLABE/Phone, and Remittance Purpose).
+          <br/>• <code>SCREEN_REVIEW</code>: Regulatory summary confirmation screen that submits the Flow and triggers the `nfm_reply` webhook.
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>payme_remittance_flow_v1.json (WhatsApp Flow JSON v7.0 + data_api_version 3.0)</span>
+            <button class="copy-btn" onclick="copyCode('codeFlowJson', this)">Copy Flow JSON</button>
+          </div>
+          <pre><code id="codeFlowJson">{
+  "version": "7.0",
+  "data_api_version": "3.0",
+  "routing_model": {
+    "SCREEN_QUOTE": ["SCREEN_BENEFICIARY"],
+    "SCREEN_BENEFICIARY": ["SCREEN_REVIEW"],
+    "SCREEN_REVIEW": []
+  },
+  "screens": [
+    {
+      "id": "SCREEN_QUOTE",
+      "title": "Payme Transfer Quote",
+      "data": {
+        "corridors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" }
+            }
+          },
+          "__example__": [
+            { "id": "MX", "title": "🇲🇽 Mexico (MXN) — 1 USD = 19.75 MXN" },
+            { "id": "NP", "title": "🇳🇵 Nepal (NPR) — 1 USD = 134.80 NPR" },
+            { "id": "CO", "title": "🇨🇴 Colombia (COP) — 1 USD = 4,180 COP" },
+            { "id": "IN", "title": "🇮🇳 India (INR) — 1 USD = 84.10 INR" }
+          ]
+        },
+        "delivery_methods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" }
+            }
+          },
+          "__example__": [
+            { "id": "BANK_DEPOSIT", "title": "🏦 Instant Bank Deposit ($1.99 Fee)" },
+            { "id": "CASH_PICKUP", "title": "💵 Cash Pickup at Partner Agent ($2.99 Fee)" },
+            { "id": "MOBILE_WALLET", "title": "📱 Mobile Money Wallet ($1.49 Fee)" }
+          ]
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "quote_form",
+            "children": [
+              {
+                "type": "TextHeading",
+                "text": "How much would you like to send?"
+              },
+              {
+                "type": "Dropdown",
+                "label": "Destination Country & Live Rate",
+                "name": "corridor_id",
+                "data-source": "${data.corridors}",
+                "required": true
+              },
+              {
+                "type": "TextInput",
+                "label": "Amount to Send (USD $1.00 - $999.99)",
+                "name": "send_amount_usd",
+                "input-type": "number",
+                "required": true,
+                "helper-text": "Daily WhatsApp limit: $999.99 USD"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Select Payout Method",
+                "name": "delivery_method",
+                "data-source": "${data.delivery_methods}",
+                "required": true
+              },
+              {
+                "type": "Footer",
+                "label": "Calculate & Add Recipient",
+                "on-click-action": {
+                  "name": "data_exchange",
+                  "payload": {
+                    "step": "QUOTE_SUBMITTED",
+                    "corridor_id": "${form.corridor_id}",
+                    "send_amount_usd": "${form.send_amount_usd}",
+                    "delivery_method": "${form.delivery_method}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "SCREEN_BENEFICIARY",
+      "title": "Recipient Details",
+      "data": {
+        "quote_banner": { "type": "string", "__example__": "Sending $500.00 USD → 9,875.00 MXN (Fee: $1.99)" },
+        "account_label": { "type": "string", "__example__": "18-Digit CLABE or Bank Account Number" },
+        "institutions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" }
+            }
+          },
+          "__example__": [
+            { "id": "BBVA_MX", "title": "BBVA Mexico" },
+            { "id": "BANORTE_MX", "title": "Banorte" },
+            { "id": "ELEKTRA_CASH", "title": "Banco Azteca / Elektra Pickup" }
+          ]
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "beneficiary_form",
+            "children": [
+              {
+                "type": "TextBody",
+                "text": "${data.quote_banner}"
+              },
+              {
+                "type": "TextInput",
+                "label": "Recipient Full Name (Must match Government ID)",
+                "name": "beneficiary_full_name",
+                "input-type": "text",
+                "required": true,
+                "helper-text": "Include paternal & maternal last names if applicable"
+              },
+              {
+                "type": "Dropdown",
+                "label": "Receiving Bank or Cash Pickup Network",
+                "name": "institution_id",
+                "data-source": "${data.institutions}",
+                "required": true
+              },
+              {
+                "type": "TextInput",
+                "label": "${data.account_label}",
+                "name": "account_or_pickup_city",
+                "input-type": "text",
+                "required": true
+              },
+              {
+                "type": "TextInput",
+                "label": "Recipient WhatsApp / Mobile Phone",
+                "name": "beneficiary_phone",
+                "input-type": "phone",
+                "required": true
+              },
+              {
+                "type": "Footer",
+                "label": "Review Transfer",
+                "on-click-action": {
+                  "name": "data_exchange",
+                  "payload": {
+                    "step": "BENEFICIARY_SUBMITTED",
+                    "beneficiary_full_name": "${form.beneficiary_full_name}",
+                    "institution_id": "${form.institution_id}",
+                    "account_or_pickup_city": "${form.account_or_pickup_city}",
+                    "beneficiary_phone": "${form.beneficiary_phone}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "SCREEN_REVIEW",
+      "title": "Confirm Transfer",
+      "terminal": true,
+      "success": true,
+      "data": {
+        "summary_text": { "type": "string", "__example__": "Send: $500.00 USD\nFee: $1.99 USD\nTotal to Pay: $501.99 USD\nExchange Rate: 1 USD = 19.75 MXN\nRecipient Gets: 9,875.00 MXN\nTo: Maria Elena Gomez (BBVA ••4821)" },
+        "quote_id": { "type": "string", "__example__": "QT-9928174" },
+        "beneficiary_id": { "type": "string", "__example__": "BEN-44102" }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Pre-Payment Disclosure Summary"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.summary_text}"
+          },
+          {
+            "type": "Footer",
+            "label": "Confirm & Proceed to Payment",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {
+                "quote_id": "${data.quote_id}",
+                "beneficiary_id": "${data.beneficiary_id}",
+                "confirmed": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Pane 2: Send Interactive Flow Message -->
+      <div class="tab-pane" id="flw-pane-2">
+        <p>
+          Inside a user-initiated 24-hour conversation window, send the published Flow using `interactive.type = "flow"` and `flow_action = "data_exchange"` (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/flows/guides/sendingaflow" target="_blank">Meta Send Flow Guide</a>).
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages (Interactive Flow Launcher)</span>
+            <button class="copy-btn" onclick="copyCode('codeSendInteractiveFlow', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeSendInteractiveFlow">{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "flow",
+    "header": {
+      "type": "text",
+      "text": "Payme Fast Money Transfer 💸"
+    },
+    "body": {
+      "text": "Send money in seconds! Tap below to check live exchange rates, choose Bank Deposit or Cash Pickup, and select your recipient."
+    },
+    "footer": {
+      "text": "Regulated & Encrypted • 15-min Rate Lock"
+    },
+    "action": {
+      "name": "flow",
+      "parameters": {
+        "flow_message_version": "3",
+        "flow_token": "payme_ft_usr8821_session_01",
+        "flow_id": "1633450807827276",
+        "flow_cta": "Open Transfer Form",
+        "flow_action": "data_exchange"
+      }
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Pane 3: Interactive List & Reply Buttons -->
+      <div class="tab-pane" id="flw-pane-3">
+        <p>
+          For returning senders who already have saved beneficiaries on Payme's web/mobile app, let them repeat a transfer in 2 taps using an <strong>Interactive List Menu (`type: "list"`)</strong> for saved recipients and <strong>Interactive Reply Buttons (`type: "button"`)</strong> for amount selection (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/interactive-list-messages" target="_blank">Meta Interactive List Docs</a>).
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Interactive Saved Beneficiaries List + Quick-Repeat Reply Buttons</span>
+            <button class="copy-btn" onclick="copyCode('codeInteractiveListButtons', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeInteractiveListButtons">// 1. Interactive List Message: Choose a Saved Beneficiary or Add New
+{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "list",
+    "header": { "type": "text", "text": "Welcome back, Carlos! 👋" },
+    "body": { "text": "Who would you like to send money to today? Select a saved recipient from your Payme profile or add someone new." },
+    "footer": { "text": "Live Rate: 1 USD = 19.75 MXN | 134.80 NPR" },
+    "action": {
+      "button": "Select Recipient",
+      "sections": [
+        {
+          "title": "Saved Recipients",
+          "rows": [
+            {
+              "id": "bene_44102",
+              "title": "Maria Elena Gomez",
+              "description": "🇲🇽 Mexico • BBVA Bank Deposit (••4821)"
+            },
+            {
+              "id": "bene_44109",
+              "title": "Ramesh Adhikari",
+              "description": "🇳🇵 Nepal • Cash Pickup (Kathmandu / IME)"
+            }
+          ]
+        },
+        {
+          "title": "Other Actions",
+          "rows": [
+            {
+              "id": "action_new_beneficiary",
+              "title": "➕ Add New Recipient",
+              "description": "Open the in-chat form to enter a new beneficiary"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+// 2. Interactive Reply Buttons: Select Payout Method (Max 3 Buttons)
+{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "button",
+    "header": { "type": "text", "text": "Select Delivery Method" },
+    "body": { "text": "How should Maria Elena Gomez receive $500.00 USD (9,875.00 MXN)?" },
+    "footer": { "text": "Tap a payout option below" },
+    "action": {
+      "buttons": [
+        { "type": "reply", "reply": { "id": "mode_bank", "title": "🏦 Bank Deposit" } },
+        { "type": "reply", "reply": { "id": "mode_cash", "title": "💵 Cash Pickup" } },
+        { "type": "reply", "reply": { "id": "mode_wallet", "title": "📱 Mobile Wallet" } }
+      ]
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Pane 4: Interactive CTA URL for KYC & Payment -->
+      <div class="tab-pane" id="flw-pane-4">
+        <p>
+          Once the transfer quote and beneficiary are locked, use an <strong>Interactive Call-to-Action URL Button (`type: "cta_url"`)</strong> (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/interactive-cta-url-messages" target="_blank">Meta Interactive CTA URL Docs</a>) to hand the customer off to Payme's existing Web KYC or 3D Secure Debit/ACH Checkout page with a short-lived signed JWT. This keeps raw card PAN/CVV and ID document selfies out of WhatsApp chat history.
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages (Interactive CTA URL for 3DS2 Checkout)</span>
+            <button class="copy-btn" onclick="copyCode('codeCtaUrlPayment', this)">Copy JSON</button>
+          </div>
+          <pre><code id="codeCtaUrlPayment">{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "cta_url",
+    "header": {
+      "type": "text",
+      "text": "Final Step: Secure Payment 🔒"
+    },
+    "body": {
+      "text": "Please review your transfer summary before paying:\n\n• Recipient: Maria Elena Gomez\n• Delivery: BBVA Mexico (••4821)\n• Send Amount: $500.00 USD\n• Transfer Fee: $1.99 USD\n• Total Charged: $501.99 USD\n• Exchange Rate: 1 USD = 19.75 MXN\n• Total to Recipient: $9,875.00 MXN\n\nTap below to pay securely with your Visa/Mastercard Debit Card (3D Secure) on Payme. Your receipt will arrive in this chat immediately."
+    },
+    "footer": {
+      "text": "Link expires in 15 minutes • Never type card numbers in chat"
+    },
+    "action": {
+      "name": "cta_url",
+      "parameters": {
+        "display_text": "Pay $501.99 Securely",
+        "url": "https://pay.payme.com/wa/checkout?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.tx_9081_usr8821"
+      }
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8: BACKEND REFERENCE IMPLEMENTATION -->
+    <section class="doc-section" id="sec-backend">
+      <div class="section-eyebrow">Section 8 • Production Backend Code</div>
+      <h2>Complete Backend Implementation: Encryption, Flow Endpoint, and Webhook Orchestrator</h2>
+      <p>
+        Below is the complete, production-ready reference implementation for the <strong>Payme WhatsApp Orchestrator</strong>, including RSA-2048 key setup, the encrypted WhatsApp Flows `data_exchange` endpoint (`RSA-OAEP-SHA256` + `AES-128-GCM` with bitwise-inverted IV), and the webhook state router that calls your existing Payme Core APIs.
+      </p>
+
+      <div class="tab-bar" id="backendTabs">
+        <button class="tab-btn active" onclick="switchTab('backendTabs', 'be-pane-1', this)">1. RSA-2048 Key Gen &amp; Upload</button>
+        <button class="tab-btn" onclick="switchTab('backendTabs', 'be-pane-2', this)">2. Node.js / Express Flow Endpoint (Crypto)</button>
+        <button class="tab-btn" onclick="switchTab('backendTabs', 'be-pane-3', this)">3. Node.js Webhook &amp; Payme Core Bridge</button>
+        <button class="tab-btn" onclick="switchTab('backendTabs', 'be-pane-4', this)">4. Python / FastAPI Flow &amp; Webhook Implementation</button>
+        <button class="tab-btn" onclick="switchTab('backendTabs', 'be-pane-5', this)">5. Full Step-by-Step Webhook State Machine</button>
+      </div>
+
+      <!-- Backend Pane 1: RSA Key Gen & Registration -->
+      <div class="tab-pane active" id="be-pane-1">
+        <p>
+          Generate a 2048-bit RSA keypair and upload the public key (`public.pem`) to your WhatsApp Business Phone Number using `POST /{PHONE_NUMBER_ID}/whatsapp_business_encryption` (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/flows/guides/whatsapp-business-encryption" target="_blank">Meta Business Encryption API</a>).
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Step 1: Generate 2048-bit RSA Key Pair &amp; Register Public Key on WABA Phone Number</span>
+            <button class="copy-btn" onclick="copyCode('codeRsaSetup', this)">Copy Shell Commands</button>
+          </div>
+          <pre><code id="codeRsaSetup"># 1. Generate a 2048-bit RSA Private Key protected by a strong passphrase
+openssl genrsa -aes256 -passout pass:"${PAYME_FLOW_PRIVATE_KEY_PASSPHRASE}" -out payme_wa_private.pem 2048
+
+# 2. Extract the Public Key in PEM (SPKI) format
+openssl rsa -in payme_wa_private.pem -passin pass:"${PAYME_FLOW_PRIVATE_KEY_PASSPHRASE}" -pubout -out payme_wa_public.pem
+
+# 3. Upload the Public Key to Meta Cloud API for your sending PHONE_NUMBER_ID
+curl -X POST "https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/whatsapp_business_encryption" \
+  -H "Authorization: Bearer ${WHATSAPP_SYSTEM_USER_TOKEN}" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "business_public_key=$(cat payme_wa_public.pem)"
+
+# 4. Verify signature status is "VALID"
+curl -X GET "https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/whatsapp_business_encryption" \
+  -H "Authorization: Bearer ${WHATSAPP_SYSTEM_USER_TOKEN}"
+# Expected Response:
+# { "data": [{ "business_public_key": "-----BEGIN PUBLIC KEY-----...", "business_public_key_signature_status": "VALID" }] }</code></pre>
+        </div>
+      </div>
+
+      <!-- Backend Pane 2: Node.js Encrypted Flow Endpoint -->
+      <div class="tab-pane" id="be-pane-2">
+        <p>
+          This Node.js/Express module implements the exact cryptographic specification required by Meta's WhatsApp Flows `data_exchange` endpoint: verifying `X-Hub-Signature-256`, unwrapping `encrypted_aes_key` via `RSA-OAEP-SHA256`, decrypting `encrypted_flow_data` via `AES-128-GCM`, calling Payme's Quote &amp; Beneficiary APIs, and encrypting the response with the bitwise-inverted IV (`~iv`) (<a href="https://github.com/manish-107/whatsapp-bot-integration/blob/main/whatsapp-flows.md" target="_blank">WhatsApp Flows Crypto Reference</a>).
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>src/routes/whatsappFlowsEndpoint.js (Node.js 20+ / Express)</span>
+            <button class="copy-btn" onclick="copyCode('codeNodeFlowsCrypto', this)">Copy Node.js Code</button>
+          </div>
+          <pre><code id="codeNodeFlowsCrypto">import crypto from "node:crypto";
+import express from "express";
+
+const router = express.Router();
+
+// Decrypt incoming request from Meta WhatsApp Flows
+function decryptFlowRequest(body, privatePem, passphrase) {
+  const { encrypted_aes_key, encrypted_flow_data, initial_vector } = body;
+
+  const privateKey = crypto.createPrivateKey({
+    key: privatePem,
+    format: "pem",
+    passphrase,
+  });
+
+  // 1. Unwrap the 128-bit AES key using RSA-OAEP with SHA-256
+  const decryptedAesKey = crypto.privateDecrypt(
+    {
+      key: privateKey,
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: "sha256",
+    },
+    Buffer.from(encrypted_aes_key, "base64")
+  );
+
+  // 2. Split encrypted_flow_data into Ciphertext and 16-byte GCM Auth Tag
+  const flowDataBuffer = Buffer.from(encrypted_flow_data, "base64");
+  const ivBuffer = Buffer.from(initial_vector, "base64");
+  const TAG_LENGTH = 16;
+  const encryptedBody = flowDataBuffer.subarray(0, -TAG_LENGTH);
+  const authTag = flowDataBuffer.subarray(-TAG_LENGTH);
+
+  // 3. Decrypt payload using AES-128-GCM
+  const decipher = crypto.createDecipheriv("aes-128-gcm", decryptedAesKey, ivBuffer);
+  decipher.setAuthTag(authTag);
+  const decryptedJsonString = Buffer.concat([
+    decipher.update(encryptedBody),
+    decipher.final(),
+  ]).toString("utf-8");
+
+  return {
+    decryptedBody: JSON.parse(decryptedJsonString),
+    aesKeyBuffer: decryptedAesKey,
+    ivBuffer,
+  };
+}
+
+// Encrypt outgoing screen response using bitwise-inverted IV (~iv)
+function encryptFlowResponse(responsePayload, aesKeyBuffer, ivBuffer) {
+  // Flip every byte of the initial_vector using bitwise NOT
+  const flippedIv = Buffer.alloc(ivBuffer.length);
+  for (let i = 0; i < ivBuffer.length; i++) {
+    flippedIv[i] = ~ivBuffer[i] & 0xff;
+  }
+
+  const cipher = crypto.createCipheriv("aes-128-gcm", aesKeyBuffer, flippedIv);
+  const plaintext = JSON.stringify(responsePayload);
+  const encrypted = Buffer.concat([
+    cipher.update(plaintext, "utf-8"),
+    cipher.final(),
+    cipher.getAuthTag(), // Append 16-byte GCM authTag at the end
+  ]);
+
+  return encrypted.toString("base64");
+}
+
+// POST /api/wa/flows-endpoint
+router.post("/flows-endpoint", express.raw({ type: "application/json" }), async (req, res) => {
+  // Verify X-Hub-Signature-256 over raw bytes
+  const signature = req.get("x-hub-signature-256") || "";
+  const expectedSig = "sha256=" + crypto
+    .createHmac("sha256", process.env.WHATSAPP_APP_SECRET)
+    .update(req.body)
+    .digest("hex");
+
+  if (signature.length !== expectedSig.length ||
+      !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
+    return res.status(401).send("Invalid signature");
+  }
+
+  let decrypted;
+  try {
+    decrypted = decryptFlowRequest(
+      JSON.parse(req.body.toString("utf-8")),
+      process.env.PAYME_FLOW_PRIVATE_KEY_PEM,
+      process.env.PAYME_FLOW_PRIVATE_KEY_PASSPHRASE
+    );
+  } catch (err) {
+    // HTTP 421 instructs WhatsApp client to re-fetch the business public key
+    return res.status(421).send("Decryption failed");
+  }
+
+  const { decryptedBody, aesKeyBuffer, ivBuffer } = decrypted;
+  const { action, screen, data, flow_token } = decryptedBody;
+
+  // 1. Handle Meta Health Check Ping
+  if (action === "ping") {
+    const pong = encryptFlowResponse({ data: { status: "active" } }, aesKeyBuffer, ivBuffer);
+    return res.status(200).type("text/plain").send(pong);
+  }
+
+  // 2. Handle Flow Opening (action === "INIT")
+  if (action === "INIT") {
+    const liveRates = await fetchIsendCorridorRates(); // Calls existing Payme FX API
+    const initScreen = {
+      screen: "SCREEN_QUOTE",
+      data: {
+        corridors: liveRates.map((c) => ({
+          id: c.countryCode,
+          title: `${c.flag} ${c.name} (${c.currency}) — 1 USD = ${c.rate} ${c.currency}`,
+        })),
+        delivery_methods: [
+          { id: "BANK_DEPOSIT", title: "🏦 Instant Bank Deposit ($1.99 Fee)" },
+          { id: "CASH_PICKUP", title: "💵 Cash Pickup at Partner Agent ($2.99 Fee)" },
+          { id: "MOBILE_WALLET", title: "📱 Mobile Money Wallet ($1.49 Fee)" },
+        ],
+      },
+    };
+    return res.status(200).type("text/plain").send(encryptFlowResponse(initScreen, aesKeyBuffer, ivBuffer));
+  }
+
+  // 3. Handle Screen Submissions (action === "data_exchange")
+  if (action === "data_exchange" && screen === "SCREEN_QUOTE") {
+    // Lock 15-minute FX quote in existing Payme Quote API
+    const quote = await createIsendQuote({
+      flowToken: flow_token,
+      corridor: data.corridor_id,
+      sendAmountUsd: Number(data.send_amount_usd),
+      deliveryMethod: data.delivery_method,
+    });
+
+    const beneScreen = {
+      screen: "SCREEN_BENEFICIARY",
+      data: {
+        quote_banner: `Sending $${quote.sendUsd.toFixed(2)} USD → ${quote.payoutFormatted} (Fee: $${quote.feeUsd.toFixed(2)})`,
+        account_label: data.delivery_method === "CASH_PICKUP"
+          ? "Recipient City & Preferred Pickup Branch"
+          : "Bank Account / CLABE / IBAN Number",
+        institutions: quote.supportedInstitutions,
+      },
+    };
+    return res.status(200).type("text/plain").send(encryptFlowResponse(beneScreen, aesKeyBuffer, ivBuffer));
+  }
+
+  if (action === "data_exchange" && screen === "SCREEN_BENEFICIARY") {
+    // Validate & save recipient in existing Payme Beneficiary API
+    const { quote, beneficiary } = await saveBeneficiaryForFlow(flow_token, data);
+
+    const reviewScreen = {
+      screen: "SCREEN_REVIEW",
+      data: {
+        quote_id: quote.id,
+        beneficiary_id: beneficiary.id,
+        summary_text: [
+          `• Send Amount: $${quote.sendUsd.toFixed(2)} USD`,
+          `• Transfer Fee: $${quote.feeUsd.toFixed(2)} USD`,
+          `• Total Charged: $${quote.totalUsd.toFixed(2)} USD`,
+          `• Exchange Rate: 1 USD = ${quote.fxRate} ${quote.currency}`,
+          `• Recipient Gets: ${quote.payoutFormatted}`,
+          `• Recipient: ${beneficiary.fullName} (${beneficiary.institutionName})`,
+        ].join("\n"),
+      },
+    };
+    return res.status(200).type("text/plain").send(encryptFlowResponse(reviewScreen, aesKeyBuffer, ivBuffer));
+  }
+
+  return res.status(400).send("Unhandled Flow action");
+});
+
+export default router;</code></pre>
+        </div>
+      </div>
+
+      <!-- Backend Pane 3: Webhook & Core API Bridge -->
+      <div class="tab-pane" id="be-pane-3">
+        <p>
+          When the user taps <strong>"Confirm &amp; Proceed to Payment"</strong> on `SCREEN_REVIEW`, WhatsApp closes the Flow drawer and posts an `interactive.type === "nfm_reply"` event to your main WhatsApp webhook (`POST /webhook`). The orchestrator checks the user's KYC tier in Payme Core and sends the signed `cta_url` button for KYC or 3DS2 Payment Checkout.
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>src/routes/whatsappWebhookOrchestrator.js (Webhook Handler + KYC/Payment Callback)</span>
+            <button class="copy-btn" onclick="copyCode('codeNodeWebhook', this)">Copy Node.js Code</button>
+          </div>
+          <pre><code id="codeNodeWebhook">import express from "express";
+import jwt from "jsonwebtoken";
+
+const webhookRouter = express.Router();
+
+// 1. Meta Webhook Verification (GET /webhook)
+webhookRouter.get("/webhook", (req, res) => {
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+  if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    return res.status(200).send(challenge);
+  }
+  return res.sendStatus(403);
+});
+
+// 2. Inbound WhatsApp Messages & Flow Completion (POST /webhook)
+webhookRouter.post("/webhook", async (req, res) => {
+  // Always acknowledge Meta webhook within 250ms
+  res.sendStatus(200);
+
+  const entry = req.body?.entry?.[0]?.changes?.[0]?.value;
+  const message = entry?.messages?.[0];
+  if (!message) return;
+
+  const senderWaId = message.from; // e.g., "17135550142"
+
+  // Case A: User completed the native WhatsApp Flow (nfm_reply)
+  if (message.type === "interactive" && message.interactive?.type === "nfm_reply") {
+    const responseData = JSON.parse(message.interactive.nfm_reply.response_json);
+    const { flow_token, quote_id, beneficiary_id } = responseData;
+
+    // Create draft transaction in existing Payme Core API
+    const draftTx = await paymeCoreApi.post("/v1/remittances/draft", {
+      waPhone: senderWaId,
+      quoteId: quote_id,
+      beneficiaryId: beneficiary_id,
+      channel: "WHATSAPP",
+    });
+
+    // Check if user needs KYC verification before payment
+    if (draftTx.kycRequired) {
+      const kycToken = jwt.sign(
+        { userId: draftTx.userId, txId: draftTx.id, waPhone: senderWaId, scope: "wa_kyc" },
+        process.env.PAYME_WEBVIEW_JWT_SECRET,
+        { expiresIn: "30m" }
+      );
+      await sendWhatsAppCtaUrl(senderWaId, {
+        header: "Identity Verification Required 🪪",
+        body: `To protect your transfer of $${draftTx.totalUsd} USD, please complete a 60-second ID check on Payme's secure page. Once verified, we'll immediately send your payment link here.`,
+        footer: "Encrypted KYC powered by Payme Compliance",
+        buttonText: "Verify Identity (60s)",
+        url: `https://verify.payme.com/wa-kyc?session=${kycToken}`,
+      });
+      return;
+    }
+
+    // Otherwise, push signed 15-min PCI-DSS 3D Secure Checkout CTA URL
+    const payToken = jwt.sign(
+      { txId: draftTx.id, quoteId: quote_id, waPhone: senderWaId, scope: "wa_checkout" },
+      process.env.PAYME_WEBVIEW_JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    await sendWhatsAppCtaUrl(senderWaId, {
+      header: "Final Step: Secure 3DS Payment 🔒",
+      body: draftTx.regEDisclosureSummary,
+      footer: "Visa / Mastercard Debit (3D Secure) • Link valid 15m",
+      buttonText: `Pay $${draftTx.totalUsd.toFixed(2)} Now`,
+      url: `https://pay.payme.com/wa/checkout?token=${payToken}`,
+    });
+  }
+});
+
+// 3. Callback from Existing Payme Core API when KYC or Payment Completes
+webhookRouter.post("/webhooks/payme-core-events", async (req, res) => {
+  res.sendStatus(200);
+  const { eventType, data } = req.body;
+
+  // When Web KYC is approved, automatically push the 3DS2 Payment CTA into WhatsApp
+  if (eventType === "kyc.approved" && data.channel === "WHATSAPP") {
+    const payToken = jwt.sign(
+      { txId: data.txId, waPhone: data.waPhone, scope: "wa_checkout" },
+      process.env.PAYME_WEBVIEW_JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+    await sendWhatsAppCtaUrl(data.waPhone, {
+      header: "Identity Verified! Complete Payment ✅",
+      body: `Great news, ${data.senderName}! Your identity is verified. Tap below to complete payment of $${data.totalUsd} USD for ${data.beneficiaryName}.`,
+      footer: "Secure 3D Secure Checkout",
+      buttonText: `Pay $${data.totalUsd} Now`,
+      url: `https://pay.payme.com/wa/checkout?token=${payToken}`,
+    });
+  }
+
+  // When 3DS2 Payment is captured on Web Checkout, push Utility Receipt Template
+  if (eventType === "payment.captured" && data.channel === "WHATSAPP") {
+    await pushTransferReceiptTemplate(data.waPhone, {
+      sender_name: data.senderName,
+      send_amount: `$${data.sendUsd.toFixed(2)} USD`,
+      beneficiary_name: data.beneficiaryName,
+      destination_country: data.countryName,
+      payout_amount: data.payoutFormatted,
+      delivery_method: data.deliveryMethodLabel,
+      reference_code: data.mtcnReference,
+      eta_window: data.etaWindow,
+    });
+  }
+});
+
+export default webhookRouter;</code></pre>
+        </div>
+      </div>
+
+      <!-- Backend Pane 4: Python / FastAPI Implementation -->
+      <div class="tab-pane" id="be-pane-4">
+        <p>
+          If Payme's backend services are written in Python, use `cryptography` (`RSA-OAEP` + `AESGCM`) in FastAPI to handle WhatsApp Flow decryption and inverted-IV response encryption.
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>app/whatsapp_flows_crypto.py (Python 3.11+ / FastAPI + cryptography)</span>
+            <button class="copy-btn" onclick="copyCode('codePythonFlows', this)">Copy Python Code</button>
+          </div>
+          <pre><code id="codePythonFlows">import base64
+import json
+from fastapi import FastAPI, Request, Response
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+app = FastAPI()
+
+def decrypt_flow_request(payload: dict, private_key_pem: bytes, passphrase: bytes):
+    encrypted_flow_data = base64.b64decode(payload["encrypted_flow_data"])
+    encrypted_aes_key = base64.b64decode(payload["encrypted_aes_key"])
+    initial_vector = base64.b64decode(payload["initial_vector"])
+
+    private_key = serialization.load_pem_private_key(private_key_pem, password=passphrase)
+
+    # 1. Decrypt 128-bit AES key using RSA-OAEP (SHA-256)
+    aes_key = private_key.decrypt(
+        encrypted_aes_key,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ),
+    )
+
+    # 2. Decrypt Flow payload using AES-GCM (includes trailing 16-byte tag)
+    aesgcm = AESGCM(aes_key)
+    decrypted_bytes = aesgcm.decrypt(initial_vector, encrypted_flow_data, None)
+    return json.loads(decrypted_bytes.decode("utf-8")), aes_key, initial_vector
+
+def encrypt_flow_response(response_dict: dict, aes_key: bytes, initial_vector: bytes) -> str:
+    # Invert every byte of initial_vector using bitwise NOT (~b & 0xFF)
+    flipped_iv = bytes(b ^ 0xFF for b in initial_vector)
+    aesgcm = AESGCM(aes_key)
+    encrypted_bytes = aesgcm.encrypt(
+        flipped_iv,
+        json.dumps(response_dict).encode("utf-8"),
+        None,
+    )
+    return base64.b64encode(encrypted_bytes).decode("utf-8")
+
+@app.post("/api/wa/flows-endpoint")
+async def whatsapp_flow_endpoint(request: Request):
+    body = await request.json()
+    try:
+        decrypted_data, aes_key, iv = decrypt_flow_request(
+            body, PRIVATE_KEY_PEM, PASSPHRASE
+        )
+    except Exception:
+        # HTTP 421 forces WhatsApp client to re-download public key
+        return Response(content="Decryption failed", status_code=421)
+
+    if decrypted_data.get("action") == "ping":
+        cipher_b64 = encrypt_flow_response({"data": {"status": "active"}}, aes_key, iv)
+        return Response(content=cipher_b64, media_type="text/plain", status_code=200)
+
+    # Route INIT and data_exchange screens to Payme Quote & Beneficiary services
+    next_screen_payload = await route_payme_flow_screen(decrypted_data)
+    cipher_b64 = encrypt_flow_response(next_screen_payload, aes_key, iv)
+    return Response(content=cipher_b64, media_type="text/plain", status_code=200)</code></pre>
+        </div>
+      </div>
+      <!-- Backend Pane 5: Full Step-by-Step Conversational State Machine -->
+      <div class="tab-pane" id="be-pane-5">
+        <p>
+          Below is the complete step-by-step state machine showing how your existing Payme server handles every user reply from the moment they click the website WhatsApp link through Country selection, Amount input, Delivery Mode tap, Beneficiary collection, KYC/Payment WebView handoff, and post-payment live status tracking:
+        </p>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>src/services/whatsappStepStateMachine.js (Complete Round-Trip Step Controller)</span>
+            <button class="copy-btn" onclick="copyCode('codeStateMachine', this)">Copy State Machine Code</button>
+          </div>
+          <pre><code id="codeStateMachine">// Complete Step-by-Step Webhook State Machine for Payme Server
+export async function handleIncomingWhatsAppEvent(message, redis, paymeCoreApi) {
+  const waPhone = message.from; // e.g., "17135550142"
+  const sessionKey = `payme:wa:session:${waPhone}`;
+  let session = JSON.parse((await redis.get(sessionKey)) || '{"step":"IDLE"}');
+
+  // 1. EXTRACT NORMALIZED USER INPUT FROM ANY WHATSAPP MESSAGE TYPE
+  const textBody = message.type === "text" ? message.text.body.trim() : null;
+  const listReplyId = message.interactive?.type === "list_reply"
+    ? message.interactive.list_reply.id : null;
+  const buttonReplyId = message.interactive?.type === "button_reply"
+    ? message.interactive.button_reply.id : null;
+  const flowReplyJson = message.interactive?.type === "nfm_reply"
+    ? JSON.parse(message.interactive.nfm_reply.response_json) : null;
+
+  // 2. GLOBAL SHORTCUT: LIVE PAYMENT TRACKING BUTTON ("track_PAY-84920411")
+  if (buttonReplyId && buttonReplyId.startsWith("track_")) {
+    const paymentId = buttonReplyId.replace("track_", "");
+    const status = await paymeCoreApi.get(`/v1/remittances/${paymentId}/status`);
+    return sendWhatsAppJson(waPhone, {
+      type: "text",
+      text: {
+        body: `📦 *Live Payment Tracking (${paymentId})*
+` +
+              `• Status: ${status.currentStageLabel}
+` +
+              `• Amount: $${status.sendUsd} USD → ${status.payoutFormatted}
+` +
+              `• Recipient: ${status.beneficiaryName}
+` +
+              `• Last Updated: ${status.updatedAt}`
+      }
+    });
+  }
+
+  // 3. STEP 1 -> USER OPENS WHATSAPP FROM iSEND WEBSITE LINK ("Send money...")
+  if (session.step === "IDLE" || /^(hi|hello|send|start)/i.test(textBody || "")) {
+    session = { step: "AWAITING_CORRIDOR", startedAt: Date.now() };
+    await redis.set(sessionKey, JSON.stringify(session), "EX", 3600);
+
+    // Send Interactive Country List JSON from Server to WhatsApp
+    return sendWhatsAppJson(waPhone, {
+      type: "interactive",
+      interactive: {
+        type: "list",
+        header: { type: "text", text: "Welcome to Payme Money Transfer 💸" },
+        body: { text: "Select the destination country to check today's live exchange rate:" },
+        action: {
+          button: "Select Country",
+          sections: [{
+            title: "Destination Corridors",
+            rows: [
+              { id: "corridor_NP", title: "🇳🇵 Nepal (NPR)", description: "1 USD = 134.80 NPR" },
+              { id: "corridor_MX", title: "🇲🇽 Mexico (MXN)", description: "1 USD = 19.75 MXN" },
+              { id: "corridor_IN", title: "🇮🇳 India (INR)", description: "1 USD = 84.10 INR" }
+            ]
+          }]
+        }
+      }
+    });
+  }
+
+  // 4. STEP 2 -> USER SELECTS COUNTRY FROM LIST -> ASK FOR SEND AMOUNT
+  if (session.step === "AWAITING_CORRIDOR" && listReplyId?.startsWith("corridor_")) {
+    session.corridor = listReplyId.replace("corridor_", "");
+    session.step = "AWAITING_AMOUNT";
+    await redis.set(sessionKey, JSON.stringify(session), "EX", 3600);
+
+    return sendWhatsAppJson(waPhone, {
+      type: "text",
+      text: { body: `Great! How much USD would you like to send to ${session.corridor}? (Type a number, e.g., 500)` }
+    });
+  }
+
+  // 5. STEP 3 -> USER TYPES AMOUNT -> LOCK QUOTE & SEND DELIVERY METHOD BUTTONS
+  if (session.step === "AWAITING_AMOUNT" && textBody) {
+    const amountUsd = parseFloat(textBody.replace(/[^0-9.]/g, ""));
+    const quote = await paymeCoreApi.post("/v1/quotes", {
+      corridor: session.corridor,
+      sendAmountUsd: amountUsd
+    });
+    session.quoteId = quote.id;
+    session.amountUsd = amountUsd;
+    session.payoutFormatted = quote.payoutFormatted;
+    session.step = "AWAITING_DELIVERY_MODE";
+    await redis.set(sessionKey, JSON.stringify(session), "EX", 3600);
+
+    return sendWhatsAppJson(waPhone, {
+      type: "interactive",
+      interactive: {
+        type: "button",
+        body: {
+          text: `Sending *$${amountUsd.toFixed(2)} USD* → *${quote.payoutFormatted}*
+Select your delivery method:`
+        },
+        action: {
+          buttons: [
+            { type: "reply", reply: { id: "mode_BANK_DEPOSIT", title: "🏦 Bank Deposit" } },
+            { type: "reply", reply: { id: "mode_CASH_PICKUP", title: "💵 Cash Pickup" } }
+          ]
+        }
+      }
+    });
+  }
+
+  // 6. STEP 4 -> USER TAPS DELIVERY METHOD -> LAUNCH BENEFICIARY FLOW FORM
+  if (session.step === "AWAITING_DELIVERY_MODE" && buttonReplyId?.startsWith("mode_")) {
+    session.deliveryMode = buttonReplyId.replace("mode_", "");
+    session.step = "AWAITING_BENEFICIARY_FLOW";
+    await redis.set(sessionKey, JSON.stringify(session), "EX", 3600);
+
+    return sendWhatsAppJson(waPhone, {
+      type: "interactive",
+      interactive: {
+        type: "flow",
+        header: { type: "text", text: "Recipient Details 📋" },
+        body: { text: "Tap below to select or enter your recipient's bank/pickup details:" },
+        action: {
+          name: "flow",
+          parameters: {
+            flow_message_version: "3",
+            flow_token: `ft_${waPhone}_${session.quoteId}`,
+            flow_id: process.env.PAYME_BENEFICIARY_FLOW_ID,
+            flow_cta: "Enter Recipient Details",
+            flow_action: "data_exchange"
+          }
+        }
+      }
+    });
+  }
+
+  // 7. STEP 5 -> USER SUBMITS BENEFICIARY FLOW -> SEND KYC & PAYMENT WEBVIEW LINK
+  if (flowReplyJson) {
+    const draft = await paymeCoreApi.post("/v1/remittances/create-from-whatsapp", {
+      waPhone,
+      quoteId: session.quoteId,
+      deliveryMode: session.deliveryMode,
+      beneficiaryData: flowReplyJson
+    });
+    session.step = "AWAITING_WEBVIEW_COMPLETION";
+    await redis.set(sessionKey, JSON.stringify(session), "EX", 3600);
+
+    // Send Interactive CTA URL Button that opens Payme's KYC & Payment WebView
+    return sendWhatsAppJson(waPhone, {
+      type: "interactive",
+      interactive: {
+        type: "cta_url",
+        header: { type: "text", text: "Complete KYC & Payment 🔒" },
+        body: {
+          text: `Your transfer of *$${session.amountUsd} USD* (${session.payoutFormatted}) to *${flowReplyJson.beneficiary_full_name}* is ready!
+
+Tap below to verify KYC and complete payment on Payme's secure page. Your confirmation & Payment ID will arrive here automatically.`
+        },
+        action: {
+          name: "cta_url",
+          parameters: {
+            display_text: "Open KYC & Payment",
+            url: draft.signedWebviewUrl // e.g., https://app.payme.com/wa-checkout?session=JWT
+          }
+        }
+      }
+    });
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 9: SECURITY, COMPLIANCE & GO-LIVE CHECKLIST -->
+    <section class="doc-section" id="sec-compliance">
+      <div class="section-eyebrow">Section 9 • Security, Compliance &amp; Production Rollout</div>
+      <h2>Regulatory Guardrails, Limits, and Production Go-Live Checklist</h2>
+      <p>
+        Operating a remittance service over WhatsApp requires strict alignment between Meta's Business Messaging Policies, PCI-DSS v4.0, FinCEN/AML KYC rules, and the CFPB Remittance Transfer Rule (Regulation E, Subpart B).
+      </p>
+
+      <div class="grid-3">
+        <div class="info-card">
+          <h4>1. Velocity &amp; Tiered Limits</h4>
+          <ul>
+            <li><strong>Tier 1 (Basic WA Verification):</strong> Adopt <a href="https://www.riamoneytransfer.com/en/blog/how-to-send-money-on-whatsapp/" target="_blank">Ria's WhatsApp guardrail</a> of <strong>$999.99/transfer</strong> (fees included), <strong>$999.99/day</strong>, and <strong>$7,999.99/month</strong>.</li>
+            <li><strong>Debit Card &amp; 3DS2 Enforcement:</strong> Restrict initial WhatsApp channel funding to Visa/Mastercard Debit Cards with mandatory <strong>3D Secure 2.0</strong> OTP or verified ACH to prevent credit card chargeback fraud.</li>
+            <li><strong>Phone Number Binding:</strong> Match the user's WhatsApp MSISDN (`messages[].from`) against their verified Payme account phone number; require OTP challenge if linking an existing email-only web account.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h4>2. PCI-DSS &amp; PII Isolation</h4>
+          <ul>
+            <li><strong>Never Accept Card Numbers in Chat:</strong> Configure a regex guardrail in your Webhook Orchestrator that detects 13–19 digit Luhn sequences in free text, immediately warns the user, and redacts logs.</li>
+            <li><strong>Encrypted Flows for Beneficiary PII:</strong> Collect bank account numbers, CLABEs, and beneficiary ID names inside <strong>WhatsApp Flows (`data_exchange`)</strong> so sensitive PII is encrypted with your RSA-2048 key and does not sit in plain chat bubbles.</li>
+            <li><strong>Short-Lived Signed Checkout URLs:</strong> Mint single-use JWT URLs (`expiresIn: "15m"`) bound to `tx_id` and `wa_id` for your existing Payme Web Checkout.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h4>3. CFPB Reg E &amp; Cancellations</h4>
+          <ul>
+            <li><strong>Pre-Payment Disclosure:</strong> Before sending the `cta_url` payment link, display the exact Send Amount, Front-End Fee, FX Rate, Taxes, and Net Payout to Recipient.</li>
+            <li><strong>Post-Payment Receipt (`UTILITY`):</strong> Push `payme_transfer_receipt` containing the reference/MTCN number, promised delivery window, and error-resolution contact details.</li>
+            <li><strong>30-Minute In-Chat Cancellation:</strong> Support a `"Cancel Transfer"` quick-reply button or keyword inside WhatsApp for uncollected transfers within the statutory 30-minute window.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Production Implementation Checklist for Payme Engineering</h3>
+      <ul class="checklist">
+        <li>
+          <span class="check-icon">&#10003;</span>
+          <div><strong>1. Meta Business Verification &amp; Official Business Account (OBA) Green Checkmark:</strong> Verify Payme's Meta Business Portfolio, enable two-step verification, and apply for Official Business Account status so users see the verified badge next to Payme's display name (critical for anti-phishing trust, as emphasized by <a href="https://www.remitly.com/blog/money-transfer/recognizing-remitlys-official-whatsapp-account/" target="_blank">Remitly</a> and <a href="https://www.riamoneytransfer.com/en/blog/how-to-send-money-on-whatsapp/" target="_blank">Ria</a>).</div>
+        </li>
+        <li>
+          <span class="check-icon">&#10003;</span>
+          <div><strong>2. Upload 2048-Bit RSA Public Key &amp; Verify `VALID` Status:</strong> Generate your RSA keypair, call `POST /{PHONE_NUMBER_ID}/whatsapp_business_encryption`, and confirm `business_public_key_signature_status === "VALID"` before publishing any `data_exchange` Flow (<a href="https://help.1msg.io/docs/api-1msg/whatsapp-flow/flow-encryption" target="_blank">Flow Encryption Checklist</a>).</div>
+        </li>
+        <li>
+          <span class="check-icon">&#10003;</span>
+          <div><strong>3. Publish `payme_remittance_flow_v1` &amp; Pass Meta Endpoint Health Check:</strong> Register your `endpoint_uri` (`/api/wa/flows-endpoint`), handle the encrypted `action: "ping"` health check in under 2 seconds, and transition the Flow from `DRAFT` to `PUBLISHED` mode (<a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/flows/guides/sendingaflow" target="_blank">Meta Flow Publishing Guide</a>).</div>
+        </li>
+        <li>
+          <span class="check-icon">&#10003;</span>
+          <div><strong>4. Submit &amp; Approve Core `UTILITY` Templates:</strong> Create `payme_transfer_receipt`, `payme_kyc_status_update`, and `payme_remittance_quickstart_flow` via `POST /{WABA_ID}/message_templates` and verify `status === "APPROVED"` via `GET /{WABA_ID}/message_templates`.</div>
+        </li>
+        <li>
+          <span class="check-icon">&#10003;</span>
+          <div><strong>5. Wire Async Webhooks Between Payme Core and WhatsApp Orchestrator:</strong> Connect `kyc.approved`, `payment.captured`, `payout.ready_for_pickup`, and `payout.deposited` events from Payme's existing backend to automatically push real-time WhatsApp status updates and receipts.</div>
+        </li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<script>
+  // Interactive Simulator Data (7 Steps of the Payme WhatsApp Lifecycle)
+  const simSteps = [
+    {
+      title: "Step 1: Entry via Website Deep Link or Outbound Template",
+      desc: "Customer clicks 'Send on WhatsApp' on Payme.com (opening wa.me/18005550199?text=Hi%20Payme) or replies to an FX rate notification. The Payme Orchestrator receives the inbound webhook and looks up the phone number (+17135550142) in Payme's User API.",
+      endpoint: "INBOUND WEBHOOK: POST https://api.payme.com/wa/webhook",
+      chatHtml: `
+        <div class="wa-msg wa-msg-user">Hi Payme, I want to send money to Mexico 🇲🇽</div>
+        <div class="wa-msg wa-msg-bot">
+          <div class="wa-msg-header">Welcome back to Payme, Carlos! 👋</div>
+          We matched your WhatsApp number to your verified Payme profile.<br><br>
+          📈 <strong>Today's Live Rate:</strong> 1 USD = <strong>19.75 MXN</strong><br>
+          ⚡ <strong>Delivery:</strong> Instant Bank Deposit or Cash Pickup
+          <div class="wa-msg-footer">Tap below to choose a saved recipient or start a new transfer</div>
+          <div class="wa-btn-list">
+            <div class="wa-btn" onclick="selectSimStep(1)">📋 Select Recipient / Corridor</div>
+            <div class="wa-btn" onclick="selectSimStep(3)">➕ New Transfer Form</div>
+          </div>
+        </div>
+      `,
+      payload: `{
+  "object": "whatsapp_business_account",
+  "entry": [{
+    "id": "WABA_546151681022936",
+    "changes": [{
+      "field": "messages",
+      "value": {
+        "messaging_product": "whatsapp",
+        "metadata": {
+          "display_phone_number": "18005550199",
+          "phone_number_id": "102290129340398"
+        },
+        "contacts": [{ "profile": { "name": "Carlos Rivera" }, "wa_id": "17135550142" }],
+        "messages": [{
+          "from": "17135550142",
+          "id": "wamid.HBgLMTcxMzU1NTAxNDIVAgASGCA4",
+          "timestamp": "1760678100",
+          "type": "text",
+          "text": { "body": "Hi Payme, I want to send money to Mexico 🇲🇽" }
+        }]
+      }
+    }]
+  }]
+}`
+    },
+    {
+      title: "Step 2: Interactive List Message for Corridor & Saved Recipients",
+      desc: "Inside the 24-hour customer service window, Payme pushes an Interactive List Message (type: 'list') populated directly from Payme's existing GET /v1/beneficiaries and GET /v1/fx-rates APIs.",
+      endpoint: "OUTBOUND API: POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages",
+      chatHtml: `
+        <div class="wa-msg wa-msg-bot">
+          <div class="wa-msg-header">Select Corridor or Saved Recipient</div>
+          Choose a saved beneficiary for a 2-tap repeat transfer, or select a destination corridor:
+          <div class="wa-btn-list">
+            <div class="wa-btn" onclick="selectSimStep(2)">🇲🇽 Maria Elena Gomez (BBVA ••4821)</div>
+            <div class="wa-btn" onclick="selectSimStep(2)">🇳🇵 Ramesh Adhikari (Kathmandu Cash)</div>
+            <div class="wa-btn" onclick="selectSimStep(3)">➕ Send to a New Recipient</div>
+          </div>
+        </div>
+        <div class="wa-msg wa-msg-user">🇲🇽 Maria Elena Gomez (BBVA ••4821)</div>
+      `,
+      payload: `{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "list",
+    "header": { "type": "text", "text": "Select Corridor or Recipient" },
+    "body": { "text": "Choose a saved beneficiary from your Payme account or add a new recipient:" },
+    "footer": { "text": "1 USD = 19.75 MXN • 134.80 NPR" },
+    "action": {
+      "button": "Choose Recipient",
+      "sections": [
+        {
+          "title": "Saved Beneficiaries",
+          "rows": [
+            { "id": "bene_44102", "title": "Maria Elena Gomez", "description": "🇲🇽 Mexico • BBVA Bank Deposit (••4821)" },
+            { "id": "bene_44109", "title": "Ramesh Adhikari", "description": "🇳🇵 Nepal • Cash Pickup (IME Kathmandu)" }
+          ]
+        },
+        {
+          "title": "New Transfer",
+          "rows": [
+            { "id": "new_flow", "title": "➕ Add New Recipient", "description": "Launch in-chat beneficiary form" }
+          ]
+        }
+      ]
+    }
+  }
+}`
+    },
+    {
+      title: "Step 3: Interactive Reply Buttons for Payout Method Selection",
+      desc: "Payme presents up to 3 quick-tap Interactive Reply Buttons (type: 'button') so the user can choose between Instant Bank Deposit, Cash Pickup, or Mobile Wallet without typing.",
+      endpoint: "OUTBOUND API: POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages",
+      chatHtml: `
+        <div class="wa-msg wa-msg-bot">
+          <div class="wa-msg-header">Select Delivery Method</div>
+          How should your recipient receive the funds?
+          <br>• <strong>Bank Deposit:</strong> $1.99 Fee (Arrives in minutes)
+          <br>• <strong>Cash Pickup:</strong> $2.99 Fee (Elektra, OXXO, Coppel)
+          <br>• <strong>Mobile Wallet:</strong> $1.49 Fee
+          <div class="wa-btn-list">
+            <div class="wa-btn" onclick="selectSimStep(3)">🏦 Bank Deposit</div>
+            <div class="wa-btn" onclick="selectSimStep(3)">💵 Cash Pickup</div>
+            <div class="wa-btn" onclick="selectSimStep(3)">📱 Mobile Wallet</div>
+          </div>
+        </div>
+        <div class="wa-msg wa-msg-user">🏦 Bank Deposit</div>
+      `,
+      payload: `{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "button",
+    "header": { "type": "text", "text": "Select Delivery Method" },
+    "body": {
+      "text": "How should your recipient receive the funds?\\n• Bank Deposit: $1.99 Fee\\n• Cash Pickup: $2.99 Fee\\n• Mobile Wallet: $1.49 Fee"
+    },
+    "footer": { "text": "Tap an option below" },
+    "action": {
+      "buttons": [
+        { "type": "reply", "reply": { "id": "mode_bank", "title": "🏦 Bank Deposit" } },
+        { "type": "reply", "reply": { "id": "mode_cash", "title": "💵 Cash Pickup" } },
+        { "type": "reply", "reply": { "id": "mode_wallet", "title": "📱 Mobile Wallet" } }
+      ]
+    }
+  }
+}`
+    },
+    {
+      title: "Step 4: Launching the Native WhatsApp Flow for Quote & Beneficiary Collection",
+      desc: "To collect structured fields (Amount, Bank Name, 18-digit CLABE or Cash Pickup Location, and Recipient Legal Name), Payme sends an Interactive Flow message (interactive.type = 'flow', flow_action = 'data_exchange').",
+      endpoint: "OUTBOUND API: POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages",
+      chatHtml: `
+        <div class="wa-msg wa-msg-bot">
+          <div class="wa-msg-header">Payme Fast Money Transfer 💸</div>
+          Tap below to enter your USD send amount and confirm recipient bank or cash pickup details inside our encrypted form.
+          <div class="wa-msg-footer">15-minute FX Rate Lock • Encrypted</div>
+          <div class="wa-btn-list">
+            <div class="wa-btn" onclick="selectSimStep(4)">🚀 Open Transfer Form</div>
+          </div>
+        </div>
+      `,
+      payload: `{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "flow",
+    "header": { "type": "text", "text": "Payme Fast Money Transfer 💸" },
+    "body": {
+      "text": "Tap below to enter your USD send amount and confirm recipient bank or cash pickup details inside our encrypted form."
+    },
+    "footer": { "text": "15-minute FX Rate Lock • Encrypted" },
+    "action": {
+      "name": "flow",
+      "parameters": {
+        "flow_message_version": "3",
+        "flow_token": "payme_ft_usr8821_mx_9941",
+        "flow_id": "1633450807827276",
+        "flow_cta": "Open Transfer Form",
+        "flow_action": "data_exchange"
+      }
+    }
+  }
+}`
+    },
+    {
+      title: "Step 5: Native WhatsApp Flow Drawer (Encrypted data_exchange Endpoint)",
+      desc: "When the user taps 'Open Transfer Form', WhatsApp opens a native slide-up form. Each screen submission posts an RSA-OAEP + AES-128-GCM encrypted payload to Payme's /api/wa/flows-endpoint, which locks the FX quote and validates the bank account in real time.",
+      endpoint: "DECRYPTED FLOW EXCHANGE: POST https://api.payme.com/api/wa/flows-endpoint",
+      chatHtml: `
+        <div class="wa-flow-sheet">
+          <div class="wa-flow-top">
+            <span>✕ &nbsp;Payme Recipient &amp; Quote</span>
+            <span style="color:#10b981;font-size:11px;">🔒 Encrypted Flow</span>
+          </div>
+          <div style="background:#ecfdf5;padding:7px 9px;border-radius:6px;font-size:11.5px;color:#065f46;margin-bottom:8px;font-weight:600;">
+            Sending $500.00 USD &rarr; 9,875.00 MXN (1 USD = 19.75 MXN • Fee: $1.99)
+          </div>
+          <div class="wa-flow-field">
+            <label>Recipient Full Name (As on Government ID) *</label>
+            <input class="wa-flow-input" value="Maria Elena Gomez" readonly />
+          </div>
+          <div class="wa-flow-field">
+            <label>Receiving Bank / Cash Pickup Partner *</label>
+            <input class="wa-flow-input" value="BBVA Mexico (Instant SPEI)" readonly />
+          </div>
+          <div class="wa-flow-field">
+            <label>18-Digit CLABE or Bank Account Number *</label>
+            <input class="wa-flow-input" value="012180004829104821" readonly />
+          </div>
+          <div class="wa-flow-field">
+            <label>Recipient Mobile Number *</label>
+            <input class="wa-flow-input" value="+52 33 1948 2011" readonly />
+          </div>
+          <button class="wa-flow-submit" style="cursor:pointer;" onclick="selectSimStep(5)">Confirm &amp; Proceed to Payment &rarr;</button>
+        </div>
+      `,
+      payload: `// 1. Decrypted Request Received by Payme /api/wa/flows-endpoint:
+{
+  "version": "3.0",
+  "action": "data_exchange",
+  "screen": "SCREEN_BENEFICIARY",
+  "flow_token": "payme_ft_usr8821_mx_9941",
+  "data": {
+    "step": "BENEFICIARY_SUBMITTED",
+    "beneficiary_full_name": "Maria Elena Gomez",
+    "institution_id": "BBVA_MX",
+    "account_or_pickup_city": "012180004829104821",
+    "beneficiary_phone": "+523319482011"
+  }
+}
+
+// 2. Plaintext Response Encrypted with AES-128-GCM (~IV) & Returned by Payme:
+{
+  "screen": "SCREEN_REVIEW",
+  "data": {
+    "quote_id": "QT-9928174",
+    "beneficiary_id": "BEN-44102",
+    "summary_text": "Send: $500.00 USD\\nFee: $1.99 USD\\nTotal Charged: $501.99 USD\\nRate: 1 USD = 19.75 MXN\\nRecipient Gets: 9,875.00 MXN\\nTo: Maria Elena Gomez (BBVA ••4821)"
+  }
+}`
+    },
+    {
+      title: "Step 6: Pre-Payment Disclosure & Signed CTA URL Handoff (KYC / 3DS2 Payment)",
+      desc: "Upon Flow completion, Payme receives the nfm_reply webhook, verifies the user's KYC status in Payme Core, and sends an interactive CTA URL button (type: 'cta_url') pointing to Payme's existing PCI-DSS 3D Secure Debit Card / ACH Checkout.",
+      endpoint: "OUTBOUND API: POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages",
+      chatHtml: `
+        <div class="wa-msg wa-msg-user">✅ Transfer details submitted ($500.00 USD &rarr; Maria Elena Gomez)</div>
+        <div class="wa-msg wa-msg-bot">
+          <div class="wa-msg-header">Final Step: Secure 3DS Payment 🔒</div>
+          Please review your transfer summary:<br>
+          • <strong>Recipient:</strong> Maria Elena Gomez<br>
+          • <strong>Delivery:</strong> BBVA Mexico (••4821)<br>
+          • <strong>Send Amount:</strong> $500.00 USD<br>
+          • <strong>Fee:</strong> $1.99 USD<br>
+          • <strong>Total to Pay:</strong> $501.99 USD<br>
+          • <strong>Recipient Gets:</strong> $9,875.00 MXN
+          <div class="wa-msg-footer">Never type card numbers in chat • Link valid 15m</div>
+          <div class="wa-btn-list">
+            <div class="wa-btn" onclick="selectSimStep(6)">🔗 Pay $501.99 Securely (3D Secure)</div>
+          </div>
+        </div>
+      `,
+      payload: `{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "interactive",
+  "interactive": {
+    "type": "cta_url",
+    "header": { "type": "text", "text": "Final Step: Secure 3DS Payment 🔒" },
+    "body": {
+      "text": "Please review your transfer summary:\\n• Recipient: Maria Elena Gomez\\n• Delivery: BBVA Mexico (••4821)\\n• Send Amount: $500.00 USD\\n• Fee: $1.99 USD\\n• Total to Pay: $501.99 USD\\n• Exchange Rate: 1 USD = 19.75 MXN\\n• Recipient Gets: $9,875.00 MXN"
+    },
+    "footer": { "text": "Never type card numbers in chat • Link valid 15m" },
+    "action": {
+      "name": "cta_url",
+      "parameters": {
+        "display_text": "Pay $501.99 Securely",
+        "url": "https://pay.payme.com/wa/checkout?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.tx_9081_usr8821"
+      }
+    }
+  }
+}`
+    },
+    {
+      title: "Step 7: Post-Payment Utility Template Receipt & Live Status Tracking",
+      desc: "As soon as the customer approves the 3D Secure Debit Card payment on pay.payme.com, Payme's Payment Core fires a payment.captured event. The Orchestrator pushes the approved UTILITY template (payme_transfer_receipt) with the Reference Code and Tracking URL.",
+      endpoint: "OUTBOUND TEMPLATE PUSH: POST https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages",
+      chatHtml: `
+        <div class="wa-msg wa-msg-bot">
+          <div class="wa-msg-header">Payme Transfer Confirmed ✅</div>
+          Hi Carlos, your transfer of <strong>$500.00 USD</strong> to <strong>Maria Elena Gomez</strong> (Mexico) is on its way!<br><br>
+          • <strong>Payout Amount:</strong> $9,875.00 MXN<br>
+          • <strong>Delivery Method:</strong> BBVA Bank Deposit<br>
+          • <strong>Reference / PIN:</strong> <code>PAY-84920411</code><br>
+          • <strong>Estimated Arrival:</strong> Within 15 minutes
+          <div class="wa-msg-footer">Thank you for trusting Payme Money Transfer.</div>
+          <div class="wa-btn-list">
+            <div class="wa-btn">🌐 Track Transfer</div>
+            <div class="wa-btn" onclick="selectSimStep(0)">🔁 Repeat This Transfer</div>
+          </div>
+        </div>
+      `,
+      payload: `{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "+17135550142",
+  "type": "template",
+  "template": {
+    "name": "payme_transfer_receipt",
+    "language": { "code": "en_US" },
+    "components": [
+      {
+        "type": "body",
+        "parameters": [
+          { "type": "text", "parameter_name": "sender_name", "text": "Carlos" },
+          { "type": "text", "parameter_name": "send_amount", "text": "$500.00 USD" },
+          { "type": "text", "parameter_name": "beneficiary_name", "text": "Maria Elena Gomez" },
+          { "type": "text", "parameter_name": "destination_country", "text": "Mexico" },
+          { "type": "text", "parameter_name": "payout_amount", "text": "$9,875.00 MXN" },
+          { "type": "text", "parameter_name": "delivery_method", "text": "BBVA Bank Deposit" },
+          { "type": "text", "parameter_name": "reference_code", "text": "PAY-84920411" },
+          { "type": "text", "parameter_name": "eta_window", "text": "Within 15 minutes" }
+        ]
+      },
+      {
+        "type": "button",
+        "sub_type": "url",
+        "index": "0",
+        "parameters": [{ "type": "text", "text": "PAY-84920411" }]
+      }
+    ]
+  }
+}`
+    }
+  ];
+
+  function selectSimStep(index) {
+    const pills = document.querySelectorAll("#simStepper .step-pill");
+    pills.forEach((p, idx) => p.classList.toggle("active", idx === index));
+
+    const step = simSteps[index];
+    document.getElementById("simStepTitle").textContent = step.title;
+    document.getElementById("simStepDesc").textContent = step.desc;
+    document.getElementById("simCodeLabel").textContent = step.endpoint;
+    document.getElementById("waChatBody").innerHTML = step.chatHtml;
+    document.getElementById("simCodeBlock").textContent = step.payload;
+  }
+
+  function switchTab(tabBarId, paneId, btnElement) {
+    const tabBar = document.getElementById(tabBarId);
+    const buttons = tabBar.querySelectorAll(".tab-btn");
+    buttons.forEach((b) => b.classList.remove("active"));
+    btnElement.classList.add("active");
+
+    const section = tabBar.closest(".doc-section");
+    const panes = section.querySelectorAll(".tab-pane");
+    panes.forEach((p) => p.classList.toggle("active", p.id === paneId));
+  }
+
+  function copyCode(elementId, btn) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = "Copied ✓";
+      setTimeout(() => { btn.textContent = orig; }, 1600);
+    });
+  }
+
+  // Initialize simulator on load
+  selectSimStep(0);
+</script>
+</body>
+</html>
