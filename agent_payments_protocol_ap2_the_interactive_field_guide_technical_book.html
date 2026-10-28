@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Payments Protocol (AP2) — The Interactive Field Guide & Technical Book</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-app: #f6f5f0;
+      --bg-sidebar: #edece4;
+      --bg-page: #ffffff;
+      --bg-subtle: #f8fafc;
+      --bg-accent: #eef2ff;
+      --text-main: #18181b;
+      --text-muted: #52525b;
+      --border-color: #e4e4d8;
+      --accent-primary: #2563eb;
+      --accent-secondary: #0f766e;
+      --font-body: 'Newsreader', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --base-font-size: 17px;
+    }
+
+    body.theme-sepia {
+      --bg-app: #f1e7d0;
+      --bg-sidebar: #e6d8b8;
+      --bg-page: #fbf5e6;
+      --bg-subtle: #f4ead2;
+      --bg-accent: #efe1c1;
+      --text-main: #2c2216;
+      --text-muted: #5c4b37;
+      --border-color: #dccaa6;
+      --accent-primary: #9a3412;
+      --accent-secondary: #115e59;
+    }
+
+    body.theme-dark {
+      --bg-app: #090d16;
+      --bg-sidebar: #0f172a;
+      --bg-page: #111827;
+      --bg-subtle: #1e293b;
+      --bg-accent: #1e1b4b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border-color: #263248;
+      --accent-primary: #60a5fa;
+      --accent-secondary: #2dd4bf;
+    }
+
+    body.font-sans-mode {
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    .book-prose {
+      font-family: var(--font-body);
+      font-size: var(--base-font-size);
+      line-height: 1.75;
+    }
+
+    .book-page-surface {
+      background-color: var(--bg-page);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+    }
+
+    .book-sidebar {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+    }
+
+    .subtle-surface {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+    }
+
+    .code-surface {
+      font-family: var(--font-mono);
+      background-color: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .drop-cap::first-letter {
+      float: left;
+      font-size: 3.3rem;
+      line-height: 0.85;
+      padding-top: 4px;
+      padding-right: 10px;
+      padding-bottom: 2px;
+      font-family: 'Newsreader', Georgia, serif;
+      font-weight: 700;
+      color: var(--accent-primary);
+    }
+
+    .toc-item-active {
+      background-color: var(--accent-primary);
+      color: #ffffff !important;
+      font-weight: 600;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.35);
+      border-radius: 9999px;
+    }
+
+    @keyframes pulseBorder {
+      0%, 100% { border-color: rgba(37, 99, 235, 0.4); }
+      50% { border-color: rgba(37, 99, 235, 1); }
+    }
+    .active-step-card {
+      animation: pulseBorder 2s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Reading Progress Bar -->
+  <div class="fixed top-0 left-0 right-0 h-1 bg-slate-300/40 z-50">
+    <div id="readingProgressBar" class="h-full bg-blue-600 transition-all duration-300" style="width: 12.5%;"></div>
+  </div>
+
+  <!-- Top Book Header Bar -->
+  <header class="sticky top-0 z-40 h-14 px-3 sm:px-6 flex items-center justify-between border-b" style="background-color: var(--bg-sidebar); border-color: var(--border-color);">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <button id="toggleSidebarBtn" type="button" class="p-2 rounded-lg hover:bg-black/5 focus:outline-none" title="Toggle Table of Contents">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h10"></path>
+        </svg>
+      </button>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-600 text-white font-bold text-xs tracking-wider shadow-sm">AP2</span>
+        <div class="leading-tight">
+          <div class="font-bold text-xs sm:text-sm tracking-tight line-clamp-1">Agent Payments Protocol (AP2)</div>
+          <div class="text-[11px] opacity-70 hidden sm:block">Interactive Technical Handbook • v0.1 &amp; v0.2 (FIDO Standard)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Chapter Indicator -->
+    <div class="hidden md:flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full subtle-surface">
+      <span id="headerChapterBadge" class="text-blue-600 font-semibold">Ch. 1 of 8</span>
+      <span class="opacity-40">•</span>
+      <span id="headerChapterTitle" class="truncate max-w-[240px]">What is AP2? Executive Overview</span>
+    </div>
+
+    <!-- Right Reader Controls -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- Quick Search Trigger -->
+      <div class="relative hidden sm:block">
+        <input id="globalSearchInput" type="text" placeholder="Search book (e.g. SD-JWT, x402)..." class="w-44 lg:w-56 text-xs pl-7 pr-2.5 py-1.5 rounded-lg subtle-surface focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <svg class="w-3.5 h-3.5 absolute left-2.5 top-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"></path>
+        </svg>
+        <div id="searchDropdown" class="hidden absolute right-0 mt-1 w-80 max-h-80 overflow-y-auto rounded-xl book-page-surface shadow-xl p-2 z-50 text-xs"></div>
+      </div>
+
+      <!-- Typography & Theme Popover Trigger -->
+      <div class="flex items-center rounded-lg subtle-surface p-0.5 text-xs">
+        <button id="fontDecreaseBtn" type="button" class="px-2 py-1 rounded hover:bg-black/5 font-serif" title="Decrease font size">A-</button>
+        <button id="fontToggleBtn" type="button" class="px-2 py-1 rounded hover:bg-black/5 font-semibold border-x" style="border-color: var(--border-color);" title="Toggle Serif / Sans-Serif">Serif</button>
+        <button id="fontIncreaseBtn" type="button" class="px-2 py-1 rounded hover:bg-black/5 font-serif" title="Increase font size">A+</button>
+      </div>
+
+      <div class="flex items-center rounded-lg subtle-surface p-0.5 text-xs">
+        <button id="themeLightBtn" type="button" class="px-2 py-1 rounded hover:bg-black/5 font-medium" title="Paper Light Theme">Paper</button>
+        <button id="themeSepiaBtn" type="button" class="px-2 py-1 rounded hover:bg-black/5 font-medium" title="Warm Sepia Theme">Sepia</button>
+        <button id="themeDarkBtn" type="button" class="px-2 py-1 rounded hover:bg-black/5 font-medium" title="Dark Slate Theme">Dark</button>
+      </div>
+
+      <!-- Bookmark Button -->
+      <button id="bookmarkChapterBtn" type="button" class="p-1.5 rounded-lg subtle-surface hover:bg-black/5 relative" title="Bookmark current chapter">
+        <svg id="bookmarkIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Book Workspace -->
+  <div class="flex-1 flex relative">
+
+    <!-- Left Book Spine / TOC Sidebar -->
+    <aside id="bookSidebar" class="book-sidebar w-72 shrink-0 flex flex-col justify-between transition-all duration-300 z-30 fixed md:static inset-y-14 left-0 overflow-y-auto custom-scrollbar">
+      <div class="p-4 space-y-5">
+        <!-- Book Cover Miniature Card -->
+        <div class="p-3.5 rounded-xl bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white shadow-md relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-blue-400/20 blur-xl pointer-events-none"></div>
+          <div class="flex items-center justify-between text-[10px] uppercase tracking-widest text-blue-200 font-semibold mb-1">
+            <span>O'Reilly / Handbook Style</span>
+            <span class="px-1.5 py-0.5 rounded bg-blue-500/30 text-blue-100">v0.2</span>
+          </div>
+          <h2 class="font-serif font-bold text-base leading-snug">Mastering Agent Payments Protocol (AP2)</h2>
+          <p class="text-[11px] text-blue-100/80 mt-1">Verifiable Trust, Mandates &amp; Architecture for Agentic Commerce</p>
+          <div class="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between text-[11px] text-blue-200">
+            <span id="completionCounter">1 / 8 Chapters Read</span>
+            <button id="openInteractiveLabQuickBtn" type="button" class="underline hover:text-white font-medium">Jump to Code Lab →</button>
+          </div>
+        </div>
+
+        <!-- Mobile Search Input -->
+        <div class="sm:hidden">
+          <input id="mobileSearchInput" type="text" placeholder="Search chapters &amp; terms..." class="w-full text-xs px-3 py-2 rounded-lg book-page-surface focus:outline-none" />
+        </div>
+
+        <!-- Table of Contents Navigation -->
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-wider opacity-60 px-2 mb-2">Table of Contents</div>
+          <nav id="tocList" class="space-y-1 text-xs"></nav>
+        </div>
+
+        <!-- Bookmarks & Study Notes Box -->
+        <div class="pt-3 border-t" style="border-color: var(--border-color);">
+          <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider opacity-60">Saved Bookmarks</span>
+            <span id="bookmarkCountBadge" class="text-[10px] px-1.5 py-0.5 rounded-full subtle-surface font-semibold">0</span>
+          </div>
+          <div id="bookmarksList" class="space-y-1 text-xs px-1 opacity-80">
+            <div class="text-[11px] italic px-1 py-1 opacity-70">Click the ribbon icon in the top bar to bookmark chapters.</div>
+          </div>
+        </div>
+
+        <!-- Reader Scratchpad Note -->
+        <div class="pt-3 border-t" style="border-color: var(--border-color);">
+          <label for="readerNotesArea" class="block text-[11px] font-bold uppercase tracking-wider opacity-60 px-1 mb-1.5">Reader Margin Notes</label>
+          <textarea id="readerNotesArea" rows="3" placeholder="Jot down architecture notes or questions as you read (saved automatically)..." class="w-full text-xs p-2.5 rounded-lg book-page-surface focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"></textarea>
+          <div id="noteSaveStatus" class="text-[10px] opacity-60 text-right mt-0.5">Auto-saved in browser</div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-4 border-t text-[11px] opacity-75 space-y-1" style="border-color: var(--border-color);">
+        <div class="font-semibold">Official Protocol Links</div>
+        <div class="flex flex-wrap gap-x-3 gap-y-1">
+          <a href="https://ap2-protocol.org/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">ap2-protocol.org ↗</a>
+          <a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">GitHub Repo ↗</a>
+          <a href="https://fidoalliance.org/building-the-trust-layer-for-agentic-payments-with-ap2-and-verifiable-intent/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">FIDO Alliance ↗</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Book Page Canvas -->
+    <main class="flex-1 min-w-0 py-6 px-3 sm:px-6 lg:px-10 flex flex-col items-center">
+      <article id="bookPageContainer" class="w-full max-w-4xl book-page-surface rounded-2xl p-5 sm:p-8 lg:p-12 transition-all">
+        <!-- Dynamic Chapter Content Injected Here -->
+      </article>
+
+      <!-- Book Footer Page Turners -->
+      <div class="w-full max-w-4xl mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <button id="prevChapterBtn" type="button" class="flex-1 flex items-center gap-3 p-4 rounded-xl book-page-surface hover:border-blue-500 transition text-left group">
+          <span class="w-8 h-8 rounded-lg subtle-surface flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">←</span>
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-wider opacity-60 font-semibold">Previous Chapter</div>
+            <div id="prevChapterLabel" class="text-xs sm:text-sm font-bold truncate">Cover &amp; Ch. 1</div>
+          </div>
+        </button>
+
+        <div class="hidden sm:flex flex-col items-center px-3 text-xs opacity-70">
+          <span id="footerPageNumber" class="font-serif italic">Page 1 of 8</span>
+          <span class="text-[10px]">Use ← / → keys</span>
+        </div>
+
+        <button id="nextChapterBtn" type="button" class="flex-1 flex items-center justify-end gap-3 p-4 rounded-xl book-page-surface hover:border-blue-500 transition text-right group">
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-wider opacity-60 font-semibold">Next Chapter</div>
+            <div id="nextChapterLabel" class="text-xs sm:text-sm font-bold truncate">Ch. 2: Why AP2 is Required</div>
+          </div>
+          <span class="w-8 h-8 rounded-lg subtle-surface flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">→</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 hidden px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-medium shadow-lg border border-slate-700"></div>
+
+  <script>
+    // =========================================================================
+    // BOOK DATA & INTERACTIVE CHAPTERS
+    // =========================================================================
+    const CHAPTERS = [
+      {
+        id: "ch1-what-is-ap2",
+        number: "Chapter 1",
+        shortTitle: "What is AP2? Overview",
+        title: "What is the Agent Payments Protocol (AP2)?",
+        subtitle: "An open, cryptographically verifiable trust and coordination layer for AI-driven commerce across cards, bank rails, and digital currencies.",
+        readTime: "6 min read",
+        render: () => `
+          <!-- Book Cover Header Banner -->
+          <div class="mb-8 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white p-6 sm:p-8 shadow-lg relative overflow-hidden">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div class="space-y-2 max-w-xl">
+                <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold">
+                  <span>Open Standard • Apache 2.0 • FIDO Alliance</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight">Agent Payments Protocol (AP2)</h1>
+                <p class="text-sm text-blue-100/90 leading-relaxed">
+                  Initiated by Google in September 2025 with 60+ payment and technology leaders—and contributed to the <strong>FIDO Alliance</strong> in April 2026 alongside AP2 v0.2—AP2 establishes a universal cryptographic language for AI agents to shop and transact safely on behalf of humans.
+                </p>
+              </div>
+              <!-- SVG Protocol Emblem -->
+              <div class="shrink-0 flex items-center justify-center">
+                <svg class="w-32 h-32 sm:w-36 sm:h-36" viewBox="0 0 160 160" fill="none">
+                  <circle cx="80" cy="80" r="72" stroke="url(#grad1)" stroke-width="3" stroke-dasharray="6 4"/>
+                  <circle cx="80" cy="80" r="54" fill="rgba(37,99,235,0.18)" stroke="#60a5fa" stroke-width="2"/>
+                  <path d="M52 82L72 102L110 62" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="44" y="34" width="72" height="22" rx="6" fill="#1e293b" stroke="#93c5fd" stroke-width="1.5"/>
+                  <text x="80" y="49" text-anchor="middle" fill="#e0f2fe" font-size="11" font-family="Inter, sans-serif" font-weight="700">MANDATE VC</text>
+                  <rect x="38" y="108" width="84" height="22" rx="6" fill="#0f766e" stroke="#5eead4" stroke-width="1.5"/>
+                  <text x="80" y="123" text-anchor="middle" fill="#ccfbf1" font-size="10" font-family="JetBrains Mono, monospace" font-weight="600">ES256 • SD-JWT</text>
+                  <defs>
+                    <linearGradient id="grad1" x1="0" y1="0" x2="160" y2="160" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#60a5fa"/>
+                      <stop offset="1" stop-color="#2dd4bf"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="book-prose space-y-5">
+            <p class="drop-cap">
+              The <strong>Agent Payments Protocol (AP2)</strong> is an open, payment-rail-agnostic authorization and trust protocol that enables generative AI agents to initiate, negotiate, and execute financial transactions on behalf of users safely, verifiably, and with deterministic accountability. Rather than replacing existing payment networks (like Visa, Mastercard, American Express, PayPal, UPI, PIX, or stablecoins), AP2 sits as a <em>cryptographic coordination and evidence layer</em> between AI agents, merchants, digital wallets, and payment processors.
+            </p>
+
+            <blockquote class="p-4 rounded-xl subtle-surface border-l-4 border-l-blue-600 italic text-sm sm:text-base my-4">
+              "AP2 answers the single biggest question every merchant, issuer, and regulator asks about agentic commerce: <strong>Did a human actually authorize their AI agent to make this specific purchase, under these exact terms?</strong>"
+            </blockquote>
+
+            <h3 class="text-xl font-bold font-sans pt-2">1.1 What AP2 Is — And What It Is Not</h3>
+            <p>
+              A common misconception when first encountering AP2 (via <a href="https://agentpaymentsprotocol.info/" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">agentpaymentsprotocol.info</a> or the official docs at <a href="https://ap2-protocol.org/" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">ap2-protocol.org</a>) is assuming it is a new cryptocurrency, a proprietary wallet, or a competing card network. In reality, AP2 is strictly an <strong>open authorization and verifiable credential standard</strong>:
+            </p>
+          </div>
+
+          <!-- Comparison Grid: What AP2 Is vs Isn't -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6 font-sans text-xs sm:text-sm">
+            <div class="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+              <div class="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-emerald-500 text-white inline-flex items-center justify-center text-xs">✓</span>
+                <span>What AP2 IS</span>
+              </div>
+              <ul class="space-y-1.5 list-disc list-inside opacity-90">
+                <li><strong>An Extension to A2A, MCP &amp; UCP:</strong> Plugs directly into Agent2Agent (A2A), Model Context Protocol (MCP), and Universal Commerce Protocol (UCP).</li>
+                <li><strong>A Cryptographic Mandate Layer:</strong> Uses tamper-evident Verifiable Digital Credentials (SD-JWTs / VCs) signed by user and agent keys.</li>
+                <li><strong>Payment-Rail Agnostic:</strong> Works uniformly across credit/debit cards, real-time bank transfers (UPI, PIX), e-wallets, and Web3 stablecoins (via <code>a2a-x402</code>).</li>
+                <li><strong>A Dispute Evidence Trail:</strong> Gives issuers, payment networks, and merchants non-repudiable cryptographic proof of user consent.</li>
+              </ul>
+            </div>
+
+            <div class="p-4 rounded-xl border border-rose-500/30 bg-rose-500/5 space-y-2">
+              <div class="font-bold text-rose-700 dark:text-rose-400 flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-rose-500 text-white inline-flex items-center justify-center text-xs">✕</span>
+                <span>What AP2 IS NOT</span>
+              </div>
+              <ul class="space-y-1.5 list-disc list-inside opacity-90">
+                <li><strong>Not a Settlement Rail or Bank:</strong> AP2 does not hold balances or move money by itself; underlying rails settle funds.</li>
+                <li><strong>Not Tied to One AI Model:</strong> Works with Google ADK, LangGraph, CrewAI, AG2, or any custom LLM/agent framework.</li>
+                <li><strong>Not a Replacement for ERP/AP Policy:</strong> AP2 proves an agent had delegated authority, while enterprise ledgers still enforce budgets and accounting.</li>
+                <li><strong>Not a Proprietary Walled Garden:</strong> Licensed under Apache 2.0 and governed within the vendor-neutral <strong>FIDO Alliance</strong>.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Interactive Protocol Positioning Widget -->
+          <div class="my-8 p-5 rounded-2xl subtle-surface font-sans">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Interactive Diagram 1.1</span>
+                <h4 class="text-base font-bold">Where Does AP2 Fit in the Agentic Protocol Stack?</h4>
+              </div>
+              <span class="text-xs opacity-70">Click any protocol layer below to inspect its role</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
+              <button type="button" onclick="selectProtocolLayer('mcp')" id="layerBtn-mcp" class="p-3 rounded-xl border text-left transition hover:border-blue-500 book-page-surface">
+                <div class="text-[10px] font-mono uppercase opacity-60">Layer 1 • Context &amp; Tools</div>
+                <div class="font-bold text-sm mt-0.5">MCP</div>
+                <div class="text-[11px] opacity-75">Model Context Protocol</div>
+              </button>
+              <button type="button" onclick="selectProtocolLayer('a2a')" id="layerBtn-a2a" class="p-3 rounded-xl border text-left transition hover:border-blue-500 book-page-surface">
+                <div class="text-[10px] font-mono uppercase opacity-60">Layer 2 • Agent Transport</div>
+                <div class="font-bold text-sm mt-0.5">A2A</div>
+                <div class="text-[11px] opacity-75">Agent2Agent Protocol</div>
+              </button>
+              <button type="button" onclick="selectProtocolLayer('ucp')" id="layerBtn-ucp" class="p-3 rounded-xl border text-left transition hover:border-blue-500 book-page-surface">
+                <div class="text-[10px] font-mono uppercase opacity-60">Layer 3 • Commerce Flow</div>
+                <div class="font-bold text-sm mt-0.5">UCP</div>
+                <div class="text-[11px] opacity-75">Universal Commerce Protocol</div>
+              </button>
+              <button type="button" onclick="selectProtocolLayer('ap2')" id="layerBtn-ap2" class="p-3 rounded-xl border-2 border-blue-600 text-left transition book-page-surface">
+                <div class="text-[10px] font-mono uppercase text-blue-600 font-bold">Layer 4 • Trust &amp; Payment</div>
+                <div class="font-bold text-sm mt-0.5 text-blue-600">AP2 ★</div>
+                <div class="text-[11px] opacity-75">Agent Payments Protocol</div>
+              </button>
+            </div>
+
+            <div id="protocolLayerDetail" class="p-4 rounded-xl book-page-surface text-xs sm:text-sm space-y-2">
+              <!-- Populated by selectProtocolLayer('ap2') -->
+            </div>
+          </div>
+
+          <div class="book-prose space-y-4">
+            <h3 class="text-xl font-bold font-sans">1.2 Evolution Timeline: From Launch (v0.1) to FIDO Standardization (v0.2)</h3>
+            <p>
+              Understanding AP2 requires recognizing two key milestones in its specification history, as both terminology sets appear across developer documentation and production codebases:
+            </p>
+            <div class="space-y-3 font-sans text-xs sm:text-sm my-4">
+              <div class="flex gap-3 items-start p-3.5 rounded-xl subtle-surface">
+                <span class="px-2 py-1 rounded bg-blue-600 text-white font-mono text-xs font-bold shrink-0">Sept 2025 (v0.1)</span>
+                <div>
+                  <div class="font-bold">Initial Launch with 60+ Global Partners</div>
+                  <p class="opacity-80 mt-0.5">Google unveiled AP2 alongside Adyen, American Express, Coinbase, Etsy, Forter, Intuit, JCB, Mastercard, Mysten Labs, PayPal, Revolut, Salesforce, ServiceNow, UnionPay International, and Worldpay. Introduced the 3-mandate model (<code>IntentMandate</code>, <code>CartMandate</code>, <code>PaymentMandate</code>) and the <code>a2a-x402</code> crypto payment extension.</p>
+                </div>
+              </div>
+              <div class="flex gap-3 items-start p-3.5 rounded-xl subtle-surface">
+                <span class="px-2 py-1 rounded bg-teal-600 text-white font-mono text-xs font-bold shrink-0">April 2026 (v0.2)</span>
+                <div>
+                  <div class="font-bold">FIDO Alliance Donation &amp; AP2 v0.2 Specification</div>
+                  <p class="opacity-80 mt-0.5">With ecosystem support surpassing 100+ organizations, Google contributed AP2 (alongside Mastercard's co-developed <em>Verifiable Intent</em>) to the <strong>FIDO Alliance</strong>. Version 0.2 streamlined mandates into <strong>Checkout Mandate (Open/Closed)</strong> and <strong>Payment Mandate (Open/Closed)</strong> formatted as Selective Disclosure JWTs (SD-JWTs) with hardware-backed <code>cnf</code> key binding.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "ch2-why-required",
+        number: "Chapter 2",
+        shortTitle: "Why AP2 is Required",
+        title: "The Crisis of Trust: Why an Agent Payments Protocol is Required",
+        subtitle: "Why traditional checkout breaks when software agents decide what, when, and how to buy—and how AP2 solves Authorization, Authenticity, and Accountability.",
+        readTime: "7 min read",
+        render: () => `
+          <div class="book-prose space-y-5">
+            <div class="text-xs font-sans font-bold uppercase tracking-wider text-blue-600">Chapter 2 • Problem Statement &amp; Security Rationale</div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-tight">Why Traditional Payment Systems Break in the Agent Era</h1>
+
+            <p class="drop-cap">
+              For thirty years, every online checkout flow—from credit card forms and 3D Secure (3DS) prompts to one-click digital wallets—was engineered around one unshakeable assumption: <strong>a human being is looking at a screen, reviewing the cart total, and physically clicking the "Buy" button in real time.</strong>
+            </p>
+            <p>
+              When an autonomous AI agent acts on a user's behalf, that assumption collapses. A user might tell their assistant at 8:00 AM, <em>"Buy two concert tickets the instant they drop below $150,"</em> and be asleep on a flight when the transaction executes at 11:42 PM. Without a specialized protocol, merchants treat the agent like an unauthorized bot, card issuers block the charge as anomalous fraud, and if the LLM hallucinates and buys $1,500 VIP passes instead, nobody knows who is legally liable.
+            </p>
+
+            <h3 class="text-xl font-bold font-sans pt-2">2.1 The Three Fundamental Questions Current Systems Cannot Answer</h3>
+            <p>
+              According to the <a href="https://ap2-protocol.org/" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">AP2 Specification</a>, autonomous commerce introduces three critical trust gaps that traditional payment rails cannot resolve on their own:
+            </p>
+          </div>
+
+          <!-- 3 Pillars Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6 font-sans">
+            <div class="p-4 rounded-xl subtle-surface border-t-4 border-t-blue-600 space-y-2">
+              <div class="text-xs font-mono uppercase text-blue-600 font-bold">Pillar 01</div>
+              <h4 class="font-bold text-base">1. Authorization</h4>
+              <p class="text-xs opacity-80 leading-relaxed">
+                <strong>The Question:</strong> How can a merchant or payment network verify that a human user actually gave this AI agent authority to make this specific purchase?
+              </p>
+              <div class="pt-2 border-t text-xs" style="border-color: var(--border-color);">
+                <span class="font-semibold text-blue-600">AP2 Solution:</span> User-signed <strong>Open/Intent Mandates</strong> bind the user's cryptographic identity key to explicit spending limits, SKUs, and expiry windows.
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl subtle-surface border-t-4 border-t-teal-600 space-y-2">
+              <div class="text-xs font-mono uppercase text-teal-600 font-bold">Pillar 02</div>
+              <h4 class="font-bold text-base">2. Authenticity</h4>
+              <p class="text-xs opacity-80 leading-relaxed">
+                <strong>The Question:</strong> How can a merchant or issuer be certain the agent's checkout request reflects the user's true intent—and not an LLM hallucination or prompt injection?
+              </p>
+              <div class="pt-2 border-t text-xs" style="border-color: var(--border-color);">
+                <span class="font-semibold text-teal-600">AP2 Solution:</span> <strong>Verifiable Intent, Not Inferred Action.</strong> A deterministic <em>Trusted Surface</em> renders the final cart or constraints for cryptographic signing outside the LLM.
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl subtle-surface border-t-4 border-t-indigo-600 space-y-2">
+              <div class="text-xs font-mono uppercase text-indigo-600 font-bold">Pillar 03</div>
+              <h4 class="font-bold text-base">3. Accountability</h4>
+              <p class="text-xs opacity-80 leading-relaxed">
+                <strong>The Question:</strong> If an incorrect or fraudulent charge occurs, who is liable—the user, the agent developer, the merchant, the wallet, or the card issuer?
+              </p>
+              <div class="pt-2 border-t text-xs" style="border-color: var(--border-color);">
+                <span class="font-semibold text-indigo-600">AP2 Solution:</span> Hash-linked <strong>Checkout &amp; Payment Mandates</strong> provide a non-repudiable cryptographic audit trail for network dispute adjudication.
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Simulator: What Goes Wrong Without AP2 vs With AP2 -->
+          <div class="my-8 p-5 rounded-2xl subtle-surface font-sans">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Interactive Threat Simulator 2.1</span>
+                <h4 class="text-base font-bold">Failure Modes in Agentic Commerce: Legacy Checkout vs. AP2</h4>
+              </div>
+              <span class="text-xs opacity-70">Select a scenario to inspect the protocol defense</span>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button type="button" onclick="selectThreatScenario('hallucination')" id="threatBtn-hallucination" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">1. LLM Hallucination / Overspend</button>
+              <button type="button" onclick="selectThreatScenario('bait')" id="threatBtn-bait" class="px-3 py-1.5 rounded-lg text-xs font-semibold book-page-surface transition">2. Merchant Price Bait-and-Switch</button>
+              <button type="button" onclick="selectThreatScenario('pci')" id="threatBtn-pci" class="px-3 py-1.5 rounded-lg text-xs font-semibold book-page-surface transition">3. Raw Card / Prompt Leakage</button>
+              <button type="button" onclick="selectThreatScenario('replay')" id="threatBtn-replay" class="px-3 py-1.5 rounded-lg text-xs font-semibold book-page-surface transition">4. Double-Spend / Replay Attack</button>
+            </div>
+
+            <div id="threatScenarioView" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <!-- Populated by selectThreatScenario -->
+            </div>
+          </div>
+
+          <div class="book-prose space-y-4">
+            <h3 class="text-xl font-bold font-sans">2.2 Five Core Design Principles of AP2</h3>
+            <p>
+              To prevent the internet from splintering into dozens of incompatible, closed "AI payment silos," AP2 enforces five architectural principles across all implementations:
+            </p>
+            <ol class="list-decimal list-inside space-y-2 text-sm sm:text-base">
+              <li><strong>Openness &amp; Interoperability:</strong> Any compliant Shopping Agent can transact with any compliant Merchant Agent regardless of vendor or LLM provider.</li>
+              <li><strong>User Control &amp; Privacy by Design:</strong> Shopping agents never see raw PAN/CVV card numbers; sensitive credentials stay isolated inside the user's <em>Credentials Provider</em> (digital wallet) using selective disclosure (SD-JWT).</li>
+              <li><strong>Verifiable Intent, Not Inferred Action:</strong> Probabilistic model outputs cannot move money unless backed by deterministic cryptographic signatures.</li>
+              <li><strong>Clear Transaction Accountability:</strong> Every transaction carries portable cryptographic evidence linking user instruction → merchant cart → payment settlement.</li>
+              <li><strong>Global &amp; Future-Proof Rail Support:</strong> Built to bridge "pull" rails (cards) and "push" rails (real-time bank transfers like UPI/PIX and Web3 stablecoins).</li>
+            </ol>
+          </div>
+        `
+      },
+      {
+        id: "ch3-applicability-concepts",
+        number: "Chapter 3",
+        shortTitle: "Core Concepts & Applicability",
+        title: "Core Concepts, Role Architecture & Applicability",
+        subtitle: "Inside Verifiable Digital Credentials (VDCs), the 6-actor separation of duties, Open vs. Closed Mandates, and when to apply AP2.",
+        readTime: "8 min read",
+        render: () => `
+          <div class="book-prose space-y-5">
+            <div class="text-xs font-sans font-bold uppercase tracking-wider text-blue-600">Chapter 3 • Protocol Primitives &amp; Applicability</div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-tight">Role-Based Architecture &amp; Verifiable Digital Credentials</h1>
+
+            <p class="drop-cap">
+              In the physical world, high-value commercial delegations rely on legally binding contracts and separated fiduciary duties rather than informal handshakes. AP2 brings this exact rigor to AI agents through two foundational mechanisms: <strong>Strict Role Separation (6 Actors)</strong> and <strong>Verifiable Digital Credentials (Mandates)</strong>.
+            </p>
+
+            <h3 class="text-xl font-bold font-sans pt-2">3.1 The 6 Actors in an AP2 Transaction</h3>
+            <p>
+              To satisfy PCI-DSS compliance and protect user privacy, AP2 strictly separates the entity that <em>browses and reasons</em> (the Shopping Agent) from the entity that <em>holds payment keys and vaults cards</em> (the Credentials Provider). Click any actor in the interactive architecture map below to inspect its exact responsibilities:
+            </p>
+          </div>
+
+          <!-- Interactive 6-Actor Role Explorer -->
+          <div class="my-6 p-5 rounded-2xl subtle-surface font-sans">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-blue-600 mb-3">Interactive Architecture 3.1 • Click any Actor Role</div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
+              <button type="button" onclick="selectActorRole('user')" id="actorBtn-user" class="p-3 rounded-xl border-2 border-blue-600 text-left book-page-surface transition">
+                <div class="text-[10px] font-mono uppercase text-blue-600 font-bold">Actor 1 • Origin</div>
+                <div class="font-bold text-xs sm:text-sm">User &amp; Trusted Surface</div>
+              </button>
+              <button type="button" onclick="selectActorRole('sa')" id="actorBtn-sa" class="p-3 rounded-xl border text-left book-page-surface transition">
+                <div class="text-[10px] font-mono uppercase opacity-60">Actor 2 • Orchestrator</div>
+                <div class="font-bold text-xs sm:text-sm">Shopping Agent (SA)</div>
+              </button>
+              <button type="button" onclick="selectActorRole('cp')" id="actorBtn-cp" class="p-3 rounded-xl border text-left book-page-surface transition">
+                <div class="text-[10px] font-mono uppercase opacity-60">Actor 3 • Wallet / Vault</div>
+                <div class="font-bold text-xs sm:text-sm">Credentials Provider (CP)</div>
+              </button>
+              <button type="button" onclick="selectActorRole('ma')" id="actorBtn-ma" class="p-3 rounded-xl border text-left book-page-surface transition">
+                <div class="text-[10px] font-mono uppercase opacity-60">Actor 4 • Seller</div>
+                <div class="font-bold text-xs sm:text-sm">Merchant Endpoint (ME/MA)</div>
+              </button>
+              <button type="button" onclick="selectActorRole('mpp')" id="actorBtn-mpp" class="p-3 rounded-xl border text-left book-page-surface transition">
+                <div class="text-[10px] font-mono uppercase opacity-60">Actor 5 • Acquirer / PSP</div>
+                <div class="font-bold text-xs sm:text-sm">Merchant Processor (MPP)</div>
+              </button>
+              <button type="button" onclick="selectActorRole('network')" id="actorBtn-network" class="p-3 rounded-xl border text-left book-page-surface transition">
+                <div class="text-[10px] font-mono uppercase opacity-60">Actor 6 • Settlement</div>
+                <div class="font-bold text-xs sm:text-sm">Network &amp; Issuer</div>
+              </button>
+            </div>
+            <div id="actorRoleDetail" class="p-4 rounded-xl book-page-surface text-xs sm:text-sm"></div>
+          </div>
+
+          <div class="book-prose space-y-4">
+            <h3 class="text-xl font-bold font-sans pt-2">3.2 Key Concept: Mandates (v0.1 Three-Mandate Model vs. v0.2 Open/Closed Model)</h3>
+            <p>
+              At the heart of AP2 are <strong>Mandates</strong>—tamper-evident, cryptographically signed Verifiable Digital Credentials (VDCs). In <strong>AP2 v0.1</strong> (Sept 2025), the specification defined three distinct objects: <code>IntentMandate</code>, <code>CartMandate</code>, and <code>PaymentMandate</code>. In <strong>AP2 v0.2</strong> (April 2026 FIDO release), the spec unified these into two primary mandate types—<strong>Checkout Mandate</strong> and <strong>Payment Mandate</strong>—each operating across two lifecycle stages: <strong>Open</strong> (pre-authorized constraints for autonomous execution) and <strong>Closed</strong> (bound to a finalized cart and exact price).
+            </p>
+          </div>
+
+          <!-- Table Comparing v0.1 and v0.2 Mandates -->
+          <div class="my-6 overflow-x-auto rounded-xl border font-sans text-xs sm:text-sm" style="border-color: var(--border-color);">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="subtle-surface border-b" style="border-color: var(--border-color);">
+                  <th class="p-3 font-bold">Mandate Stage / Purpose</th>
+                  <th class="p-3 font-bold">AP2 v0.1 Name (2025)</th>
+                  <th class="p-3 font-bold">AP2 v0.2 Name (2026 FIDO)</th>
+                  <th class="p-3 font-bold">v0.2 SD-JWT <code>vct</code> Claim</th>
+                  <th class="p-3 font-bold">Shared With</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y" style="border-color: var(--border-color);">
+                <tr>
+                  <td class="p-3 font-medium">Upfront Purchase Constraints (SKUs, allowed merchants, expiry)</td>
+                  <td class="p-3 font-mono text-xs">IntentMandate</td>
+                  <td class="p-3 font-semibold text-blue-600">Open Checkout Mandate</td>
+                  <td class="p-3 font-mono text-xs">mandate.checkout.open.1</td>
+                  <td class="p-3">Shopping Agent → Merchant</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-medium">Finalized Cart Binding (Exact items, merchant JWT &amp; <code>checkout_hash</code>)</td>
+                  <td class="p-3 font-mono text-xs">CartMandate</td>
+                  <td class="p-3 font-semibold text-blue-600">Closed Checkout Mandate</td>
+                  <td class="p-3 font-mono text-xs">mandate.checkout.1</td>
+                  <td class="p-3">Merchant &amp; Dispute Ledger</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-medium">Upfront Spend Ceiling (<code>amount_range</code>, allowed payees, instrument rules)</td>
+                  <td class="p-3 font-mono text-xs">IntentMandate (Payment rules)</td>
+                  <td class="p-3 font-semibold text-teal-600">Open Payment Mandate</td>
+                  <td class="p-3 font-mono text-xs">mandate.payment.open.1</td>
+                  <td class="p-3">Credentials Provider &amp; Network</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-medium">Final Payment Authorization (Exact <code>payment_amount</code>, <code>transaction_id</code>, agent modality)</td>
+                  <td class="p-3 font-mono text-xs">PaymentMandate</td>
+                  <td class="p-3 font-semibold text-teal-600">Closed Payment Mandate</td>
+                  <td class="p-3 font-mono text-xs">mandate.payment.1</td>
+                  <td class="p-3">Credentials Provider, PSP, Network &amp; Issuer</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="book-prose space-y-4">
+            <h3 class="text-xl font-bold font-sans pt-2">3.3 Applicability Matrix: When Should You Use AP2?</h3>
+            <p>
+              According to the <a href="https://ap2-protocol.org/faq/" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">official AP2 FAQ</a>, developers and merchants often ask how AP2 relates to the <strong>Universal Commerce Protocol (UCP)</strong> and native AI checkout:
+            </p>
+            <ul class="list-disc list-inside space-y-2 text-sm sm:text-base">
+              <li><strong>Human-Present Multi-Agent Checkout:</strong> Applicable whenever a user converses with an AI Shopping Agent that discovers products across remote Merchant Agents and requires a tamper-proof <em>Closed Checkout Mandate</em> before charging a tokenized payment method.</li>
+              <li><strong>Human-Not-Present (Delegated / Autonomous) Commerce:</strong> Essential whenever a user delegates conditional rules (e.g., price drops, ticket releases, recurring inventory restocks) so the agent can sign a <em>Closed Mandate</em> using its delegated <code>cnf</code> key while the user is offline.</li>
+              <li><strong>UCP vs. AP2 Applicability:</strong> UCP orchestrates the broader retail catalog, cart, and post-purchase order status lifecycle (such as native inline buying on Google AI Mode and Gemini). <strong>AP2 is the specialized cryptographic payment extension</strong> plugged into UCP or A2A whenever verifiable delegation, multi-agent interaction, or autonomous execution is required.</li>
+            </ul>
+          </div>
+        `
+      },
+      {
+        id: "ch4-tech-stack",
+        number: "Chapter 4",
+        shortTitle: "Tech Stacks & Standards",
+        title: "The AP2 Technical Stack & Cryptographic Standards",
+        subtitle: "How ADK/LangGraph, MCP, A2A JSON-RPC, SD-JWT Verifiable Credentials, ES256 Keys, and x402 Crypto Rails fit together.",
+        readTime: "8 min read",
+        render: () => `
+          <div class="book-prose space-y-5">
+            <div class="text-xs font-sans font-bold uppercase tracking-wider text-blue-600">Chapter 4 • Engineering &amp; Protocol Stack</div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-tight">Inside the AP2 Technology Stack</h1>
+
+            <p class="drop-cap">
+              AP2 is deliberately framework-agnostic and transport-modular. While Google's official reference repository (<a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">google-agentic-commerce/AP2</a>) uses Python 3.11+, the Agent Development Kit (ADK), and Gemini models for its quickstart demos, any agent built in <strong>LangGraph, CrewAI, AG2, Go, Java, Kotlin/Android, or TypeScript</strong> can implement the protocol.
+            </p>
+          </div>
+
+          <!-- 5-Layer Architecture Stack Visual -->
+          <div class="my-6 space-y-2.5 font-sans">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-blue-600 mb-2">Figure 4.1 • The 5-Layer Agentic Commerce Tech Stack</div>
+
+            <div class="p-4 rounded-xl book-page-surface border-l-4 border-l-purple-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div class="text-[10px] font-mono uppercase text-purple-600 font-bold">Layer 5 • AI Orchestration &amp; Runtime</div>
+                <div class="font-bold text-sm">Agent Frameworks &amp; Trusted Surfaces</div>
+                <div class="text-xs opacity-75">Google ADK, LangGraph, CrewAI, AG2, Vite+React Web Client, Android Wallet Surface (Kotlin)</div>
+              </div>
+              <span class="px-2.5 py-1 rounded-md subtle-surface font-mono text-xs shrink-0">Python / Go / TS / Java</span>
+            </div>
+
+            <div class="p-4 rounded-xl book-page-surface border-l-4 border-l-blue-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div class="text-[10px] font-mono uppercase text-blue-600 font-bold">Layer 4 • Cryptographic Mandate &amp; Evidence Layer (AP2 Core)</div>
+                <div class="font-bold text-sm">Verifiable Digital Credentials &amp; Signatures</div>
+                <div class="text-xs opacity-75">IETF SD-JWT (Selective Disclosure JWT), W3C VC Data Model, ES256 (ECDSA P-256), <code>cnf</code> Key Binding, SHA-256 <code>checkout_hash</code></div>
+              </div>
+              <span class="px-2.5 py-1 rounded-md bg-blue-600 text-white font-mono text-xs shrink-0">ap2/v1 • v0.2 SD-JWT</span>
+            </div>
+
+            <div class="p-4 rounded-xl book-page-surface border-l-4 border-l-sky-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div class="text-[10px] font-mono uppercase text-sky-600 font-bold">Layer 3 • Inter-Agent Communication &amp; Discovery</div>
+                <div class="font-bold text-sm">A2A Protocol &amp; MCP Tooling</div>
+                <div class="text-xs opacity-75">JSON-RPC 2.0 over HTTP, <code>/.well-known/agent-card.json</code>, Header <code>X-A2A-Extensions: https://github.com/google-agentic-commerce/ap2/v1</code></div>
+              </div>
+              <span class="px-2.5 py-1 rounded-md subtle-surface font-mono text-xs shrink-0">A2A v0.3 • MCP • UCP</span>
+            </div>
+
+            <div class="p-4 rounded-xl book-page-surface border-l-4 border-l-amber-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div class="text-[10px] font-mono uppercase text-amber-600 font-bold">Layer 2 • Hardware Security, Identity &amp; Core Accounting</div>
+                <div class="font-bold text-sm">Key Management, Authentication &amp; Double-Entry Ledgers</div>
+                <div class="text-xs opacity-75">FIDO2 / WebAuthn Level 3 Passkeys, Android Keystore / TEE / Cloud HSM, Omnibus Core Ledgers (Formance Numscript Reserve/Capture/Release)</div>
+              </div>
+              <span class="px-2.5 py-1 rounded-md subtle-surface font-mono text-xs shrink-0">FIDO2 • TEE/HSM • 3DS</span>
+            </div>
+
+            <div class="p-4 rounded-xl book-page-surface border-l-4 border-l-emerald-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div class="text-[10px] font-mono uppercase text-emerald-600 font-bold">Layer 1 • Payment Settlement Rails</div>
+                <div class="font-bold text-sm">Pull Rails, Push Rails &amp; Programmable Crypto</div>
+                <div class="text-xs opacity-75">Card Networks (DPAN + Cryptograms: Mastercard, Amex, JCB, UnionPay), Wallets (PayPal), RTP (UPI, PIX), Web3 (<code>a2a-x402</code> USDC/ETH/Sui/Cardano)</div>
+              </div>
+              <span class="px-2.5 py-1 rounded-md subtle-surface font-mono text-xs shrink-0">Cards • RTP • x402</span>
+            </div>
+          </div>
+
+          <div class="book-prose space-y-4">
+            <h3 class="text-xl font-bold font-sans pt-2">4.1 Deep Dive: Cryptographic Mechanics (SD-JWT &amp; <code>cnf</code> Key Binding)</h3>
+            <p>
+              How does a verifier (like a Merchant Payment Processor or Card Issuer) mathematically verify a Human-Not-Present transaction without calling back to the user's phone? <a href="https://www.formance.com/blog/financial-operations/ap2-mandates-explained" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">AP2 v0.2 accomplishes this</a> through a two-link cryptographic chain:
+            </p>
+            <ul class="list-disc list-inside space-y-2 text-sm sm:text-base">
+              <li><strong>Step 1 — User Signs the Open Mandate (ES256):</strong> When the user pre-approves a task on a Trusted Surface, their hardware-backed key signs an <em>Open Checkout Mandate</em> (<code>vct: mandate.checkout.open.1</code>) and an <em>Open Payment Mandate</em> (<code>vct: mandate.payment.open.1</code>). Inside that signed JWT is a <code>cnf</code> (confirmation) claim containing the <strong>Shopping Agent's public EC P-256 key</strong>.</li>
+              <li><strong>Step 2 — Agent Signs the Closed Mandate (Key-Binding JWT):</strong> When the agent later finds a matching cart, the merchant signs a <code>checkout_jwt</code>. The Shopping Agent signs a <em>Closed Mandate</em> using its private key (matching the public key in <code>cnf</code>) and includes an <code>sd_hash</code> digest pointing back to the user's Open Mandate.</li>
+              <li><strong>Step 3 — Offline Deterministic Verification:</strong> Any verifier checks (a) the user's signature on the Open Mandate, (b) that the Closed Mandate was signed by the exact agent key named in <code>cnf</code>, and (c) that the final price, merchant, SKU, and timestamp satisfy every constraint in the Open Mandate.</li>
+            </ul>
+
+            <h3 class="text-xl font-bold font-sans pt-2">4.2 Repository Languages &amp; SDK Ecosystem</h3>
+            <p>
+              In the official <a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">google-agentic-commerce/AP2 repository</a>, the codebase spans multiple languages to support full-stack reference scenarios:
+            </p>
+          </div>
+
+          <!-- Repo Language Breakdown Bar -->
+          <div class="my-5 p-4 rounded-xl subtle-surface font-sans space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span>Official GitHub Repository Language Distribution (<code>google-agentic-commerce/AP2</code>)</span>
+              <span class="font-mono">Apache-2.0 License</span>
+            </div>
+            <div class="w-full h-3 rounded-full overflow-hidden flex">
+              <div class="bg-blue-600 h-full" style="width: 62.7%" title="Python 62.7%"></div>
+              <div class="bg-sky-400 h-full" style="width: 13.5%" title="TypeScript 13.5%"></div>
+              <div class="bg-purple-500 h-full" style="width: 9.6%" title="Kotlin 9.6%"></div>
+              <div class="bg-teal-500 h-full" style="width: 7.1%" title="Go 7.1%"></div>
+              <div class="bg-amber-500 h-full" style="width: 7.1%" title="SCSS & Shell 7.1%"></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+              <div><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-600 mr-1"></span><strong>Python (62.7%):</strong> Core SDK (<code>code/sdk/python/ap2/</code>), Pydantic models &amp; ADK agents</div>
+              <div><span class="inline-block w-2.5 h-2.5 rounded-full bg-sky-400 mr-1"></span><strong>TypeScript (13.5%):</strong> Vite + React Demo Web Client (<code>code/web-client/</code>)</div>
+              <div><span class="inline-block w-2.5 h-2.5 rounded-full bg-purple-500 mr-1"></span><strong>Kotlin (9.6%):</strong> Android Digital Payment Credentials App (<code>code/samples/android/</code>)</div>
+              <div><span class="inline-block w-2.5 h-2.5 rounded-full bg-teal-500 mr-1"></span><strong>Go (7.1%):</strong> High-concurrency Go agent role samples (<code>code/samples/go/</code>)</div>
+              <div><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 mr-1"></span><strong>Community SDKs:</strong> Java (<code>a2ajava</code>), Rust/Numscript ledgers, and x402 bridges</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "ch5-industries-ecosystem",
+        number: "Chapter 5",
+        shortTitle: "Industries & Ecosystem",
+        title: "Target Industries & The 100+ Partner Ecosystem",
+        subtitle: "Which industries are adopting AP2, how each vertical applies cryptographic mandates, and who is building the ecosystem.",
+        readTime: "6 min read",
+        render: () => `
+          <div class="book-prose space-y-5">
+            <div class="text-xs font-sans font-bold uppercase tracking-wider text-blue-600">Chapter 5 • Market Adoption &amp; Industry Verticals</div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-tight">Industries Transformed by Agentic Payments</h1>
+
+            <p class="drop-cap">
+              Because AP2 decouples <em>how purchase authority is proven</em> from <em>how funds settle</em>, its applicability extends far beyond consumer retail chatboxes. Launched with more than 60 organizations in September 2025 (<a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Google Cloud Blog</a>) and expanding past 100 supporting institutions upon joining the FIDO Alliance in 2026 (<a href="https://www.spark.money/research/google-ap2-agent-payment-protocol" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Spark Research</a>), AP2 spans six major industry verticals.
+            </p>
+          </div>
+
+          <!-- Interactive Industry Filter -->
+          <div class="my-6 p-5 rounded-2xl subtle-surface font-sans">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Interactive Explorer 5.1</span>
+                <h4 class="text-base font-bold">Explore AP2 Impact by Industry Vertical</h4>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" onclick="filterIndustry('all')" id="indBtn-all" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white">All (6)</button>
+                <button type="button" onclick="filterIndustry('retail')" id="indBtn-retail" class="px-2.5 py-1 rounded-lg text-xs font-semibold book-page-surface">Retail</button>
+                <button type="button" onclick="filterIndustry('finance')" id="indBtn-finance" class="px-2.5 py-1 rounded-lg text-xs font-semibold book-page-surface">Banking &amp; Cards</button>
+                <button type="button" onclick="filterIndustry('b2b')" id="indBtn-b2b" class="px-2.5 py-1 rounded-lg text-xs font-semibold book-page-surface">B2B &amp; SaaS</button>
+                <button type="button" onclick="filterIndustry('travel')" id="indBtn-travel" class="px-2.5 py-1 rounded-lg text-xs font-semibold book-page-surface">Travel &amp; Events</button>
+                <button type="button" onclick="filterIndustry('web3')" id="indBtn-web3" class="px-2.5 py-1 rounded-lg text-xs font-semibold book-page-surface">Web3 &amp; DeFi</button>
+              </div>
+            </div>
+
+            <div id="industryCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <!-- Populated by filterIndustry -->
+            </div>
+          </div>
+
+          <div class="book-prose space-y-4">
+            <h3 class="text-xl font-bold font-sans pt-2">5.1 Notable Ecosystem Partners &amp; Their Roles</h3>
+            <p>
+              The strength of AP2 lies in the diversity of its coalition across every link of the value chain:
+            </p>
+          </div>
+
+          <div class="my-5 overflow-x-auto rounded-xl border font-sans text-xs sm:text-sm" style="border-color: var(--border-color);">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="subtle-surface border-b" style="border-color: var(--border-color);">
+                  <th class="p-3 font-bold">Ecosystem Category</th>
+                  <th class="p-3 font-bold">Participating Organizations</th>
+                  <th class="p-3 font-bold">Primary AP2 Role</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y" style="border-color: var(--border-color);">
+                <tr>
+                  <td class="p-3 font-semibold">Card Networks &amp; Issuers</td>
+                  <td class="p-3">Mastercard (co-author of Verifiable Intent), American Express, JCB, UnionPay International</td>
+                  <td class="p-3">Network routing, DPAN tokenization, agent modality risk scoring &amp; dispute adjudication</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-semibold">Wallets, PSPs &amp; Acquirers</td>
+                  <td class="p-3">PayPal, Adyen, Worldpay, Revolut, Ant International, Lightspark</td>
+                  <td class="p-3">Credentials Providers (CP), Merchant Payment Processors (MPP), &amp; instant settlement</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-semibold">Enterprise SaaS, B2B &amp; Retail</td>
+                  <td class="p-3">Salesforce, ServiceNow, Intuit, Etsy, Formance, Payouts.com</td>
+                  <td class="p-3">Merchant Agents, autonomous B2B procurement, accounting &amp; omnibus ledger controls</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-semibold">Fraud Prevention &amp; Identity</td>
+                  <td class="p-3">FIDO Alliance, Forter, Cloud Security Alliance (CSA)</td>
+                  <td class="p-3">Passkey/biometric Trusted Surface binding, bot vs. authorized-agent risk telemetry</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-semibold">Web3 &amp; Programmable Crypto</td>
+                  <td class="p-3">Coinbase, Ethereum Foundation, MetaMask, Mysten Labs (Sui), Masumi (Cardano)</td>
+                  <td class="p-3"><code>a2a-x402</code> crypto extension, stablecoin micropayments &amp; on-chain escrow enforcement</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `
+      },
+      {
+        id: "ch6-use-cases-flows",
+        number: "Chapter 6",
+        shortTitle: "Sample Use Cases & Flows",
+        title: "Sample Use Cases & Interactive Sequence Simulator",
+        subtitle: "Step-by-step message flows for Human-Present Shopping, Human-Not-Present Autonomous Delegation, B2B Procurement, and x402 Micropayments.",
+        readTime: "9 min read",
+        render: () => `
+          <div class="book-prose space-y-5">
+            <div class="text-xs font-sans font-bold uppercase tracking-wider text-blue-600">Chapter 6 • Transaction Flows &amp; Real-World Scenarios</div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-tight">How AP2 Works in Action: Use Cases &amp; Sequence Flows</h1>
+
+            <p class="drop-cap">
+              To truly understand AP2, you need to trace how mandates are minted, signed, and verified across agents. Below is an interactive <strong>Transaction Sequence Simulator</strong> covering the three canonical flows from the <a href="https://ap2-protocol.org/" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">AP2 Specification</a>, followed by four concrete industry blueprints.
+            </p>
+          </div>
+
+          <!-- Interactive Sequence Flow Stepper -->
+          <div class="my-6 p-5 rounded-2xl subtle-surface font-sans">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Interactive Flow Simulator 6.1</span>
+                <h4 class="text-base font-bold">Step-by-Step AP2 Transaction Lifecycle</h4>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" onclick="selectFlowMode('human-present')" id="flowModeBtn-human-present" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white">Flow A: Human-Present (Cards)</button>
+                <button type="button" onclick="selectFlowMode('human-not-present')" id="flowModeBtn-human-not-present" class="px-3 py-1.5 rounded-lg text-xs font-semibold book-page-surface">Flow B: Human-Not-Present (Autonomous)</button>
+                <button type="button" onclick="selectFlowMode('x402-crypto')" id="flowModeBtn-x402-crypto" class="px-3 py-1.5 rounded-lg text-xs font-semibold book-page-surface">Flow C: Web3 x402 Stablecoin</button>
+              </div>
+            </div>
+
+            <!-- Stepper Controls -->
+            <div class="flex items-center justify-between gap-2 mb-3 p-2.5 rounded-xl book-page-surface">
+              <button type="button" onclick="stepFlow(-1)" class="px-3 py-1 rounded-lg subtle-surface text-xs font-semibold hover:bg-blue-600 hover:text-white transition">← Prev Step</button>
+              <div id="flowStepIndicator" class="text-xs font-mono font-bold text-blue-600">Step 1 of 6</div>
+              <button type="button" onclick="stepFlow(1)" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition">Next Step →</button>
+            </div>
+
+            <!-- Step Progress Pills -->
+            <div id="flowPillsContainer" class="grid grid-cols-6 gap-1.5 mb-4"></div>
+
+            <!-- Active Step Detail Card -->
+            <div id="flowActiveCard" class="p-4 rounded-xl book-page-surface border-2 border-blue-500/50 space-y-2 text-xs sm:text-sm"></div>
+          </div>
+
+          <div class="book-prose space-y-4">
+            <h3 class="text-xl font-bold font-sans pt-2">6.1 Four Concrete Sample Use Cases</h3>
+            <p>
+              Here are four detailed sample use cases showing how consumer apps, enterprises, and Web3 developers combine AP2 mandates with payment rails:
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-5 font-sans text-xs sm:text-sm">
+            <div class="p-4 rounded-xl subtle-surface space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-blue-600/15 text-blue-600 font-bold text-[11px]">Use Case 01 • Human-Present Retail</span>
+                <span class="font-mono text-[11px] opacity-60">Cards + OTP</span>
+              </div>
+              <h4 class="font-bold text-base">Conversational Espresso Machine Purchase</h4>
+              <p class="opacity-85">
+                A user chats with a Shopping Agent: <em>"Find me a refundable espresso coffee maker."</em> The agent generates an <code>IntentMandate</code>, queries the Merchant Agent, and receives 3 <code>CartMandate</code> offers ($89.99, $249.00, $599.99). After the user picks the $599.99 machine, the agent fetches the shipping address ($2.00 shipping + $1.50 tax = $603.49) and Amex DPAN token from the Credentials Provider, collects the user's signature on a Trusted Surface, and completes an issuer OTP challenge (<code>123</code>).
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl subtle-surface space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-teal-600/15 text-teal-600 font-bold text-[11px]">Use Case 02 • Human-Not-Present</span>
+                <span class="font-mono text-[11px] opacity-60">Open → Closed SD-JWT</span>
+              </div>
+              <h4 class="font-bold text-base">Autonomous Concert Ticket Sniping &amp; Price Drop</h4>
+              <p class="opacity-85">
+                A fan tells their agent: <em>"Buy 2 floor tickets to the Coldplay tour the moment they go on sale if total price is under $300."</em> Upfront, the user signs an <strong>Open Checkout Mandate</strong> (SKU: floor tickets, qty: 2) and an <strong>Open Payment Mandate</strong> (<code>amount_range.max: 30000</code> cents, <code>exp: 7 days</code>) containing the agent's <code>cnf</code> public key. At 3:00 AM, tickets drop at $135 each ($270 total). The agent signs the <strong>Closed Mandate</strong> with its own private key and settles instantly.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl subtle-surface space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-indigo-600/15 text-indigo-600 font-bold text-[11px]">Use Case 03 • Enterprise B2B &amp; Cloud</span>
+                <span class="font-mono text-[11px] opacity-60">Omnibus Ledger + AP2</span>
+              </div>
+              <h4 class="font-bold text-base">Autonomous Cloud SaaS Seat &amp; GPU Procurement</h4>
+              <p class="opacity-85">
+                An enterprise IT operations agent monitors cluster load and holds a CFO-signed Open Payment Mandate for up to $250,000/month across approved Google Cloud Marketplace vendors. On issuance, the company's Formance core ledger posts an <code>open_mandate_reserve</code> of $250,000. When the agent provisions $187,500 of GPU capacity, the Closed Mandate triggers a <code>closed_mandate_capture</code>, and at month-end the unused $62,500 is automatically released.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl subtle-surface space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-purple-600/15 text-purple-600 font-bold text-[11px]">Use Case 04 • Web3 Machine-to-Machine</span>
+                <span class="font-mono text-[11px] opacity-60">a2a-x402 + Stablecoins</span>
+              </div>
+              <h4 class="font-bold text-base">Agent-to-Agent API Data Paywalls &amp; Micropayments</h4>
+              <p class="opacity-85">
+                A financial research agent queries a specialized weather-satellite agent for real-time crop imagery. The satellite agent responds with an HTTP <code>402 Payment Required</code> challenge via the <code>a2a-x402</code> extension. Operating under a pre-signed Open Mandate budget of $10 USDC/day, the research agent automatically signs a Closed Payment Mandate for $0.04 USDC on Base/Sui and receives the high-resolution payload in milliseconds.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "ch7-code-payload-lab",
+        number: "Chapter 7",
+        shortTitle: "Code & Payload Lab",
+        title: "Hands-On Code Examples & Interactive Mandate Validator",
+        subtitle: "Inspect real A2A Agent Cards, JSON-RPC 2.0 traces, v0.2 SD-JWT Mandates, Python ADK & Java implementations, and test live mandate validation.",
+        readTime: "10 min read",
+        render: () => `
+          <div class="book-prose space-y-4">
+            <div class="text-xs font-sans font-bold uppercase tracking-wider text-blue-600">Chapter 7 • Developer Reference &amp; Live Sandbox</div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-tight">Code Examples, Wire Payloads &amp; Mandate Sandbox</h1>
+
+            <p class="drop-cap">
+              This chapter provides real, production-grounded code and wire payloads extracted directly from the <a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">official AP2 repository</a>, the <a href="https://arthurchiao.art/blog/ap2-illustrated-guide/" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">AP2 A2A trace logs</a>, the <a href="https://www.formance.com/blog/financial-operations/ap2-mandates-explained" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">v0.2 SD-JWT specification</a>, and <a href="https://dev.to/vishalmysore/what-is-google-ap2-protocol-step-by-step-guide-with-examples-2lcp" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Java AP2 implementations</a>. Use the tabs below to inspect each artifact, then test the interactive Mandate Constraint Validator below.
+            </p>
+          </div>
+
+          <!-- Multi-Tab Code Viewer -->
+          <div class="my-6 rounded-2xl overflow-hidden border font-sans" style="border-color: var(--border-color);">
+            <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 subtle-surface border-b" style="border-color: var(--border-color);">
+              <div class="flex flex-wrap gap-1">
+                <button type="button" onclick="selectCodeTab('agent-card')" id="codeTabBtn-agent-card" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white">1. A2A Agent Card</button>
+                <button type="button" onclick="selectCodeTab('jsonrpc-trace')" id="codeTabBtn-jsonrpc-trace" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold book-page-surface">2. JSON-RPC Mandate Trace</button>
+                <button type="button" onclick="selectCodeTab('sdjwt-v02')" id="codeTabBtn-sdjwt-v02" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold book-page-surface">3. v0.2 SD-JWT (Open/Closed)</button>
+                <button type="button" onclick="selectCodeTab('python-adk')" id="codeTabBtn-python-adk" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold book-page-surface">4. Python ADK Quickstart</button>
+                <button type="button" onclick="selectCodeTab('java-sdk')" id="codeTabBtn-java-sdk" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold book-page-surface">5. Java Mandate Chain</button>
+                <button type="button" onclick="selectCodeTab('ledger-numscript')" id="codeTabBtn-ledger-numscript" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold book-page-surface">6. Core Ledger Postings</button>
+              </div>
+              <button type="button" onclick="copyCurrentCode()" class="px-2.5 py-1 rounded-lg book-page-surface text-xs font-mono hover:border-blue-500">Copy Code</button>
+            </div>
+            <div id="codeTabDescription" class="px-4 py-2 text-xs subtle-surface border-b opacity-85" style="border-color: var(--border-color);"></div>
+            <pre id="codeDisplayPre" class="code-surface p-4 text-xs overflow-x-auto leading-relaxed max-h-[420px] custom-scrollbar"></pre>
+          </div>
+
+          <!-- Interactive Mandate Constraint & Cryptographic Validator Sandbox -->
+          <div class="my-8 p-5 rounded-2xl subtle-surface font-sans">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Interactive Lab 7.1 • Live AP2 v0.2 Verifier</span>
+                <h4 class="text-base font-bold">Mandate Constraint &amp; Cryptographic Chain Simulator</h4>
+                <p class="text-xs opacity-75">Configure the User's Open Mandate constraints on the left and the Agent's proposed Closed Checkout on the right to see how a Merchant/PSP Verifier evaluates the transaction.</p>
+              </div>
+              <button type="button" onclick="resetSandboxDefaults()" class="px-3 py-1.5 rounded-lg book-page-surface text-xs font-semibold shrink-0 hover:border-blue-500">Reset Defaults</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-xs">
+              <!-- Left: User Open Mandate Constraints -->
+              <div class="p-4 rounded-xl book-page-surface space-y-3">
+                <div class="font-bold text-sm text-blue-600 border-b pb-1.5" style="border-color: var(--border-color);">1. User-Signed Open Mandate Constraints</div>
+                <div>
+                  <label for="sbMaxBudget" class="block font-semibold mb-1">Max Authorized Amount (<code>payment.amount_range.max</code> USD)</label>
+                  <input id="sbMaxBudget" type="number" value="300" min="10" max="5000" oninput="evaluateMandateSandbox()" class="w-full px-3 py-1.5 rounded-lg subtle-surface font-mono" />
+                </div>
+                <div>
+                  <label for="sbAllowedMerchant" class="block font-semibold mb-1">Allowed Merchant (<code>checkout.allowed_merchants</code>)</label>
+                  <select id="sbAllowedMerchant" onchange="evaluateMandateSandbox()" class="w-full px-3 py-1.5 rounded-lg subtle-surface font-mono">
+                    <option value="merchant_roasters_inc">merchant_roasters_inc (Specialty Coffee Co.)</option>
+                    <option value="ticketmaster_verified">ticketmaster_verified (Official Box Office)</option>
+                    <option value="gcp_marketplace">gcp_marketplace (Google Cloud Marketplace)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="sbAllowedSku" class="block font-semibold mb-1">Authorized SKU (<code>checkout.line_items.sku</code>)</label>
+                  <input id="sbAllowedSku" type="text" value="SKU-ESP-PRO-03" oninput="evaluateMandateSandbox()" class="w-full px-3 py-1.5 rounded-lg subtle-surface font-mono" />
+                </div>
+              </div>
+
+              <!-- Right: Agent Closed Mandate Proposal -->
+              <div class="p-4 rounded-xl book-page-surface space-y-3">
+                <div class="font-bold text-sm text-teal-600 border-b pb-1.5" style="border-color: var(--border-color);">2. Agent-Signed Closed Mandate (At Checkout)</div>
+                <div>
+                  <label for="sbCartAmount" class="block font-semibold mb-1">Final Checkout Price (<code>payment_amount</code> USD)</label>
+                  <input id="sbCartAmount" type="number" value="265" min="1" max="5000" oninput="evaluateMandateSandbox()" class="w-full px-3 py-1.5 rounded-lg subtle-surface font-mono" />
+                </div>
+                <div>
+                  <label for="sbCartMerchant" class="block font-semibold mb-1">Actual Payee Merchant (<code>payee</code>)</label>
+                  <select id="sbCartMerchant" onchange="evaluateMandateSandbox()" class="w-full px-3 py-1.5 rounded-lg subtle-surface font-mono">
+                    <option value="merchant_roasters_inc">merchant_roasters_inc (Specialty Coffee Co.)</option>
+                    <option value="unverified_reseller_99">unverified_reseller_99 (3rd-Party Scalper)</option>
+                    <option value="ticketmaster_verified">ticketmaster_verified (Official Box Office)</option>
+                    <option value="gcp_marketplace">gcp_marketplace (Google Cloud Marketplace)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="sbCartSku" class="block font-semibold mb-1">Cart Item SKU &amp; Signature State</label>
+                  <div class="flex gap-2">
+                    <input id="sbCartSku" type="text" value="SKU-ESP-PRO-03" oninput="evaluateMandateSandbox()" class="w-1/2 px-2.5 py-1.5 rounded-lg subtle-surface font-mono" />
+                    <select id="sbKeyMatch" onchange="evaluateMandateSandbox()" class="w-1/2 px-2 py-1.5 rounded-lg subtle-surface font-mono">
+                      <option value="valid">cnf Key: Valid ES256</option>
+                      <option value="mismatch">cnf Key: Mismatch!</option>
+                      <option value="tampered">checkout_hash: Tampered!</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Verification Verdict Output -->
+            <div id="sandboxVerdictBox" class="p-4 rounded-xl book-page-surface border"></div>
+          </div>
+        `
+      },
+      {
+        id: "ch8-quiz-glossary",
+        number: "Chapter 8",
+        shortTitle: "Quiz, Glossary & Links",
+        title: "Self-Assessment Quiz, Official Glossary & Reference Library",
+        subtitle: "Test your mastery of AP2 architecture, search the canonical glossary, and explore primary specification documents.",
+        readTime: "6 min read",
+        render: () => `
+          <div class="book-prose space-y-4">
+            <div class="text-xs font-sans font-bold uppercase tracking-wider text-blue-600">Chapter 8 • Review, Glossary &amp; Citations</div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-tight">Knowledge Check &amp; Canonical Reference Library</h1>
+            <p class="drop-cap">
+              Congratulations on completing the core chapters of this interactive book on the Agent Payments Protocol (AP2). Use the interactive quiz below to test your architectural understanding, browse the searchable protocol glossary, or jump directly to the primary specification sources.
+            </p>
+          </div>
+
+          <!-- Interactive Quiz -->
+          <div class="my-6 p-5 rounded-2xl subtle-surface font-sans space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Interactive Assessment 8.1</span>
+                <h4 class="text-base font-bold">AP2 Certification Practice Quiz (5 Questions)</h4>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="quizScoreBadge" class="px-3 py-1 rounded-full bg-blue-600 text-white text-xs font-bold">Score: 0 / 5</span>
+                <button type="button" onclick="resetQuiz()" class="px-2.5 py-1 rounded-lg book-page-surface text-xs font-medium hover:border-blue-500">Reset Quiz</button>
+              </div>
+            </div>
+            <div id="quizQuestionsContainer" class="space-y-4"></div>
+          </div>
+
+          <!-- Searchable Glossary -->
+          <div class="my-8 font-sans space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h3 class="text-lg font-bold">Official AP2 Terminology Glossary</h3>
+              <input id="glossaryFilterInput" type="text" oninput="renderGlossary()" placeholder="Filter glossary terms (e.g. Mandate, CP, x402)..." class="text-xs px-3 py-1.5 rounded-lg subtle-surface w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <div id="glossaryGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm"></div>
+          </div>
+
+          <!-- Grounded Bibliography & Primary Sources -->
+          <div class="my-8 p-5 rounded-2xl subtle-surface font-sans space-y-3">
+            <h3 class="text-base font-bold">Primary Sources &amp; Further Reading</h3>
+            <ul class="space-y-2 text-xs sm:text-sm">
+              <li>• <a href="https://ap2-protocol.org/" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">AP2 Official Documentation &amp; Specification (ap2-protocol.org)</a> — Canonical protocol documentation, role architecture, and FAQ.</li>
+              <li>• <a href="https://github.com/google-agentic-commerce/AP2" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">Google Agentic Commerce AP2 GitHub Repository</a> — Apache-2.0 source code, Python SDK (<code>code/sdk/python/ap2/</code>), Go/Android samples, and JSON schemas.</li>
+              <li>• <a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">Google Cloud Blog: Powering AI Commerce with the New Agent Payments Protocol (AP2)</a> — September 16, 2025 launch announcement with 60+ partners.</li>
+              <li>• <a href="https://fidoalliance.org/building-the-trust-layer-for-agentic-payments-with-ap2-and-verifiable-intent/" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">FIDO Alliance: Building the Trust Layer for Agentic Payments with AP2 and Verifiable Intent</a> — May 2026 technical deep dive on v0.2 Open/Closed Mandates and FIDO standardization.</li>
+              <li>• <a href="https://www.formance.com/blog/financial-operations/ap2-mandates-explained" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">Formance: AP2 Mandates Explained (Open, Closed, and Payment SD-JWTs)</a> — Detailed walkthrough of v0.1 to v0.2 migration, <code>cnf</code> ES256 keys, and core ledger postings.</li>
+              <li>• <a href="https://developer.paypal.com/community/blog/PayPal-Agent-Payments-Protocol/" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">PayPal Developer Blog: Building Verifiable Trust for Agentic Commerce</a> — How two-sided payment networks integrate AP2 mandates.</li>
+              <li>• <a href="https://arthurchiao.art/blog/ap2-illustrated-guide/" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">An Illustrated Guide to AP2 (Agent Payment Protocol)</a> &amp; <a href="https://dev.to/vishalmysore/what-is-google-ap2-protocol-step-by-step-guide-with-examples-2lcp" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline">DEV Step-by-Step AP2 Guide</a> — Full A2A JSON-RPC wire traces and Java/Python code samples.</li>
+            </ul>
+          </div>
+        `
+      }
+    ];
+
+    // =========================================================================
+    // INTERACTIVE DATA MODELS FOR CHAPTER WIDGETS
+    // =========================================================================
+    const PROTOCOL_LAYERS = {
+      mcp: {
+        title: "MCP (Model Context Protocol) — Context & Tool Attachment Layer",
+        badge: "Anthropic / Open Standard",
+        desc: "MCP connects an AI model to external data sources, APIs, and local tools. While MCP lets an agent query a database or read a catalog tool, MCP alone does not provide non-repudiable cryptographic proof that a user authorized a financial transaction. AP2 can be exposed as an MCP tool/extension so MCP-equipped agents can mint and exchange verifiable payment mandates."
+      },
+      a2a: {
+        title: "A2A (Agent2Agent Protocol) — Multi-Agent Transport & Discovery Layer",
+        badge: "Google / Open Standard (JSON-RPC 2.0)",
+        desc: "A2A enables independent AI agents (e.g., a user's Shopping Agent and a retailer's Merchant Agent) to discover each other via /.well-known/agent-card.json and exchange structured tasks over JSON-RPC 2.0. AP2 is built directly as an official extension to A2A (advertised via URI https://github.com/google-agentic-commerce/ap2/v1)."
+      },
+      ucp: {
+        title: "UCP (Universal Commerce Protocol) — End-to-End Shopping & Order Lifecycle",
+        badge: "Commerce Orchestration",
+        desc: "UCP orchestrates product discovery, inline cart building, loyalty points, and post-purchase order tracking (powering native checkout on surfaces like Google AI Mode and Gemini). When a UCP flow involves delegated autonomous agents or multi-agent negotiation, AP2 acts as the cryptographic authorization extension inside UCP."
+      },
+      ap2: {
+        title: "AP2 (Agent Payments Protocol) — Verifiable Authorization & Mandate Layer",
+        badge: "FIDO Alliance / Apache 2.0",
+        desc: "AP2 is the dedicated cryptographic trust layer. It defines Verifiable Digital Credentials (Open & Closed Checkout Mandates and Payment Mandates) signed by hardware-backed keys so merchants, wallets (Credentials Providers), and payment networks have mathematical proof of what the user authorized the agent to buy and pay."
+      }
+    };
+
+    const THREAT_SCENARIOS = {
+      hallucination: {
+        withoutTitle: "Without AP2: Unbounded Model Hallucination",
+        withoutText: "A user asks their agent for 'running shoes under $100.' Due to context confusion or prompt injection on a webpage, the LLM selects $450 limited-edition sneakers and submits stored card details. The charge goes through with zero cryptographic proof of the user's $100 cap.",
+        withTitle: "With AP2: Deterministic Constraint Enforcement",
+        withText: "The user signs an Open Payment Mandate setting payment.amount_range.max = 10000 ($100.00) on a non-LLM Trusted Surface. Even if the LLM hallucinates and tries to close a $450 checkout, both the Credentials Provider and Merchant Payment Processor deterministically reject the Closed Mandate because 45000 > 10000."
+      },
+      bait: {
+        withoutTitle: "Without AP2: Silent Cart Price Mutation",
+        withoutText: "An agent negotiates a $199 hotel room and asks the user for approval. Between the user saying 'Yes' in chat and the agent submitting the final HTTP checkout call, dynamic pricing bumps the total to $289. The card is charged $289.",
+        withTitle: "With AP2: Cryptographic checkout_hash Binding",
+        withText: "The Merchant signs a checkout_jwt locking the exact SKU, line items, and $199 price. The Closed Checkout Mandate signs the SHA-256 checkout_hash of that JWT. If the merchant alters a single cent before capture, the hash breaks and the ledger/issuer rejects the capture."
+      },
+      pci: {
+        withoutTitle: "Without AP2: Raw PAN/CVV Exposed in LLM Context",
+        withoutText: "To complete checkout on arbitrary websites, naive browser agents require access to raw 16-digit card numbers, CVVs, or session cookies—exposing sensitive PCI data to prompt injection, logging leaks, and compliance violations.",
+        withTitle: "With AP2: Role Separation & Tokenized Credentials Provider",
+        withText: "The Shopping Agent never sees raw card credentials. It only receives payment method aliases (e.g., 'Amex ending in 4444') and an encrypted token reference from the Credentials Provider (CP). Only the Merchant Payment Processor exchanges the signed PaymentMandate with the CP for a network DPAN + cryptogram."
+      },
+      replay: {
+        withoutTitle: "Without AP2: Agent Replays Approval Multiple Times",
+        withoutText: "An autonomous agent tasked with buying one laptop experiences a retry loop or compromised sub-agent and submits three identical purchases across three different merchants using the user's pre-authorization.",
+        withTitle: "With AP2: Strict Mandate Sequencing & transaction_id Deduplication",
+        withText: "Under AP2 v0.2 rules, a Shopping Agent MUST NOT sign a second Closed Mandate against an Open Mandate unless it first presents a cryptographic Rejection Receipt from the prior attempt. Furthermore, core ledgers key captures on transaction_id (hash of checkout_jwt) to block replay."
+      }
+    };
+
+    const ACTOR_ROLES = {
+      user: {
+        name: "1. The User & Trusted Surface (TS)",
+        tag: "Root of Authority",
+        summary: "The human individual who initiates the commerce task. Crucially, in AP2 v0.2, the user grants consent via a Trusted Surface (TS)—a deterministic UI (such as a passkey prompt, digital wallet sheet, or OS dialog) where no LLM sits between what the user sees on screen and the cryptographic signature (ES256)."
+      },
+      sa: {
+        name: "2. User Agent (UA) / Shopping Agent (SA)",
+        tag: "AI Orchestrator",
+        summary: "The conversational AI surface that understands user needs, searches across Merchant Agents, compares options, and coordinates mandate creation. In Human-Not-Present flows, the SA holds an ephemeral Agent Key whose public half is embedded in the Open Mandate's cnf claim, allowing it to sign Closed Mandates within user bounds."
+      },
+      cp: {
+        name: "3. Credentials Provider (CP)",
+        tag: "Digital Wallet / Key Vault",
+        summary: "A specialized, PCI-compliant entity (e.g., Google Pay, PayPal, bank wallet, or enterprise vault) that manages the user's payment instruments and shipping addresses. It filters eligible payment methods, verifies signed Payment Mandates, and issues scoped payment tokens/DPAN cryptograms without exposing raw card numbers to the Shopping Agent."
+      },
+      ma: {
+        name: "4. Merchant Endpoint / Merchant Agent (ME / MA)",
+        tag: "Seller & Cart Signer",
+        summary: "An AI agent, MCP server, or web API operating on behalf of a retailer or service provider. It advertises AP2 support in /.well-known/agent-card.json, searches catalog inventory matching the user's intent, constructs binding cart offers, signs the checkout_jwt, and verifies the Closed Checkout Mandate."
+      },
+      mpp: {
+        name: "5. Merchant Payment Processor (MPP)",
+        tag: "Acquirer / PSP Agent",
+        summary: "The payment processor or acquirer acting on behalf of the merchant (e.g., Adyen, Worldpay, Stripe, PayPal Braintree). It receives the signed Payment Mandate, retrieves the scoped network credential from the Credentials Provider, triggers step-up challenges (like 3DS/OTP) if required, and submits authorization to the payment rail."
+      },
+      network: {
+        name: "6. Payment Network & Card Issuer",
+        tag: "Settlement & Dispute Adjudicator",
+        summary: "The underlying payment network (e.g., Mastercard, Amex, JCB, UnionPay, or x402 blockchain rail) and the user's issuing bank. They receive the Payment Mandate's agent modality signals (Human-Present vs. Human-Not-Present) for fraud risk scoring and use the signed Checkout & Payment Mandates as authoritative evidence in chargeback disputes."
+      }
+    };
+
+    const INDUSTRIES_DATA = [
+      {
+        id: "retail",
+        category: "retail",
+        title: "Retail & Conversational E-Commerce",
+        partners: "Etsy, Shopify ecosystems, Global Retailers",
+        useCases: "Multi-merchant product comparison, automatic price-drop purchasing, limited-edition sneaker/merch drops, and loyalty-aware cart checkout.",
+        impact: "Eliminates cart abandonment from tedious forms while protecting merchants from friendly fraud ('my AI bought the wrong size') via signed Cart/Checkout Mandates."
+      },
+      {
+        id: "finance",
+        category: "finance",
+        title: "Banking, Card Networks & Issuers",
+        partners: "Mastercard, American Express, JCB, UnionPay International, Revolut",
+        useCases: "Distinguishing legitimate user-authorized AI agents from malicious credential-stuffing bots; dynamic spend controls; automated dispute adjudication.",
+        impact: "Payment Mandates carry explicit 'agent modality' signals (Human-Present vs. Not-Present) plus Verifiable Intent proofs, slashing false-positive fraud declines."
+      },
+      {
+        id: "b2b",
+        category: "b2b",
+        title: "Enterprise B2B Procurement & Cloud SaaS",
+        partners: "Salesforce, ServiceNow, Intuit, Google Cloud Marketplace, Formance, Payouts.com",
+        useCases: "Autonomous SaaS license scaling, dynamic cloud GPU cluster purchasing, automated vendor restocking within CFO-signed Open Mandate budgets.",
+        impact: "Maps Open Mandates directly to core ledger fund reservations and Closed Mandates to invoice captures, preserving SOX/audit compliance."
+      },
+      {
+        id: "finance",
+        category: "finance",
+        title: "Fintech, Acquirers & Digital Wallets",
+        partners: "PayPal, Adyen, Worldpay, Ant International, Forter",
+        useCases: "Acting as AP2 Credentials Providers (vaulting cards/bank links) and Merchant Payment Processors verifying SD-JWT mandate chains.",
+        impact: "Allows wallets to stay at the center of agentic commerce without sharing raw PANs with third-party AI chat platforms."
+      },
+      {
+        id: "travel",
+        category: "travel",
+        title: "Travel, Hospitality & Live Events",
+        partners: "Airlines, OTA Agents, Ticketing Platforms",
+        useCases: "Multi-leg itinerary booking (flight + hotel + rail) where an orchestrator coordinates multiple Merchant Agents under a single overarching budget mandate; automatic rebooking during flight delays.",
+        impact: "Allows conditional pre-authorization ('rebook me on any nonstop flight under $400 if my flight is canceled') while the traveler is offline."
+      },
+      {
+        id: "web3",
+        category: "web3",
+        title: "Web3, Stablecoins & Machine-to-Machine Economies",
+        partners: "Coinbase, Ethereum Foundation, MetaMask, Mysten Labs (Sui), Masumi (Cardano)",
+        useCases: "Sub-cent API paywalls, autonomous AI agent-to-agent service monetization, instant cross-border stablecoin settlement via a2a-x402.",
+        impact: "Combines HTTP 402 (Payment Required) and programmable smart-contract escrow with AP2's verifiable mandate audit trail."
+      }
+    ];
+
+    const FLOW_MODES = {
+      "human-present": [
+        {
+          step: 1,
+          actors: "User → Shopping Agent (SA)",
+          title: "Capture Shopping Intent",
+          detail: "The user asks the Shopping Agent: 'Find me a refundable espresso machine.' The SA clarifies preferences and constructs an initial IntentMandate (or Open Checkout query) capturing item description, refundability requirement, and expiry."
+        },
+        {
+          step: 2,
+          actors: "Shopping Agent → Merchant Agent (MA)",
+          title: "Catalog Discovery & Merchant-Signed Carts",
+          detail: "Over A2A JSON-RPC (with header X-A2A-Extensions: .../ap2/v1), the SA sends the IntentMandate to the Merchant Agent. The Merchant returns candidate CartMandates (or signed checkout_jwt offers) with exact SKU, price, refund period, and supported payment networks."
+        },
+        {
+          step: 3,
+          actors: "Shopping Agent ↔ Credentials Provider (CP)",
+          title: "Fetch Shipping Address & Eligible Payment Aliases",
+          detail: "After the user picks an espresso machine ($599.99), the SA queries the user's Credentials Provider (wallet) for their shipping address and eligible payment method aliases ('Amex ending in 4444'). The Merchant updates the cart with shipping/tax ($603.49 total) and signs the final cart."
+        },
+        {
+          step: 4,
+          actors: "Shopping Agent → Trusted Surface (User)",
+          title: "Deterministic User Approval & Mandate Signing",
+          detail: "The final cart ($603.49) and selected payment method are rendered on a deterministic Trusted Surface (outside the LLM). The user approves via passkey/biometrics, generating a cryptographically signed Closed Checkout Mandate and Closed Payment Mandate."
+        },
+        {
+          step: 5,
+          actors: "Shopping Agent → Merchant → Payment Processor (MPP)",
+          title: "Tokenized Payment Initiation & OTP Challenge",
+          detail: "The SA obtains a payment token from the CP and forwards the signed PaymentMandate to the Merchant, which delegates to its Merchant Payment Processor (MPP). If the issuer requires step-up authentication, the MPP returns an A2A 'input-required' OTP challenge."
+        },
+        {
+          step: 6,
+          actors: "MPP ↔ Credentials Provider → Issuer Network",
+          title: "Credential Exchange, Settlement & Signed Receipt",
+          detail: "The MPP presents the signed PaymentMandate + token to the Credentials Provider to retrieve the scoped DPAN + cryptogram, completes network authorization, and returns a verifiable Payment Receipt to the Merchant and Shopping Agent."
+        }
+      ],
+      "human-not-present": [
+        {
+          step: 1,
+          actors: "User → Trusted Surface → Shopping Agent",
+          title: "Pre-Authorize Open Checkout & Payment Mandates",
+          detail: "The user delegates an offline task ('Buy 2 concert tickets when they go on sale up to $300'). On a Trusted Surface, the user signs an Open Checkout Mandate (mandate.checkout.open.1) and Open Payment Mandate (mandate.payment.open.1) embedding the Shopping Agent's public key in the cnf claim."
+        },
+        {
+          step: 2,
+          actors: "Core Ledger / Credentials Provider",
+          title: "Reserve Authorized Ceiling (Optional Omnibus Hold)",
+          detail: "For enterprise or wallet balances, receiving the Open Payment Mandate triggers an open_mandate_reserve posting for the maximum authorized ceiling ($300.00) with an expiration timestamp (exp)."
+        },
+        {
+          step: 3,
+          actors: "Shopping Agent ↔ Merchant Agent (User Offline)",
+          title: "Autonomous Condition Monitoring & Cart Negotiation",
+          detail: "Hours or days later while the user is offline, tickets go on sale at $135 each ($270 total). The Shopping Agent requests a finalized checkout_jwt from the Merchant Agent matching the exact SKU and quantity."
+        },
+        {
+          step: 4,
+          actors: "Shopping Agent (Agent Private Key)",
+          title: "Agent Closes Mandate via Key-Binding JWT",
+          detail: "Instead of waking the user, the Shopping Agent signs a Closed Checkout Mandate and Closed Payment Mandate using its own Agent Private Key (matching the cnf public key in the user's Open Mandate) and links them via sd_hash and checkout_hash."
+        },
+        {
+          step: 5,
+          actors: "Merchant & Credentials Provider Verifiers",
+          title: "Verify Mandate Chain & Constraint Compliance",
+          detail: "The Merchant and Credentials Provider verify: (1) User's signature on the Open Mandate, (2) Agent's cnf signature on the Closed Mandate, (3) $270 <= $300 max range, (4) merchant & SKU match allowed lists, and (5) no prior active Closed Mandate exists without a rejection receipt."
+        },
+        {
+          step: 6,
+          actors: "MPP → Network/Issuer → Ledger Capture",
+          title: "Autonomous Settlement & Remainder Release",
+          detail: "The payment settles with 'Human-Not-Present / Agent' modality signals sent to the issuer. The ledger captures $270.00 (keyed by transaction_id) and releases the remaining $30.00 reservation back to the user's available balance."
+        }
+      ],
+      "x402-crypto": [
+        {
+          step: 1,
+          actors: "User → Shopping Agent + Web3 Wallet (CP)",
+          title: "Configure a2a-x402 Extension & Spend Mandate",
+          detail: "Both agents advertise the AP2 extension and https://github.com/google-agentic-commerce/a2a-x402. The user grants an Open Mandate allowing autonomous USDC micropayments up to $25.00/day."
+        },
+        {
+          step: 2,
+          actors: "Buyer Agent → Seller Agent / API",
+          title: "Request Protected Resource or Digital Good",
+          detail: "The Buyer Agent requests a real-time dataset, compute job, or digital item from the Seller Agent over A2A."
+        },
+        {
+          step: 3,
+          actors: "Seller Agent → Buyer Agent",
+          title: "Return x402 Payment Required Quote + Checkout JWT",
+          detail: "The Seller Agent responds with an x402 payment requirement specifying the exact token amount (e.g., 1.50 USDC), target chain (e.g., Base, Ethereum, Sui), recipient address, and signed checkout_jwt."
+        },
+        {
+          step: 4,
+          actors: "Buyer Agent → Credentials Provider (Wallet)",
+          title: "Present Closed Payment Mandate SD-JWT",
+          detail: "The Buyer Agent signs a Closed Payment Mandate binding the Seller's checkout_hash and presents the Open + Closed mandate chain to the Web3 Credentials Provider (e.g., Coinbase / MetaMask / Cobo MPC wallet)."
+        },
+        {
+          step: 5,
+          actors: "Credentials Provider → Blockchain Rail",
+          title: "Execute On-Chain Transfer or Escrow Lock",
+          detail: "After verifying that 1.50 USDC is within the user's Open Mandate limits and allowed payees, the wallet signs the on-chain stablecoin transaction (or locks funds in an AP2-aligned escrow contract)."
+        },
+        {
+          step: 6,
+          actors: "Seller Agent → Buyer Agent",
+          title: "Verify On-Chain Receipt & Deliver Payload",
+          detail: "The Seller Agent verifies the cryptographic payment proof + Closed Mandate, fulfills the digital service immediately, and emits a signed AP2 Payment Receipt."
+        }
+      ]
+    };
+
+    const CODE_SAMPLES = {
+      "agent-card": {
+        desc: "Published at /.well-known/agent-card.json, this A2A Agent Card advertises support for the Agent Payments Protocol extension (https://github.com/google-agentic-commerce/ap2/v1).",
+        code: `{
+  "name": "MerchantAgent",
+  "description": "A sales assistant agent for a merchant supporting AP2 verifiable checkout.",
+  "skills": [
+    {
+      "id": "search_catalog",
+      "name": "Search Catalog",
+      "description": "Searches the merchant's catalog based on a shopping intent & returns a signed cart.",
+      "tags": ["merchant", "search", "catalog"]
+    }
+  ],
+  "capabilities": {
+    "extensions": [
+      {
+        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+        "description": "Supports the Agent Payments Protocol (AP2).",
+        "required": true
+      },
+      {
+        "uri": "https://sample-card-network.github.io/paymentmethod/types/v1",
+        "description": "Supports the Sample Card Network payment method extension.",
+        "required": true
+      }
+    ]
+  },
+  "defaultInputModes": ["json"],
+  "defaultOutputModes": ["json"],
+  "preferredTransport": "JSONRPC",
+  "protocolVersion": "0.3.0",
+  "url": "http://localhost:8001/a2a/merchant_agent",
+  "version": "1.0.0"
+}`
+      },
+      "jsonrpc-trace": {
+        desc: "Real A2A JSON-RPC 2.0 wire message from the official AP2 demo where the Shopping Agent sends a signed PaymentMandate to the Merchant Agent.",
+        code: `POST http://MerchantAgent/a2a/merchant_agent HTTP/1.1
+Content-Type: application/json
+X-A2A-Extensions: https://github.com/google-agentic-commerce/ap2/v1
+
+{
+  "id": "be1ef52c-fd9d-4177-810d-cd14303219f1",
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "params": {
+    "configuration": { "acceptedOutputModes": [], "blocking": true },
+    "message": {
+      "contextId": "6030ebc7-fde8-4489-b655-045443c47af0",
+      "kind": "message",
+      "messageId": "14ed8b94ec5a4cc0a516a7b8d62cc6f8",
+      "role": "agent",
+      "parts": [
+        { "kind": "text", "text": "Initiate a payment" },
+        {
+          "kind": "data",
+          "data": {
+            "ap2.mandates.PaymentMandate": {
+              "payment_mandate_contents": {
+                "payment_mandate_id": "848f97b287584cd1aa3085bed1985c22",
+                "payment_details_id": "order_3",
+                "payment_details_total": {
+                  "label": "Total",
+                  "amount": { "currency": "USD", "value": 603.49 },
+                  "refund_period": 30
+                },
+                "payment_response": {
+                  "request_id": "order_3",
+                  "method_name": "CARD",
+                  "details": {
+                    "token": {
+                      "value": "fake_payment_credential_token_0",
+                      "url": "http://CredentialsProvider/a2a/credentials_provider"
+                    }
+                  },
+                  "shipping_address": {
+                    "recipient": "Bugs Bunny",
+                    "address_line": ["123 Main St"],
+                    "city": "Sample City",
+                    "region": "ST",
+                    "postal_code": "00000",
+                    "country": "US"
+                  },
+                  "payer_email": "bugsbunny@gmail.com"
+                },
+                "merchant_agent": "Generic Merchant",
+                "timestamp": "2025-11-11T03:50:04.532972+00:00"
+              },
+              "user_authorization": "sig_es256_cart_3_hash_848f97b287584cd1aa3085bed1985c22"
+            }
+          }
+        },
+        {
+          "kind": "data",
+          "data": { "shopping_agent_id": "trusted_shopping_agent" }
+        }
+      ]
+    }
+  }
+}`
+      },
+      "sdjwt-v02": {
+        desc: "AP2 v0.2 (April 2026 FIDO Spec) Open Payment Mandate & Closed Payment Mandate SD-JWT claims showing cnf P-256 agent key binding and transaction_id hashing.",
+        code: `// 1. DECODED OPEN PAYMENT MANDATE (User-Signed on Trusted Surface)
+{
+  "vct": "mandate.payment.open.1",
+  "iss": "did:web:wallet.example.com:users:alice",
+  "iat": 1777363200,
+  "exp": 1778572800,
+  "cnf": {
+    "jwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+      "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0"
+    }
+  },
+  "payment": {
+    "amount_range": { "currency": "USD", "min": 100, "max": 30000 },
+    "allowed_payee": ["merchant_roasters_inc", "ticketmaster_verified"],
+    "allowed_instruments": ["card_amex_4444"],
+    "reference": {
+      "conditional_transaction_id": "sha256_digest_of_linked_open_checkout_mandate"
+    }
+  }
+}
+
+// 2. DECODED CLOSED PAYMENT MANDATE (Agent-Signed via cnf Private Key)
+{
+  "vct": "mandate.payment.1",
+  "iat": 1777401120,
+  "transaction_id": "txn_9c21_sha256_of_merchant_checkout_jwt",
+  "payment_amount": { "currency": "USD", "value": 26500 },
+  "payee": "merchant_roasters_inc",
+  "payment_instrument": "card_amex_4444",
+  "kb_jwt": {
+    "aud": "https://credentials-provider.example.com/a2a",
+    "nonce": "n-0S6_WzA2Mj",
+    "sd_hash": "sha256_digest_binding_to_open_payment_mandate"
+  }
+}`
+      },
+      "python-adk": {
+        desc: "Official Python ADK Shopping Agent setup and quickstart commands from github.com/google-agentic-commerce/AP2.",
+        code: `# 1. Install the official AP2 Python SDK types & models
+# uv pip install git+https://github.com/google-agentic-commerce/AP2.git@main
+
+# 2. Run the Human-Present Card Payment multi-agent scenario locally:
+# export GOOGLE_API_KEY="your_key"
+# bash code/samples/python/scenarios/a2a/human-present/cards/run.sh
+
+from ap2.types.mandate import IntentMandate, CartMandate, PaymentMandate
+from google.adk.agents import RetryingLlmAgent
+from . import tools
+
+shopper_agent = RetryingLlmAgent(
+    name="shopper",
+    instruction=\"\"\"
+    You are an agent responsible for helping the user shop for products.
+    1. Inquire about item description, preferred merchants/SKUs, and refundability.
+    2. Call 'create_intent_mandate' to construct a verifiable IntentMandate.
+    3. Present the IntentMandate summary to the user for confirmation.
+    4. Once confirmed, call 'find_products' to retrieve Merchant-signed CartMandates.
+    5. After the user selects a cart, call 'update_chosen_cart_mandate' and hand off
+       to the orchestrator to coordinate shipping & PaymentMandate signing with the
+       Credentials Provider.
+    \"\"\",
+    tools=[
+        tools.create_intent_mandate,
+        tools.find_products,
+        tools.update_chosen_cart_mandate,
+    ],
+)`
+      },
+      "java-sdk": {
+        desc: "Java implementation of the AP2 Three-Mandate Chain (Intent -> Cart -> Payment) & cryptographic verification.",
+        code: `import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.*;
+
+// 1. Create User Intent Mandate (Constraints & Budget Cap)
+IntentMandate intentMandate = new IntentMandate(
+    "intent-123",                // Unique Mandate ID
+    "user-agent-456",            // Requesting Shopping Agent
+    "merchant-789",              // Target Merchant Agent
+    new BigDecimal("100.00"),    // Max authorized amount
+    true                         // Requires human cart confirmation
+);
+intentMandate.setAllowedCategories(Collections.singletonList("shoes"));
+
+// 2. Bind Merchant Offer into a Cart Mandate referencing Intent Mandate
+List<CartMandate.CartItem> items = List.of(
+    new CartMandate.CartItem("item-123", "Nike Air Zoom Pegasus", new BigDecimal("95.00"), 1)
+);
+CartMandate cartMandate = new CartMandate(
+    "cart-456", "user-agent-456", "merchant-789",
+    "intent-123",                // Parent IntentMandate reference
+    items, "USD", Instant.now().plusMinutes(30)
+);
+
+// 3. Issue Payment Mandate bound to approved Cart Mandate
+Map<String, Object> paymentDetails = Map.of("paymentMethodId", "card-amex-4444");
+PaymentMandate paymentMandate = new PaymentMandate(
+    "payment-789", "user-agent-456", "merchant-789",
+    "order-321", new BigDecimal("95.00"), "USD",
+    "cart-456",                  // Parent CartMandate reference
+    paymentDetails, Instant.now().plusMinutes(15)
+);
+
+// 4. Deterministic Verification across the Mandate Chain
+boolean validIntent = mandateVerifier.verifyIntentMandate(intentMandate, paymentRequest);
+boolean validCart   = mandateVerifier.verifyCartMandate(cartMandate, intentMandate, paymentRequest);
+boolean validPay    = mandateVerifier.verifyPaymentMandate(paymentMandate, cartMandate);`
+      },
+      "ledger-numscript": {
+        desc: "How a programmable core ledger (Formance Numscript) honors AP2 Open, Closed, and Expired Mandates with double-entry postings.",
+        code: `// STEP 1: OPEN_MANDATE_RESERVE (Reserve $250,000.00 ceiling on Open Mandate issuance)
+send [USD/2 25000000] (
+  source = @buyers:acme:available
+  destination = @buyers:acme:mandate:7f3a:reserved
+)
+set_tx_meta("event_type", "open_mandate_reserve")
+set_tx_meta("mandate_id", "m_7f3a")
+set_tx_meta("exp", "2026-11-14T00:00:00Z")
+
+// STEP 2: CLOSED_MANDATE_CAPTURE (Capture exact $187,500.00 from Closed Mandate)
+send [USD/2 18750000] (
+  source = @buyers:acme:mandate:7f3a:reserved
+  destination = @merchants:412:payable
+)
+set_tx_meta("event_type", "closed_mandate_capture")
+set_tx_meta("mandate_id", "m_7f3a")
+set_tx_meta("transaction_id", "txn_9c21")
+set_tx_meta("vct", "mandate.checkout.1")
+
+// STEP 3: OPEN_MANDATE_RELEASE (Release unused $62,500.00 on expiry or rejection receipt)
+send [USD/2 6250000] (
+  source = @buyers:acme:mandate:7f3a:reserved
+  destination = @buyers:acme:available
+)
+set_tx_meta("event_type", "open_mandate_release")
+set_tx_meta("mandate_id", "m_7f3a")
+set_tx_meta("release_reason", "intent_expiry")`
+      }
+    };
+
+    const QUIZ_QUESTIONS = [
+      {
+        q: "1. What is the primary role of the Agent Payments Protocol (AP2)?",
+        options: [
+          "A new blockchain settlement coin that replaces credit cards and bank transfers",
+          "An open cryptographic authorization and mandate protocol that proves user intent across any payment rail",
+          "A proprietary browser extension that autofills raw 16-digit credit card numbers into LLM prompts",
+          "An AI model trained by banks to predict stock prices"
+        ],
+        correct: 1,
+        explanation: "AP2 is payment-rail agnostic and does not replace cards, bank transfers, or stablecoins. Instead, it provides Verifiable Digital Credentials (Mandates) proving that a user authorized an agent to transact."
+      },
+      {
+        q: "2. Why does AP2 separate the Shopping Agent (SA) from the Credentials Provider (CP)?",
+        options: [
+          "To make the chat interface load faster on mobile networks",
+          "Because LLMs cannot parse JSON numbers accurately",
+          "To preserve user privacy and PCI compliance so the browsing/reasoning AI agent never accesses raw payment credentials or private keys",
+          "Because merchants are not allowed to talk to Shopping Agents"
+        ],
+        correct: 2,
+        explanation: "Role separation ensures the Shopping Agent handles product discovery while the Credentials Provider (digital wallet) isolates sensitive PCI/PII data and issues scoped tokens."
+      },
+      {
+        q: "3. In AP2 v0.2 (contributed to the FIDO Alliance in April 2026), how does a verifier know an autonomous agent is allowed to sign a Closed Mandate when the user is offline?",
+        options: [
+          "The verifier trusts a plain-text chat transcript sent by the LLM",
+          "The user-signed Open Mandate embeds the Shopping Agent's public key in its 'cnf' claim, and the agent signs the Closed Mandate with the matching private key",
+          "The merchant calls the user on the phone to ask for a verbal password",
+          "Autonomous offline transactions are forbidden in AP2 v0.2"
+        ],
+        correct: 1,
+        explanation: "Every v0.2 Open Mandate carries a 'cnf' (confirmation) claim containing the agent's EC P-256 public key. The agent closes the mandate by signing a key-binding JWT with its matching private key."
+      },
+      {
+        q: "4. Which extension enables AP2 agents to settle machine-to-machine micropayments using stablecoins and Web3 rails?",
+        options: [
+          "a2a-x402 (developed with Coinbase, Ethereum Foundation, MetaMask, and others)",
+          "SMTP-TLS",
+          "FTP-Pay",
+          "GraphQL-Cash"
+        ],
+        correct: 0,
+        explanation: "The A2A x402 extension bridges AP2's verifiable mandate framework with HTTP 402 payment challenges and programmable stablecoins/crypto rails."
+      },
+      {
+        q: "5. What happens if a merchant alters the cart price after the Closed Checkout Mandate is signed?",
+        options: [
+          "The user's card is automatically charged the higher amount without notice",
+          "The Shopping Agent splits the difference with the merchant",
+          "Changing the price mutates the merchant's checkout_jwt, invalidating the signed checkout_hash and causing verification/capture to fail",
+          "The transaction converts into a store credit"
+        ],
+        correct: 2,
+        explanation: "A Closed Checkout Mandate cryptographically binds to the SHA-256 checkout_hash of the merchant's signed checkout_jwt. Any post-signature price or SKU change breaks the hash."
+      }
+    ];
+
+    const GLOSSARY_TERMS = [
+      { term: "AP2 (Agent Payments Protocol)", def: "An open protocol initiated by Google and 60+ partners (now governed within the FIDO Alliance) that uses cryptographic Mandates to authorize and audit AI-agent-initiated payments." },
+      { term: "A2A (Agent2Agent Protocol)", def: "An open JSON-RPC 2.0 standard enabling independent AI agents across different frameworks to discover capabilities via /.well-known/agent-card.json and collaborate on tasks." },
+      { term: "MCP (Model Context Protocol)", def: "An open standard for connecting AI models and agents to external tools, APIs, and data sources. AP2 operates alongside both A2A and MCP." },
+      { term: "UCP (Universal Commerce Protocol)", def: "A protocol orchestrating end-to-end commerce discovery, cart management, and post-purchase signals; uses AP2 as its cryptographic payment extension for agentic flows." },
+      { term: "VDC (Verifiable Digital Credential)", def: "Tamper-evident, cryptographically signed data objects (standardized as SD-JWTs in AP2 v0.2) that serve as non-repudiable building blocks of an AP2 transaction." },
+      { term: "Open Mandate (v0.2) / Intent Mandate (v0.1)", def: "A user-signed credential capturing pre-authorized constraints (budget range, allowed merchants, SKUs, expiry) and the agent's cnf public key for autonomous execution." },
+      { term: "Closed Mandate (v0.2) / Cart Mandate (v0.1)", def: "A credential binding authorization to one specific, finalized merchant checkout (checkout_jwt) and exact transaction amount." },
+      { term: "Payment Mandate", def: "An SD-JWT credential shared with the Credentials Provider, PSP, and Card Network/Issuer proving the agent is authorized to pay for a specific checkout and signaling agent modality." },
+      { term: "Trusted Surface (TS)", def: "A deterministic, non-LLM user interface (e.g., passkey sheet, OS wallet prompt) that renders mandate details to the human user and initiates cryptographic signing." },
+      { term: "Credentials Provider (CP)", def: "A secure digital wallet or vault agent responsible for storing user payment instruments, filtering eligible methods, and issuing tokenized payment credentials." },
+      { term: "cnf (Confirmation Claim)", def: "A standard JWT claim inside an Open Mandate that names the Shopping Agent's public EC P-256 key, enabling the agent to sign a Closed Mandate offline." },
+      { term: "a2a-x402", def: "The production Web3 extension to A2A and AP2 built with Coinbase, Ethereum Foundation, and MetaMask for HTTP 402 stablecoin and crypto agent payments." }
+    ];
+
+    // =========================================================================
+    // APPLICATION STATE & NAVIGATION LOGIC
+    // =========================================================================
+    let currentChapterIndex = 0;
+    let visitedChapters = new Set([0]);
+    let bookmarkedChapters = new Set();
+    let currentFontSize = 17;
+    let isSansMode = false;
+    let currentFlowMode = "human-present";
+    let currentFlowStep = 0;
+    let currentCodeTab = "agent-card";
+    let quizAnswers = {};
+
+    function showToast(msg) {
+      const el = document.getElementById("toastNotification");
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.remove("hidden");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        el.classList.add("hidden");
+      }, 2400);
+    }
+
+    function loadSavedState() {
+      try {
+        const savedNotes = localStorage.getItem("ap2_book_notes");
+        if (savedNotes !== null) {
+          document.getElementById("readerNotesArea").value = savedNotes;
+        }
+        const savedBookmarks = localStorage.getItem("ap2_book_bookmarks");
+        if (savedBookmarks) {
+          JSON.parse(savedBookmarks).forEach(idx => bookmarkedChapters.add(idx));
+        }
+      } catch (e) {
+        // Ignore storage errors in sandboxed iframes
+      }
+    }
+
+    function saveBookmarks() {
+      try {
+        localStorage.setItem("ap2_book_bookmarks", JSON.stringify(Array.from(bookmarkedChapters)));
+      } catch (e) {}
+    }
+
+    function renderTOC() {
+      const tocEl = document.getElementById("tocList");
+      if (!tocEl) return;
+      tocEl.innerHTML = CHAPTERS.map((ch, idx) => {
+        const isActive = idx === currentChapterIndex;
+        const isVisited = visitedChapters.has(idx);
+        const isBookmarked = bookmarkedChapters.has(idx);
+        return `
+          <button type="button" onclick="goToChapter(${idx})" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition ${isActive ? 'toc-item-active shadow-sm' : 'hover:bg-black/5'}">
+            <div class="min-w-0 pr-2">
+              <div class="text-[10px] uppercase tracking-wider ${isActive ? 'text-blue-100' : 'opacity-60'} font-semibold">${ch.number}</div>
+              <div class="truncate text-xs font-medium">${ch.shortTitle}</div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              ${isBookmarked ? '<span title="Bookmarked" class="text-amber-400">★</span>' : ''}
+              <span class="w-4 h-4 rounded-full text-[10px] inline-flex items-center justify-center ${isActive ? 'bg-white/20 text-white' : (isVisited ? 'bg-emerald-500/20 text-emerald-600 font-bold' : 'opacity-30')}">
+                ${isVisited ? '✓' : (idx + 1)}
+              </span>
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      const compEl = document.getElementById("completionCounter");
+      if (compEl) {
+        compEl.textContent = `${visitedChapters.size} / ${CHAPTERS.length} Chapters Read`;
+      }
+    }
+
+    function renderBookmarksList() {
+      const listEl = document.getElementById("bookmarksList");
+      const badgeEl = document.getElementById("bookmarkCountBadge");
+      if (!listEl || !badgeEl) return;
+      const arr = Array.from(bookmarkedChapters).sort((a, b) => a - b);
+      badgeEl.textContent = String(arr.length);
+      if (arr.length === 0) {
+        listEl.innerHTML = `<div class="text-[11px] italic px-1 py-1 opacity-70">Click the ribbon icon in the top bar to bookmark chapters.</div>`;
+        return;
+      }
+      listEl.innerHTML = arr.map(idx => {
+        const ch = CHAPTERS[idx];
+        return `
+          <button type="button" onclick="goToChapter(${idx})" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg subtle-surface hover:border-blue-500 text-left">
+            <span class="truncate font-medium">${ch.number}: ${ch.shortTitle}</span>
+            <span class="text-amber-500 font-bold">★</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function goToChapter(index) {
+      if (index < 0 || index >= CHAPTERS.length) return;
+      currentChapterIndex = index;
+      visitedChapters.add(index);
+
+      const ch = CHAPTERS[index];
+      const container = document.getElementById("bookPageContainer");
+      container.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-6 border-b text-xs font-sans opacity-75" style="border-color: var(--border-color);">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-blue-600">${ch.number}</span>
+            <span>•</span>
+            <span>${ch.readTime}</span>
+          </div>
+          <div class="font-serif italic">${ch.subtitle}</div>
+        </div>
+        ${ch.render()}
+      `;
+
+      // Update Header & Progress Bar
+      document.getElementById("headerChapterBadge").textContent = `Ch. ${index + 1} of ${CHAPTERS.length}`;
+      document.getElementById("headerChapterTitle").textContent = ch.shortTitle;
+      document.getElementById("readingProgressBar").style.width = `${((index + 1) / CHAPTERS.length) * 100}%`;
+      document.getElementById("footerPageNumber").textContent = `Chapter ${index + 1} of ${CHAPTERS.length}`;
+
+      // Update Bookmark Icon
+      const bmIcon = document.getElementById("bookmarkIcon");
+      if (bookmarkedChapters.has(index)) {
+        bmIcon.setAttribute("fill", "currentColor");
+        bmIcon.classList.add("text-amber-500");
+      } else {
+        bmIcon.setAttribute("fill", "none");
+        bmIcon.classList.remove("text-amber-500");
+      }
+
+      // Update Prev/Next Footer Buttons
+      const prevBtn = document.getElementById("prevChapterBtn");
+      const nextBtn = document.getElementById("nextChapterBtn");
+      if (index === 0) {
+        prevBtn.disabled = true;
+        prevBtn.classList.add("opacity-40", "cursor-not-allowed");
+        document.getElementById("prevChapterLabel").textContent = "Start of Book";
+      } else {
+        prevBtn.disabled = false;
+        prevBtn.classList.remove("opacity-40", "cursor-not-allowed");
+        document.getElementById("prevChapterLabel").textContent = `${CHAPTERS[index - 1].number}: ${CHAPTERS[index - 1].shortTitle}`;
+      }
+
+      if (index === CHAPTERS.length - 1) {
+        nextBtn.disabled = true;
+        nextBtn.classList.add("opacity-40", "cursor-not-allowed");
+        document.getElementById("nextChapterLabel").textContent = "End of Book";
+      } else {
+        nextBtn.disabled = false;
+        nextBtn.classList.remove("opacity-40", "cursor-not-allowed");
+        document.getElementById("nextChapterLabel").textContent = `${CHAPTERS[index + 1].number}: ${CHAPTERS[index + 1].shortTitle}`;
+      }
+
+      // Initialize chapter-specific interactive widgets
+      if (index === 0) selectProtocolLayer("ap2");
+      if (index === 1) selectThreatScenario("hallucination");
+      if (index === 2) selectActorRole("user");
+      if (index === 4) filterIndustry("all");
+      if (index === 5) selectFlowMode(currentFlowMode);
+      if (index === 6) {
+        selectCodeTab(currentCodeTab);
+        evaluateMandateSandbox();
+      }
+      if (index === 7) {
+        renderQuiz();
+        renderGlossary();
+      }
+
+      renderTOC();
+      renderBookmarksList();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // =========================================================================
+    // CHAPTER WIDGET HANDLERS
+    // =========================================================================
+    window.selectProtocolLayer = function(key) {
+      const data = PROTOCOL_LAYERS[key];
+      if (!data) return;
+      ["mcp", "a2a", "ucp", "ap2"].forEach(k => {
+        const btn = document.getElementById(`layerBtn-${k}`);
+        if (btn) {
+          btn.className = k === key
+            ? "p-3 rounded-xl border-2 border-blue-600 text-left transition book-page-surface shadow-sm"
+            : "p-3 rounded-xl border text-left transition hover:border-blue-500 book-page-surface opacity-80";
+        }
+      });
+      const detail = document.getElementById("protocolLayerDetail");
+      if (detail) {
+        detail.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="font-bold text-blue-600">${data.title}</span>
+            <span class="px-2 py-0.5 rounded subtle-surface font-mono text-[11px]">${data.badge}</span>
+          </div>
+          <p class="leading-relaxed opacity-90">${data.desc}</p>
+        `;
+      }
+    };
+
+    window.selectThreatScenario = function(key) {
+      const data = THREAT_SCENARIOS[key];
+      if (!data) return;
+      ["hallucination", "bait", "pci", "replay"].forEach(k => {
+        const btn = document.getElementById(`threatBtn-${k}`);
+        if (btn) {
+          btn.className = k === key
+            ? "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition"
+            : "px-3 py-1.5 rounded-lg text-xs font-semibold book-page-surface transition hover:border-blue-500";
+        }
+      });
+      const view = document.getElementById("threatScenarioView");
+      if (view) {
+        view.innerHTML = `
+          <div class="p-4 rounded-xl border border-rose-500/40 bg-rose-500/5 space-y-1.5">
+            <div class="font-bold text-rose-600 flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>${data.withoutTitle}</span>
+            </div>
+            <p class="leading-relaxed opacity-90">${data.withoutText}</p>
+          </div>
+          <div class="p-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 space-y-1.5">
+            <div class="font-bold text-emerald-600 flex items-center gap-1.5">
+              <span>🛡️</span>
+              <span>${data.withTitle}</span>
+            </div>
+            <p class="leading-relaxed opacity-90">${data.withText}</p>
+          </div>
+        `;
+      }
+    };
+
+    window.selectActorRole = function(key) {
+      const data = ACTOR_ROLES[key];
+      if (!data) return;
+      ["user", "sa", "cp", "ma", "mpp", "network"].forEach(k => {
+        const btn = document.getElementById(`actorBtn-${k}`);
+        if (btn) {
+          btn.className = k === key
+            ? "p-3 rounded-xl border-2 border-blue-600 text-left book-page-surface transition shadow-sm"
+            : "p-3 rounded-xl border text-left book-page-surface transition hover:border-blue-500 opacity-85";
+        }
+      });
+      const detail = document.getElementById("actorRoleDetail");
+      if (detail) {
+        detail.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-bold text-sm sm:text-base text-blue-600">${data.name}</span>
+            <span class="px-2 py-0.5 rounded subtle-surface font-mono text-xs">${data.tag}</span>
+          </div>
+          <p class="leading-relaxed opacity-90">${data.summary}</p>
+        `;
+      }
+    };
+
+    window.filterIndustry = function(cat) {
+      ["all", "retail", "finance", "b2b", "travel", "web3"].forEach(c => {
+        const btn = document.getElementById(`indBtn-${c}`);
+        if (btn) {
+          btn.className = c === cat
+            ? "px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white"
+            : "px-2.5 py-1 rounded-lg text-xs font-semibold book-page-surface hover:border-blue-500";
+        }
+      });
+      const grid = document.getElementById("industryCardsGrid");
+      if (!grid) return;
+      const filtered = cat === "all" ? INDUSTRIES_DATA : INDUSTRIES_DATA.filter(i => i.category === cat);
+      grid.innerHTML = filtered.map(item => `
+        <div class="p-4 rounded-xl book-page-surface space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <h5 class="font-bold text-sm text-blue-600">${item.title}</h5>
+            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded subtle-surface">${item.category}</span>
+          </div>
+          <div class="text-xs"><strong>Key Ecosystem Players:</strong> ${item.partners}</div>
+          <div class="text-xs opacity-90"><strong>Core Use Cases:</strong> ${item.useCases}</div>
+          <div class="text-xs pt-1.5 border-t opacity-85" style="border-color: var(--border-color);"><strong>Why AP2 Matters Here:</strong> ${item.impact}</div>
+        </div>
+      `).join("");
+    };
+
+    window.selectFlowMode = function(mode) {
+      currentFlowMode = mode;
+      currentFlowStep = 0;
+      ["human-present", "human-not-present", "x402-crypto"].forEach(m => {
+        const btn = document.getElementById(`flowModeBtn-${m}`);
+        if (btn) {
+          btn.className = m === mode
+            ? "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white"
+            : "px-3 py-1.5 rounded-lg text-xs font-semibold book-page-surface hover:border-blue-500";
+        }
+      });
+      renderFlowStep();
+    };
+
+    window.stepFlow = function(delta) {
+      const steps = FLOW_MODES[currentFlowMode] || [];
+      const next = currentFlowStep + delta;
+      if (next >= 0 && next < steps.length) {
+        currentFlowStep = next;
+        renderFlowStep();
+      }
+    };
+
+    window.jumpToFlowStep = function(idx) {
+      currentFlowStep = idx;
+      renderFlowStep();
+    };
+
+    function renderFlowStep() {
+      const steps = FLOW_MODES[currentFlowMode] || [];
+      const current = steps[currentFlowStep];
+      if (!current) return;
+
+      const ind = document.getElementById("flowStepIndicator");
+      if (ind) ind.textContent = `Step ${currentFlowStep + 1} of ${steps.length}`;
+
+      const pills = document.getElementById("flowPillsContainer");
+      if (pills) {
+        pills.innerHTML = steps.map((s, idx) => `
+          <button type="button" onclick="jumpToFlowStep(${idx})" class="h-2 rounded-full transition ${idx === currentFlowStep ? 'bg-blue-600' : (idx < currentFlowStep ? 'bg-blue-400/60' : 'bg-slate-400/30')}" title="Step ${s.step}: ${s.title}"></button>
+        `).join("");
+      }
+
+      const card = document.getElementById("flowActiveCard");
+      if (card) {
+        card.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-blue-600 text-white font-mono text-xs font-bold">Step ${current.step}</span>
+            <span class="font-mono text-xs px-2.5 py-0.5 rounded subtle-surface font-semibold">${current.actors}</span>
+          </div>
+          <h5 class="text-base font-bold pt-1">${current.title}</h5>
+          <p class="leading-relaxed opacity-90">${current.detail}</p>
+        `;
+      }
+    }
+
+    window.selectCodeTab = function(tabKey) {
+      currentCodeTab = tabKey;
+      const sample = CODE_SAMPLES[tabKey];
+      if (!sample) return;
+      Object.keys(CODE_SAMPLES).forEach(k => {
+        const btn = document.getElementById(`codeTabBtn-${k}`);
+        if (btn) {
+          btn.className = k === tabKey
+            ? "px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white"
+            : "px-2.5 py-1.5 rounded-lg text-xs font-semibold book-page-surface hover:border-blue-500";
+        }
+      });
+      const descEl = document.getElementById("codeTabDescription");
+      const preEl = document.getElementById("codeDisplayPre");
+      if (descEl) descEl.textContent = sample.desc;
+      if (preEl) preEl.textContent = sample.code;
+    };
+
+    window.copyCurrentCode = function() {
+      const sample = CODE_SAMPLES[currentCodeTab];
+      if (!sample) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(sample.code).then(() => showToast("Code copied to clipboard!")).catch(() => fallbackCopy(sample.code));
+      } else {
+        fallbackCopy(sample.code);
+      }
+    };
+
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("Code copied to clipboard!");
+      } catch (e) {
+        showToast("Copy completed");
+      }
+      document.body.removeChild(ta);
+    }
+
+    window.resetSandboxDefaults = function() {
+      document.getElementById("sbMaxBudget").value = "300";
+      document.getElementById("sbAllowedMerchant").value = "merchant_roasters_inc";
+      document.getElementById("sbAllowedSku").value = "SKU-ESP-PRO-03";
+      document.getElementById("sbCartAmount").value = "265";
+      document.getElementById("sbCartMerchant").value = "merchant_roasters_inc";
+      document.getElementById("sbCartSku").value = "SKU-ESP-PRO-03";
+      document.getElementById("sbKeyMatch").value = "valid";
+      evaluateMandateSandbox();
+    };
+
+    window.evaluateMandateSandbox = function() {
+      const maxBudget = parseFloat(document.getElementById("sbMaxBudget")?.value || "0");
+      const allowedMerchant = document.getElementById("sbAllowedMerchant")?.value || "";
+      const allowedSku = (document.getElementById("sbAllowedSku")?.value || "").trim();
+      const cartAmount = parseFloat(document.getElementById("sbCartAmount")?.value || "0");
+      const cartMerchant = document.getElementById("sbCartMerchant")?.value || "";
+      const cartSku = (document.getElementById("sbCartSku")?.value || "").trim();
+      const keyState = document.getElementById("sbKeyMatch")?.value || "valid";
+
+      const checks = [
+        {
+          name: "1. Cryptographic cnf Key & checkout_hash Integrity",
+          passed: keyState === "valid",
+          detail: keyState === "valid"
+            ? "Agent's ES256 signature matches Open Mandate cnf.jwk public key & checkout_hash is intact."
+            : (keyState === "mismatch"
+              ? "REJECTED: Closed Mandate signed by an unknown key not matching Open Mandate cnf claim!"
+              : "REJECTED: Merchant checkout_jwt was modified after signing (checkout_hash mismatch)!")
+        },
+        {
+          name: "2. Budget Ceiling Constraint (payment.amount_range.max)",
+          passed: cartAmount > 0 && cartAmount <= maxBudget,
+          detail: cartAmount <= maxBudget
+            ? `PASSED: Cart amount ($${cartAmount.toFixed(2)}) is within authorized ceiling ($${maxBudget.toFixed(2)}).`
+            : `REJECTED (unresolved_constraint): Cart amount ($${cartAmount.toFixed(2)}) exceeds Open Mandate ceiling ($${maxBudget.toFixed(2)}).`
+        },
+        {
+          name: "3. Merchant Allowlist Constraint (checkout.allowed_merchants)",
+          passed: allowedMerchant === cartMerchant,
+          detail: allowedMerchant === cartMerchant
+            ? `PASSED: Payee '${cartMerchant}' is explicitly authorized in Open Mandate.`
+            : `REJECTED (unresolved_constraint): Payee '${cartMerchant}' is not in allowed_merchants ['${allowedMerchant}'].`
+        },
+        {
+          name: "4. Exact Line-Item SKU Match (checkout.line_items)",
+          passed: allowedSku.length > 0 && allowedSku === cartSku,
+          detail: allowedSku === cartSku
+            ? `PASSED: Cart SKU '${cartSku}' matches authorized Open Mandate line item.`
+            : `REJECTED (unresolved_constraint): Cart SKU '${cartSku}' does not match authorized SKU '${allowedSku}'.`
+        }
+      ];
+
+      const allPassed = checks.every(c => c.passed);
+      const remainder = Math.max(0, maxBudget - cartAmount);
+
+      const box = document.getElementById("sandboxVerdictBox");
+      if (!box) return;
+      box.className = `p-4 rounded-xl border-2 space-y-3 ${allPassed ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-rose-500/50 bg-rose-500/5'}`;
+      box.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="font-bold text-sm ${allPassed ? 'text-emerald-600' : 'text-rose-600'}">
+            ${allPassed ? '✓ VERIFICATION PASSED: Closed Mandate Authorized for Capture' : '✕ VERIFICATION FAILED: Transaction Blocked at Verifier / Ledger Boundary'}
+          </div>
+          <span class="font-mono text-xs px-2 py-0.5 rounded subtle-surface">
+            ${allPassed ? 'Receipt: mandate.payment.accepted' : 'Receipt: mandate.payment.rejected'}
+          </span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          ${checks.map(c => `
+            <div class="p-2.5 rounded-lg book-page-surface flex items-start gap-2">
+              <span class="font-bold ${c.passed ? 'text-emerald-600' : 'text-rose-600'}">${c.passed ? '✓' : '✕'}</span>
+              <div>
+                <div class="font-semibold">${c.name}</div>
+                <div class="opacity-80 mt-0.5">${c.detail}</div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+        <div class="pt-2 border-t text-xs font-mono opacity-85" style="border-color: var(--border-color);">
+          ${allPassed
+            ? `Ledger Action: Reserve $${maxBudget.toFixed(2)} → Capture $${cartAmount.toFixed(2)} (txn_hash_verified) → Release Remainder $${remainder.toFixed(2)}`
+            : `Ledger Action: Emit Signed Rejection Receipt → Release Reserved $${maxBudget.toFixed(2)} back to @buyer:available OR escalate to Human Trusted Surface.`}
+        </div>
+      `;
+    };
+
+    window.answerQuiz = function(qIdx, optIdx) {
+      quizAnswers[qIdx] = optIdx;
+      renderQuiz();
+    };
+
+    window.resetQuiz = function() {
+      quizAnswers = {};
+      renderQuiz();
+    };
+
+    function renderQuiz() {
+      const container = document.getElementById("quizQuestionsContainer");
+      const scoreBadge = document.getElementById("quizScoreBadge");
+      if (!container || !scoreBadge) return;
+
+      let correctCount = 0;
+      QUIZ_QUESTIONS.forEach((item, idx) => {
+        if (quizAnswers[idx] === item.correct) correctCount++;
+      });
+      scoreBadge.textContent = `Score: ${correctCount} / ${QUIZ_QUESTIONS.length}`;
+
+      container.innerHTML = QUIZ_QUESTIONS.map((item, qIdx) => {
+        const chosen = quizAnswers[qIdx];
+        const hasAnswered = chosen !== undefined;
+        return `
+          <div class="p-4 rounded-xl book-page-surface space-y-2.5 text-xs sm:text-sm">
+            <div class="font-bold">${item.q}</div>
+            <div class="space-y-1.5">
+              ${item.options.map((opt, oIdx) => {
+                let btnStyle = "subtle-surface hover:border-blue-500";
+                if (hasAnswered) {
+                  if (oIdx === item.correct) {
+                    btnStyle = "border-2 border-emerald-600 bg-emerald-500/10 font-semibold";
+                  } else if (oIdx === chosen && chosen !== item.correct) {
+                    btnStyle = "border-2 border-rose-600 bg-rose-500/10";
+                  }
+                }
+                return `
+                  <button type="button" onclick="answerQuiz(${qIdx}, ${oIdx})" class="w-full text-left px-3 py-2 rounded-lg border transition flex items-center justify-between gap-2 ${btnStyle}">
+                    <span>${opt}</span>
+                    ${hasAnswered && oIdx === item.correct ? '<span class="text-emerald-600 font-bold">✓</span>' : ''}
+                    ${hasAnswered && oIdx === chosen && chosen !== item.correct ? '<span class="text-rose-600 font-bold">✕</span>' : ''}
+                  </button>
+                `;
+              }).join("")}
+            </div>
+            ${hasAnswered ? `
+              <div class="p-2.5 rounded-lg subtle-surface text-xs">
+                <strong>Explanation:</strong> ${item.explanation}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join("");
+    }
+
+    window.renderGlossary = function() {
+      const grid = document.getElementById("glossaryGrid");
+      if (!grid) return;
+      const q = (document.getElementById("glossaryFilterInput")?.value || "").toLowerCase().trim();
+      const filtered = GLOSSARY_TERMS.filter(g => !q || g.term.toLowerCase().includes(q) || g.def.toLowerCase().includes(q));
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-2 p-4 rounded-xl subtle-surface text-xs italic">No matching glossary terms found for "${q}".</div>`;
+        return;
+      }
+      grid.innerHTML = filtered.map(g => `
+        <div class="p-3.5 rounded-xl book-page-surface space-y-1">
+          <div class="font-bold text-blue-600">${g.term}</div>
+          <p class="text-xs opacity-85 leading-relaxed">${g.def}</p>
+        </div>
+      `).join("");
+    };
+
+    // =========================================================================
+    // HEADER CONTROLS, SEARCH, THEME & KEYBOARD LISTENERS
+    // =========================================================================
+    function handleSearchInput(query) {
+      const dropdown = document.getElementById("searchDropdown");
+      if (!dropdown) return;
+      const q = query.toLowerCase().trim();
+      if (!q) {
+        dropdown.classList.add("hidden");
+        return;
+      }
+      const matches = [];
+      CHAPTERS.forEach((ch, idx) => {
+        if (ch.title.toLowerCase().includes(q) || ch.subtitle.toLowerCase().includes(q) || ch.shortTitle.toLowerCase().includes(q)) {
+          matches.push({ type: "Chapter", label: `${ch.number}: ${ch.title}`, idx });
+        }
+      });
+      GLOSSARY_TERMS.forEach(g => {
+        if (g.term.toLowerCase().includes(q) || g.def.toLowerCase().includes(q)) {
+          matches.push({ type: "Glossary", label: `${g.term} — ${g.def.slice(0, 70)}...`, idx: 7 });
+        }
+      });
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = `<div class="p-2 text-xs opacity-70">No matches for "${query}". Try "SD-JWT", "x402", "Mandate", or "FIDO".</div>`;
+      } else {
+        dropdown.innerHTML = matches.slice(0, 6).map(m => `
+          <button type="button" onclick="selectSearchResult(${m.idx})" class="w-full text-left p-2 rounded-lg hover:bg-blue-600/10 flex items-center justify-between gap-2">
+            <span class="truncate font-medium">${m.label}</span>
+            <span class="px-1.5 py-0.5 rounded subtle-surface text-[10px] font-mono shrink-0">${m.type}</span>
+          </button>
+        `).join("");
+      }
+      dropdown.classList.remove("hidden");
+    }
+
+    window.selectSearchResult = function(chapterIdx) {
+      const dropdown = document.getElementById("searchDropdown");
+      if (dropdown) dropdown.classList.add("hidden");
+      goToChapter(chapterIdx);
+    };
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadSavedState();
+      goToChapter(0);
+
+      // Sidebar Toggle
+      document.getElementById("toggleSidebarBtn").addEventListener("click", () => {
+        const sb = document.getElementById("bookSidebar");
+        sb.classList.toggle("hidden");
+      });
+
+      // Quick Jump to Code Lab
+      document.getElementById("openInteractiveLabQuickBtn").addEventListener("click", () => {
+        goToChapter(6);
+      });
+
+      // Prev / Next Chapter Buttons
+      document.getElementById("prevChapterBtn").addEventListener("click", () => {
+        if (currentChapterIndex > 0) goToChapter(currentChapterIndex - 1);
+      });
+      document.getElementById("nextChapterBtn").addEventListener("click", () => {
+        if (currentChapterIndex < CHAPTERS.length - 1) goToChapter(currentChapterIndex + 1);
+      });
+
+      // Font Size Controls
+      document.getElementById("fontDecreaseBtn").addEventListener("click", () => {
+        currentFontSize = Math.max(14, currentFontSize - 1);
+        document.documentElement.style.setProperty("--base-font-size", `${currentFontSize}px`);
+      });
+      document.getElementById("fontIncreaseBtn").addEventListener("click", () => {
+        currentFontSize = Math.min(22, currentFontSize + 1);
+        document.documentElement.style.setProperty("--base-font-size", `${currentFontSize}px`);
+      });
+      document.getElementById("fontToggleBtn").addEventListener("click", (e) => {
+        isSansMode = !isSansMode;
+        document.body.classList.toggle("font-sans-mode", isSansMode);
+        e.target.textContent = isSansMode ? "Sans" : "Serif";
+      });
+
+      // Theme Controls
+      document.getElementById("themeLightBtn").addEventListener("click", () => {
+        document.body.classList.remove("theme-sepia", "theme-dark");
+      });
+      document.getElementById("themeSepiaBtn").addEventListener("click", () => {
+        document.body.classList.remove("theme-dark");
+        document.body.classList.add("theme-sepia");
+      });
+      document.getElementById("themeDarkBtn").addEventListener("click", () => {
+        document.body.classList.remove("theme-sepia");
+        document.body.classList.add("theme-dark");
+      });
+
+      // Bookmark Current Chapter
+      document.getElementById("bookmarkChapterBtn").addEventListener("click", () => {
+        if (bookmarkedChapters.has(currentChapterIndex)) {
+          bookmarkedChapters.delete(currentChapterIndex);
+          showToast("Removed chapter bookmark");
+        } else {
+          bookmarkedChapters.add(currentChapterIndex);
+          showToast(`Bookmarked ${CHAPTERS[currentChapterIndex].number}`);
+        }
+        saveBookmarks();
+        goToChapter(currentChapterIndex);
+      });
+
+      // Reader Notes Auto-save
+      document.getElementById("readerNotesArea").addEventListener("input", (e) => {
+        try {
+          localStorage.setItem("ap2_book_notes", e.target.value);
+          document.getElementById("noteSaveStatus").textContent = "Saved just now";
+        } catch (err) {}
+      });
+
+      // Search Inputs
+      document.getElementById("globalSearchInput").addEventListener("input", (e) => {
+        handleSearchInput(e.target.value);
+      });
+      document.getElementById("mobileSearchInput").addEventListener("input", (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        if (!q) return;
+        const foundIdx = CHAPTERS.findIndex(ch => ch.title.toLowerCase().includes(q) || ch.shortTitle.toLowerCase().includes(q));
+        if (foundIdx !== -1) goToChapter(foundIdx);
+      });
+
+      // Keyboard Left/Right Page Turners
+      document.addEventListener("keydown", (e) => {
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || tag === "select") return;
+        if (e.key === "ArrowRight" && currentChapterIndex < CHAPTERS.length - 1) {
+          goToChapter(currentChapterIndex + 1);
+        } else if (e.key === "ArrowLeft" && currentChapterIndex > 0) {
+          goToChapter(currentChapterIndex - 1);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
